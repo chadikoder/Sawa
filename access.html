@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sawa connects Lebanese donors with families in need — transparently and directly, with 0 intermediaries.">
+    <meta http-equiv="author" content="chadi khoder">
+
+    <link rel="icon" href="images/sawa.svg" type="image/svg">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/access.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <title>Sawa — Connecting Donors with Families in Need</title>
+
+</head>
+<body>
+
+    <!-- ── Brand Panel (left on desktop, top on mobile) ── -->
+    <div class="brand-panel">
+
+        <div class="logo">
+            <img src="images/sawa_v2.svg" alt="Sawa Logo" width="120" height="120" class="logo_image">
+            <div class="logo_text">
+                <span class="sawa">SAWA</span>
+                <span class="sawa_arab" lang="ar">سويًّا</span>
+                <span class="sawa_text">together · since 2026</span>
+            </div>
+        </div>
+
+        <p class="value-prop">
+            Connecting Lebanese donors with families in need —<br>
+            <strong>transparently and directly.</strong>
+        </p>
+
+        <ul class="feature-list">
+            <li class="feature-item">
+                <span class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </span>
+                <div>
+                    <h4>0 Intermediaries</h4>
+                    <p>Every donation goes directly to the family or organisation</p>
+                </div>
+            </li>
+            <li class="feature-item">
+                <span class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </span>
+                <div>
+                    <h4>Verified Organisations</h4>
+                    <p>All NGOs go through a review process before joining</p>
+                </div>
+            </li>
+            <li class="feature-item">
+                <span class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </span>
+                <div>
+                    <h4>Secure & Transparent</h4>
+                    <p>Track your impact with real-time donation updates</p>
+                </div>
+            </li>
+        </ul>
+
+        <!-- ── Rotating testimonial (social proof) ──
+             TESTIMONIAL_PLACEHOLDER: replace quote, name, role with real content. -->
+        <div class="testimonial-rotator" id="testimonial-rotator" aria-label="What people say about Sawa">
+            <div class="testimonial-slides">
+                <figure class="testimonial-slide is-active">
+                    <svg class="testimonial-quote-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.17 6A5.17 5.17 0 0 0 2 11.17V18h6.83V11.17H5.5A1.67 1.67 0 0 1 7.17 9.5V6Zm10 0A5.17 5.17 0 0 0 12 11.17V18h6.83V11.17H15.5A1.67 1.67 0 0 1 17.17 9.5V6Z"/></svg>
+                    <blockquote>I gave $25 to Sara's campaign and a week later her mother sent me a thank-you message. That transparency is rare.</blockquote>
+                    <figcaption>
+                        <span class="testimonial-avatar" aria-hidden="true">L</span>
+                        <span><strong>Layla N.</strong><small>Donor &middot; Beirut</small></span>
+                    </figcaption>
+                </figure>
+                <figure class="testimonial-slide">
+                    <svg class="testimonial-quote-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.17 6A5.17 5.17 0 0 0 2 11.17V18h6.83V11.17H5.5A1.67 1.67 0 0 1 7.17 9.5V6Zm10 0A5.17 5.17 0 0 0 12 11.17V18h6.83V11.17H15.5A1.67 1.67 0 0 1 17.17 9.5V6Z"/></svg>
+                    <blockquote>Sawa helped us reach 67 donors for our winter food drive. The verification was quick and funds came straight to us.</blockquote>
+                    <figcaption>
+                        <span class="testimonial-avatar" aria-hidden="true">A</span>
+                        <span><strong>Ahmad R.</strong><small>Community Care NGO</small></span>
+                    </figcaption>
+                </figure>
+                <figure class="testimonial-slide">
+                    <svg class="testimonial-quote-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.17 6A5.17 5.17 0 0 0 2 11.17V18h6.83V11.17H5.5A1.67 1.67 0 0 1 7.17 9.5V6Zm10 0A5.17 5.17 0 0 0 12 11.17V18h6.83V11.17H15.5A1.67 1.67 0 0 1 17.17 9.5V6Z"/></svg>
+                    <blockquote>Knowing 100% of the money reaches the family — no admin fees — is why I donate monthly now.</blockquote>
+                    <figcaption>
+                        <span class="testimonial-avatar" aria-hidden="true">S</span>
+                        <span><strong>Sara H.</strong><small>Donor &middot; Tripoli</small></span>
+                    </figcaption>
+                </figure>
+            </div>
+            <div class="testimonial-dots" role="tablist" aria-label="Testimonial selection">
+                <button class="testimonial-dot is-active" type="button" aria-label="Testimonial 1" role="tab"></button>
+                <button class="testimonial-dot" type="button" aria-label="Testimonial 2" role="tab"></button>
+                <button class="testimonial-dot" type="button" aria-label="Testimonial 3" role="tab"></button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Action Card (right on desktop, bottom on mobile) ── -->
+    <div class="action-card">
+
+        <h2 class="card-title">Get Started</h2>
+        <p class="card-sub">Join 120+ donors making a real difference in Lebanon</p>
+
+        <div class="button-group">
+            <a href="pages/signup.html" class="button_signup">Create Free Account</a>
+            <a href="pages/login.html" class="button_login">Log In</a>
+        </div>
+
+        <p class="trust-line">300+ families helped &middot; 100% direct impact</p>
+
+        <a href="pages/userhome.html?guest=1" class="link_visitors">Browse campaigns as a guest &rarr;</a>
+
+        <div class="footer">
+            <div class="social-links">
+                <a href="https://www.facebook.com/sawatogether" target="_blank" rel="noopener" aria-label="Facebook">
+                    <img src="images/social-facebook.svg" alt="Facebook" width="22" height="22">
+                </a>
+                <a href="https://www.instagram.com/sawatogether" target="_blank" rel="noopener" aria-label="Instagram">
+                    <img src="images/social-instagram.svg" alt="Instagram" width="22" height="22">
+                </a>
+                <a href="mailto:sawatogether961@gmail.com" aria-label="Email us">
+                    <img src="images/social-gmail.svg" alt="Gmail" width="22" height="22">
+                </a>
+            </div>
+            <p>&copy; 2026 Sawa. All rights reserved.</p>
+        </div>
+
+    </div>
+
+    <!-- ── About popover ── -->
+    <button type="button" class="info-btn" popovertarget="info_popover" aria-label="About Sawa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+    </button>
+
+    <div id="info_popover" popover>
+        <button class="popover-close" popovertarget="info_popover" popovertargetaction="hide" aria-label="Close">&times;</button>
+        <p class="popover-head">About Sawa</p>
+        <p>Sawa was designed, built, and developed from scratch by Chadi Khoder — a digital platform connecting Lebanese families with donors during the country's ongoing crisis.</p>
+    </div>
+
+    <script>
+      (function () {
+        const rotator = document.getElementById('testimonial-rotator');
+        if (!rotator) return;
+        const slides = rotator.querySelectorAll('.testimonial-slide');
+        const dots   = rotator.querySelectorAll('.testimonial-dot');
+        let index = 0;
+        let timer;
+
+        function show(i) {
+          index = (i + slides.length) % slides.length;
+          slides.forEach((s, n) => s.classList.toggle('is-active', n === index));
+          dots.forEach((d, n) => d.classList.toggle('is-active', n === index));
+        }
+        function start() {
+          stop();
+          timer = setInterval(() => show(index + 1), 6000);
+        }
+        function stop() { if (timer) clearInterval(timer); }
+
+        dots.forEach((d, n) => d.addEventListener('click', () => { show(n); start(); }));
+        rotator.addEventListener('mouseenter', stop);
+        rotator.addEventListener('mouseleave', start);
+        start();
+      })();
+    </script>
+
+</body>
+</html>

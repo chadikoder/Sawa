@@ -42,8 +42,67 @@ function openSidebar() {
   document.body.style.overflow = 'hidden';
 }
 
+/* ── Guest unified header / mobile drawer ── */
+(function() {
+    const burger    = document.getElementById('site-burger');
+    const drawer    = document.getElementById('guest-drawer');
+    const backdrop  = document.getElementById('guest-drawer-backdrop');
+    const closeBtn  = document.getElementById('guest-drawer-close');
+
+    function openDrawer() {
+        if (!drawer) return;
+        drawer.hidden = false;
+        backdrop.hidden = false;
+        requestAnimationFrame(() => {
+            drawer.classList.add('is-open');
+            backdrop.classList.add('is-open');
+        });
+        burger?.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        if (!drawer) return;
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        burger?.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+            if (!drawer.classList.contains('is-open')) {
+                drawer.hidden = true;
+                backdrop.hidden = true;
+            }
+        }, 280);
+    }
+
+    burger?.addEventListener('click', openDrawer);
+    closeBtn?.addEventListener('click', closeDrawer);
+    backdrop?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && drawer && !drawer.hidden) closeDrawer();
+    });
+
+    // Jump-to-section links inside the header + drawer
+    document.querySelectorAll('[data-jump]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = el.dataset.jump;
+            const sectionBtn = document.querySelector(`[data-section="${target}"]`);
+            if (sectionBtn) sectionBtn.click();
+            // Highlight active link in header + drawer
+            document.querySelectorAll('[data-jump]').forEach(other => {
+                other.classList.toggle('is-active', other.dataset.jump === target);
+            });
+            closeDrawer();
+        });
+    });
+})();
+
 document.querySelector('.mobile-overlay')?.addEventListener('click', closeSidebar);
 document.querySelector('.sidebar-close')?.addEventListener('click', closeSidebar);
+document.getElementById('nav-hamburger')?.addEventListener('click', () => {
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar?.classList.contains('open')) closeSidebar(); else openSidebar();
+});
 document.querySelector('.nav-user')?.addEventListener('click', () => {
   if (window.innerWidth <= 768) {
     openSidebar();
@@ -61,22 +120,213 @@ document.querySelector('.sidebar-toggle')?.addEventListener('click', () => {
   document.querySelector('.sidebar').classList.toggle('collapsed');
 });
 
-/* ── Filter panel toggle ── */
-const filterToggle  = document.getElementById('filter-toggle');
-const filterAdvanced = document.getElementById('filter-advanced');
+/* ── Discover filter / search / sort engine ── */
+(function() {
+  const grid          = document.getElementById('discover-grid');
+  const empty         = document.getElementById('discover-empty');
+  const searchInput   = document.getElementById('discover-search');
+  const searchClear   = document.getElementById('discover-search-clear');
+  const sortSelect    = document.getElementById('discover-sort');
+  const catRow        = document.querySelector('.discover-cat-row');
+  const advToggle     = document.getElementById('filter-toggle');
+  const advPanel      = document.getElementById('filter-advanced');
+  const advReset      = document.getElementById('filter-reset');
+  const advCount      = document.getElementById('filter-active-count');
+  const urgencyPills  = document.querySelectorAll('.adv-pills[data-filter="urgency"] .adv-pill');
+  const locationSel   = document.getElementById('discover-location-select');
+  const activePillBox = document.getElementById('discover-active-filters');
+  const resultCount   = document.getElementById('discover-result-count');
 
-filterToggle?.addEventListener('click', () => {
-  const isHidden = filterAdvanced.hasAttribute('hidden');
-  if (isHidden) {
-    filterAdvanced.removeAttribute('hidden');
-    filterToggle.setAttribute('aria-expanded', 'true');
-    filterToggle.classList.add('active');
-  } else {
-    filterAdvanced.setAttribute('hidden', '');
-    filterToggle.setAttribute('aria-expanded', 'false');
-    filterToggle.classList.remove('active');
+  if (!grid) return;
+
+  const state = {
+    category: 'All',
+    urgency:  'All',
+    location: 'all',
+    search:   '',
+    sort:     'newest',
+  };
+
+  const allCards = Array.from(grid.querySelectorAll('.camp-card'));
+
+  function applyFilters() {
+    const term = state.search.trim().toLowerCase();
+    const matches = allCards.filter(card => {
+      if (state.category !== 'All' && card.dataset.category !== state.category) return false;
+      if (state.urgency === 'Urgent' && card.dataset.urgent !== 'true') return false;
+      if (state.location !== 'all' && card.dataset.location !== state.location) return false;
+      if (term) {
+        const hay = (card.dataset.campTitle + ' ' + card.dataset.category + ' ' +
+                     (card.querySelector('.camp-card-desc')?.textContent || '')).toLowerCase();
+        if (!hay.includes(term)) return false;
+      }
+      return true;
+    });
+
+    const pctOf = c => {
+      const r = +c.dataset.raised || 0;
+      const g = +c.dataset.goal || 1;
+      return r / g;
+    };
+    matches.sort((a, b) => {
+      switch (state.sort) {
+        case 'most-funded': return (+b.dataset.raised || 0) - (+a.dataset.raised || 0);
+        case 'closest':     return pctOf(b) - pctOf(a);
+        case 'urgent':      return (b.dataset.urgent === 'true') - (a.dataset.urgent === 'true');
+        default:            return (+b.dataset.campId || 0) - (+a.dataset.campId || 0);
+      }
+    });
+
+    allCards.forEach(c => { c.style.display = 'none'; });
+    matches.forEach(c => { c.style.display = ''; grid.appendChild(c); });
+
+    if (empty) empty.hidden = matches.length > 0;
+    if (resultCount) {
+      resultCount.textContent = matches.length === 1
+        ? '1 campaign'
+        : matches.length + ' campaigns';
+    }
+    renderActivePills();
+    updateChipCounts();
+    updateAdvCount();
   }
-});
+
+  function updateChipCounts() {
+    document.querySelectorAll('.cat-chip-count').forEach(span => {
+      const cat = span.dataset.countFor;
+      const n = cat === 'All'
+        ? allCards.length
+        : allCards.filter(c => c.dataset.category === cat).length;
+      span.textContent = n;
+    });
+  }
+
+  function updateAdvCount() {
+    if (!advCount) return;
+    let n = 0;
+    if (state.urgency !== 'All') n++;
+    if (state.location !== 'all') n++;
+    if (n > 0) { advCount.hidden = false; advCount.textContent = n; }
+    else       { advCount.hidden = true; }
+  }
+
+  function renderActivePills() {
+    if (!activePillBox) return;
+    const pills = [];
+    if (state.category !== 'All') pills.push({ key: 'category', label: state.category });
+    if (state.urgency  !== 'All') pills.push({ key: 'urgency',  label: 'Urgent only' });
+    if (state.location !== 'all') pills.push({ key: 'location', label: state.location.replace('_lb', ' (South)') });
+    if (state.search.trim())      pills.push({ key: 'search',   label: `"${state.search.trim()}"` });
+
+    activePillBox.innerHTML = '';
+    if (pills.length === 0) { activePillBox.hidden = true; return; }
+    activePillBox.hidden = false;
+    pills.forEach(p => {
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'active-filter-pill';
+      pill.innerHTML = `${p.label}<span aria-hidden="true">&times;</span>`;
+      pill.setAttribute('aria-label', `Remove filter ${p.label}`);
+      pill.addEventListener('click', () => clearFilter(p.key));
+      activePillBox.appendChild(pill);
+    });
+    const clearAll = document.createElement('button');
+    clearAll.type = 'button';
+    clearAll.className = 'active-filter-clearall';
+    clearAll.textContent = 'Clear all';
+    clearAll.addEventListener('click', resetAll);
+    activePillBox.appendChild(clearAll);
+  }
+
+  function clearFilter(key) {
+    if (key === 'category') {
+      state.category = 'All';
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.dataset.category === 'All'));
+    } else if (key === 'urgency') {
+      state.urgency = 'All';
+      urgencyPills.forEach(p => p.classList.toggle('active', p.dataset.urgency === 'All'));
+    } else if (key === 'location') {
+      state.location = 'all';
+      if (locationSel) locationSel.value = 'all';
+    } else if (key === 'search') {
+      state.search = '';
+      if (searchInput) searchInput.value = '';
+      if (searchClear) searchClear.hidden = true;
+    }
+    applyFilters();
+  }
+
+  function resetAll() {
+    state.category = 'All';
+    state.urgency  = 'All';
+    state.location = 'all';
+    state.search   = '';
+    state.sort     = 'newest';
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.dataset.category === 'All'));
+    urgencyPills.forEach(p => p.classList.toggle('active', p.dataset.urgency === 'All'));
+    if (locationSel) locationSel.value = 'all';
+    if (sortSelect)  sortSelect.value  = 'newest';
+    if (searchInput) searchInput.value = '';
+    if (searchClear) searchClear.hidden = true;
+    applyFilters();
+  }
+
+  // Category chips
+  document.querySelectorAll('.cat-chip[data-category]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.category = chip.dataset.category;
+      applyFilters();
+    });
+  });
+
+  // Urgency pills
+  urgencyPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      urgencyPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      state.urgency = pill.dataset.urgency;
+      applyFilters();
+    });
+  });
+
+  // Location + sort
+  locationSel?.addEventListener('change', () => { state.location = locationSel.value; applyFilters(); });
+  sortSelect?.addEventListener('change', () => { state.sort = sortSelect.value; applyFilters(); });
+
+  // Search input
+  let searchTimer;
+  searchInput?.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.search = searchInput.value;
+      if (searchClear) searchClear.hidden = !searchInput.value;
+      applyFilters();
+    }, 120);
+  });
+  searchClear?.addEventListener('click', () => clearFilter('search'));
+
+  // Advanced toggle
+  advToggle?.addEventListener('click', () => {
+    const isHidden = advPanel.hasAttribute('hidden');
+    if (isHidden) {
+      advPanel.removeAttribute('hidden');
+      advToggle.setAttribute('aria-expanded', 'true');
+      advToggle.classList.add('active');
+    } else {
+      advPanel.setAttribute('hidden', '');
+      advToggle.setAttribute('aria-expanded', 'false');
+      advToggle.classList.remove('active');
+    }
+  });
+
+  // Reset
+  advReset?.addEventListener('click', resetAll);
+
+  // First paint
+  applyFilters();
+})();
 
 /* ── Donate modal ── */
 const donateModal = document.getElementById('donate-modal');
@@ -305,46 +555,160 @@ document.getElementById('thanks-close-btn')?.addEventListener('click', closeDona
     });
 })();
 
-/* ── Dashboard search → filters Discover cards ── */
+/* ── Dashboard search bridge → forwards to the Discover filter engine ── */
 (function() {
     const input = document.getElementById('dash-search-input');
-    const grid  = document.getElementById('discover-grid');
-    if (!input || !grid) return;
-
-    function applyFilter(q) {
-        const term = q.trim().toLowerCase();
-        const cards = grid.querySelectorAll('.camp-card');
-        let visible = 0;
-        cards.forEach(card => {
-            const title = (card.dataset.campTitle || '').toLowerCase();
-            const cat   = (card.dataset.category || '').toLowerCase();
-            const desc  = (card.querySelector('.camp-card-desc')?.textContent || '').toLowerCase();
-            const match = !term || title.includes(term) || cat.includes(term) || desc.includes(term);
-            card.style.display = match ? '' : 'none';
-            if (match) visible++;
-        });
-        const empty = document.getElementById('discover-search-empty');
-        if (visible === 0 && term && !empty) {
-            const msg = document.createElement('p');
-            msg.id = 'discover-search-empty';
-            msg.className = 'discover-search-empty';
-            msg.textContent = `No campaigns match "${q}". Try a different search.`;
-            grid.parentElement.appendChild(msg);
-        } else if (empty && (visible > 0 || !term)) {
-            empty.remove();
-        }
-    }
-
+    if (!input) return;
     input.addEventListener('input', (e) => {
-        // Jump to Discover when typing in search
-        if (e.target.value.length > 0) {
+        const val = e.target.value;
+        if (val.length > 0) {
             const discoverBtn = document.querySelector('[data-section="discover"]');
             if (discoverBtn && !document.getElementById('discover').classList.contains('active')) {
                 discoverBtn.click();
             }
         }
-        applyFilter(e.target.value);
+        const discSearch = document.getElementById('discover-search');
+        if (discSearch) {
+            discSearch.value = val;
+            discSearch.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     });
+})();
+
+/* ── Count-up animation for stat tiles ──
+   Parses the existing rendered text ($14,400 / 1,200+ / $250k+ / 48)
+   and animates from 0 to that target when scrolled into view. */
+(function() {
+    function parseStat(raw) {
+        const trimmed = raw.trim();
+        const m = trimmed.match(/^([^\d]*)([\d,.]+)\s*([a-zA-Z]?)\s*(\+?)$/);
+        if (!m) return null;
+        const [, prefix, numStr, suffixLetter, plus] = m;
+        const multiplier = suffixLetter.toLowerCase() === 'k' ? 1000 :
+                           suffixLetter.toLowerCase() === 'm' ? 1000000 : 1;
+        const value = parseFloat(numStr.replace(/,/g, '')) * multiplier;
+        return { prefix, value, suffixLetter, plus, hasComma: numStr.includes(',') };
+    }
+
+    function format(n, parts) {
+        let display;
+        if (parts.suffixLetter) {
+            const scaled = parts.suffixLetter.toLowerCase() === 'k' ? n / 1000 : n / 1000000;
+            display = Math.round(scaled) + parts.suffixLetter;
+        } else if (parts.hasComma || parts.value >= 1000) {
+            display = Math.round(n).toLocaleString();
+        } else {
+            display = Math.round(n).toString();
+        }
+        return parts.prefix + display + parts.plus;
+    }
+
+    function animate(el) {
+        const parts = parseStat(el.textContent);
+        if (!parts) return;
+        const start = performance.now();
+        const duration = 1200;
+        function tick(now) {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            el.textContent = format(parts.value * eased, parts);
+            if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    const targets = document.querySelectorAll('.stat-tile-value');
+    if (!targets.length) return;
+
+    if ('IntersectionObserver' in window) {
+        const obs = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animate(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.4 });
+        targets.forEach(t => obs.observe(t));
+    } else {
+        targets.forEach(animate);
+    }
+})();
+
+/* ── Apply data-image as background on card media + featured thumbs ──
+   Lets PHP / future content swap the gradient illustrations for real photos
+   without touching markup: just add data-image="/path/to/photo.jpg". */
+document.querySelectorAll('[data-image]').forEach(el => {
+  const src = el.dataset.image;
+  if (src) el.style.backgroundImage = `url('${src}')`;
+});
+
+/* ── Campaign card v2 enhancement ──
+   Injects: location badge (overlay), creator row with verified tick,
+   days-remaining pill, and an absolute % chip on the progress bar.
+   Uses existing data-* on each .camp-card. Creator + days are mocked
+   deterministically by camp-id (PHP can later set data-creator /
+   data-days-left / data-verified on each card to override). */
+(function enhanceCampCards() {
+  const creators = ['Layla N.', 'Ahmad R.', 'Sara H.', 'Yousef K.', 'Maria F.', 'Hassan T.', 'Nour A.', 'Omar S.'];
+  const daysLeft = [14, 7, 21, 5, 30, 12, 18, 9];
+
+  document.querySelectorAll('.camp-card').forEach(card => {
+    if (card.dataset.v2Enhanced) return;
+    card.dataset.v2Enhanced = '1';
+
+    const id       = parseInt(card.dataset.campId || '0', 10);
+    const idx      = (id - 1 + creators.length) % creators.length;
+    const creator  = card.dataset.creator   || creators[idx] || 'Verified';
+    const days     = card.dataset.daysLeft  || daysLeft[idx] || 14;
+    const verified = card.dataset.verified !== 'false';
+    const location = card.dataset.location || '';
+
+    // Location badge — overlay on the media area
+    const media = card.querySelector('.camp-card-media');
+    if (media && location && !media.querySelector('.camp-location-badge')) {
+      const loc = document.createElement('span');
+      loc.className = 'camp-location-badge';
+      loc.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>${location.replace('_lb', ' (South)')}</span>`;
+      media.appendChild(loc);
+    }
+
+    // Creator row inserted right after the title
+    const content = card.querySelector('.camp-card-content');
+    const title   = card.querySelector('.camp-card-title');
+    if (content && title && !content.querySelector('.camp-creator-row')) {
+      const initials = creator.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+      const row = document.createElement('div');
+      row.className = 'camp-creator-row';
+      row.innerHTML = `
+        <span class="camp-creator-avatar" aria-hidden="true">${initials}</span>
+        <span class="camp-creator-name">${creator}</span>
+        ${verified ? '<span class="camp-verified-badge" title="Verified creator"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0l3 3 4 1 1 4 3 3-3 3-1 4-4 1-3 3-3-3-4-1-1-4-3-3 3-3 1-4 4-1z"/></svg><svg class="camp-verified-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+      `;
+      title.insertAdjacentElement('afterend', row);
+    }
+
+    // Time-remaining pill in the footer
+    const footer = card.querySelector('.camp-card-footer');
+    if (footer && !footer.querySelector('.camp-days-pill')) {
+      const daysNum = parseInt(days, 10);
+      const urgent  = daysNum <= 7;
+      const pill = document.createElement('span');
+      pill.className = 'camp-days-pill' + (urgent ? ' is-urgent' : '');
+      pill.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${daysNum} ${daysNum === 1 ? 'day' : 'days'} left`;
+      footer.insertBefore(pill, footer.firstChild);
+    }
+
+    // Promote the existing % into an absolute chip on the progress bar
+    const pctEl  = card.querySelector('.camp-pct');
+    const bar    = card.querySelector('.progress-bar');
+    if (bar && pctEl && !bar.querySelector('.progress-pct-chip')) {
+      const chip = document.createElement('span');
+      chip.className = 'progress-pct-chip';
+      chip.textContent = pctEl.textContent.trim();
+      bar.appendChild(chip);
+    }
+  });
 })();
 
 /* ── Time-of-day greeting ── */
@@ -389,7 +753,7 @@ document.querySelectorAll('#discover-grid .camp-card').forEach(card => {
   });
 });
 
-document.querySelectorAll('.camp-donate, .urgent-donate').forEach(btn => {
+document.querySelectorAll('.camp-donate, .urgent-donate, .featured-camp-donate').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     openDonateModal(btn.dataset.campTitle || 'Donate', btn.dataset.campId || '');
@@ -452,22 +816,6 @@ document.getElementById('camp-image-input')?.addEventListener('change', function
     };
     reader.readAsDataURL(file);
   }
-});
-
-/* ── Filter buttons — category (mutually exclusive) ── */
-document.querySelectorAll('.campaign-filters .filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.campaign-filters .filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  });
-});
-
-/* ── Filter buttons — urgency group ── */
-document.querySelectorAll('.filter-group button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    btn.closest('.filter-group').querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  });
 });
 
 /* ── Preset amount buttons ── */

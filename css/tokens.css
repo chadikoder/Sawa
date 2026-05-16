@@ -27,14 +27,16 @@
   --color-purple-light:   #f5f3ff;
 
   --color-text:           #1f2937;
-  --color-text-muted:     #6b7280;
-  --color-text-light:     #9ca3af;
-  --color-text-navy:      #1A3D5D;   /* Sawa brand dark navy, used on access page */
+  --color-text-muted:     #4b5563;
+  --color-text-light:     #6b7280;
+  --color-text-navy:      #1A3D5D;
 
   --color-surface:        #ffffff;
   --color-bg:             #f8fafc;
+  --color-bg-deep:        #f1f5f9;
   --color-border:         #e5e7eb;
   --color-dark:           #111827;
+  --color-dark-soft:      #1e293b;
 
   /* ─── Typography ─────────────────────────────── */
   --font:       'Poppins', Arial, sans-serif;

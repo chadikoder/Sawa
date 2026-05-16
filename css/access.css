@@ -152,6 +152,127 @@ body {
 }
 
 /* ─────────────────────────────────────────
+   TESTIMONIAL ROTATOR (social proof)
+───────────────────────────────────────── */
+.testimonial-rotator {
+    width: 100%;
+    max-width: 36rem;
+    margin-top: 1.8rem;
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 1.4rem;
+    padding: 1.6rem 1.6rem 1.2rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    text-align: left;
+}
+
+.testimonial-slides {
+    position: relative;
+    min-height: 11rem;
+}
+
+.testimonial-slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    pointer-events: none;
+}
+
+.testimonial-slide.is-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.testimonial-quote-mark {
+    width: 1.8rem;
+    height: 1.8rem;
+    color: var(--primary);
+    opacity: 0.55;
+}
+
+.testimonial-slide blockquote {
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--text);
+    font-style: italic;
+    margin: 0;
+}
+
+.testimonial-slide figcaption {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: auto;
+}
+
+.testimonial-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.testimonial-slide figcaption span:last-child {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.testimonial-slide figcaption strong {
+    font-size: 1.2rem;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.testimonial-slide figcaption small {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+.testimonial-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.testimonial-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    border: none;
+    background: rgba(15, 23, 42, 0.18);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.testimonial-dot:hover {
+    background: rgba(15, 23, 42, 0.32);
+}
+
+.testimonial-dot.is-active {
+    background: var(--primary);
+    transform: scale(1.25);
+}
+
+/* ─────────────────────────────────────────
    ACTION CARD (right / bottom)
 ───────────────────────────────────────── */
 .action-card {
@@ -288,7 +409,6 @@ body {
 .footer p {
     font-size: 1.2rem;
     color: var(--text-muted);
-    opacity: 0.75;
 }
 
 /* ── About info button (fixed top-right) ── */
@@ -296,10 +416,10 @@ body {
     position: fixed;
     top: 1.6rem;
     right: 1.6rem;
-    width: 4rem;
-    height: 4rem;
+    width: 4.8rem;
+    height: 4.8rem;
     border-radius: 50%;
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.95);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border: 1.5px solid rgba(37, 99, 235, 0.2);
@@ -369,7 +489,7 @@ body {
     body {
         flex-direction: row;
         min-height: 100vh;
-        overflow: hidden;
+        overflow-y: auto;
     }
 
     .brand-panel {
