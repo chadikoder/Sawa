@@ -1,0 +1,972 @@
+* { box-sizing: border-box; }
+
+html { font-size: 62.5%; }
+
+:root {
+    --blue: var(--color-primary);
+    --blue-dark: var(--color-primary-dark);
+    --primary: var(--color-primary);
+    --text-muted: var(--color-text-muted);
+    --border: #e2e8f0;
+    --input-bg: #f8fafc;
+    --white: var(--color-surface);
+    --radius: var(--r);
+}
+
+/* ── Back link ── */
+.back-home {
+    position: fixed;
+    top: 1.6rem;
+    left: 1.6rem;
+    width: 3.8rem;
+    height: 3.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: 50%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    z-index: 100;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.back-home:hover {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+}
+
+/* ── Auth switch ── */
+.auth-switch {
+    font-size: 1.4rem;
+    color: #6b7280;
+    text-align: center;
+    margin: 1.6rem 0 0;
+    padding: 0 2rem;
+}
+.auth-switch a { color: var(--blue); font-weight: 600; text-decoration: underline; }
+
+/* ── Body ── */
+body {
+    background: linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #e0e7ff 100%);
+    font-family: 'Poppins', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0;
+}
+
+/* ── Headings ── */
+h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--blue);
+    text-align: center;
+    margin: 0 0 0.4rem;
+}
+
+/* ── Step counter ── */
+.step-counter {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.02em;
+}
+
+/* ── Phone/Email toggle navbar ── */
+.navbar {
+    position: relative;
+    width: 100%;
+    max-width: 36rem;
+    height: 4.8rem;
+    background: #f1f5f9;
+    border: 1.5px solid var(--border);
+    border-radius: 1.2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
+    font-family: 'Poppins', Arial, sans-serif;
+    cursor: pointer;
+    padding: 0 2rem;
+    border-radius: 1rem;
+    width: 50%;
+    color: #374151;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.phone_btn { color: #374151; }
+
+.active_btn {
+    position: absolute;
+    z-index: 0;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: calc(50% - 4px);
+    background-color: #fff;
+    border-radius: calc(1.2rem - 4px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.slide { transform: translateX(0%); }
+
+#email { display: none; }
+
+/* ── Form wrapper ── */
+.form_submit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 1.6rem 1.6rem 6rem;
+}
+
+/* ── Form steps (card style) ── */
+.step_1,
+.step_2,
+.basicinfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.6rem;
+    width: 100%;
+    max-width: 44rem;
+    background: #fff;
+    border-radius: 2rem;
+    padding: 3.2rem 2.4rem;
+    box-shadow: 0 4px 32px rgba(37, 99, 235, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.step_2 { display: none; }
+
+/* ── Labels ── */
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 36rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.label_text {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* ── Inputs, selects, textarea ── */
+input,
+select,
+textarea {
+    border: 1.5px solid var(--border);
+    width: 100%;
+    height: 4.8rem;
+    background: var(--input-bg);
+    padding: 0 1.6rem;
+    border-radius: 1.2rem;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 1.5rem;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #fff;
+}
+
+input::placeholder {
+    color: #c0c9d6;
+}
+
+input[type="button"],
+input[type="submit"] {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    height: 5rem;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+input[type="button"]:hover,
+input[type="submit"]:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
+}
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#role { background: var(--input-bg); }
+
+textarea {
+    padding: 1.2rem 1.6rem;
+    height: auto;
+    min-height: 9.6rem;
+    resize: vertical;
+}
+
+select {
+    appearance: none;
+    background-image: url("../images/chevron-down.svg");
+    background-color: var(--input-bg);
+    background-repeat: no-repeat;
+    background-size: 2rem;
+    background-position: right 1.2rem center;
+    padding-right: 3.6rem;
+}
+
+span { display: inline-block; }
+
+/* ── Back button ── */
+.back-btn {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    color: var(--blue);
+    width: 3.8rem;
+    height: 3.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', Arial, sans-serif;
+    align-self: flex-start;
+    flex-shrink: 0;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+}
+
+/* ── Bio counter ── */
+.bio-counter {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    text-align: right;
+    width: 100%;
+    max-width: 36rem;
+    margin-top: -1rem;
+}
+
+/* ── Upload hint ── */
+.upload-hint {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ── Profile upload ── */
+.profile-upload-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0.4rem 0;
+}
+
+.profile-upload-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+}
+
+.image_circle {
+    width: 10rem;
+    height: 10rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2.5px solid var(--blue);
+    background: #f1f5f9;
+}
+
+.image_circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.edit_text,
+.file_text {
+    color: var(--blue);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* ── Phone prefix + input grid ── */
+.input-group {
+    display: grid;
+    width: 100%;
+    max-width: 36rem;
+    grid-template-columns: 100px 1fr;
+    gap: 1rem;
+}
+
+/* ── Organisation step (same card style as other steps) ── */
+.organisation_role {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.6rem;
+    width: 100%;
+    max-width: 44rem;
+    background: #fff;
+    border-radius: 2rem;
+    padding: 3.2rem 2.4rem;
+    box-shadow: 0 4px 32px rgba(37, 99, 235, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    margin-top: 0;
+}
+
+/* ── Org document upload ── */
+.file_organisation_upload_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.file_organisation_upload_label {
+    width: 100%;
+    max-width: 36rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+}
+
+.image_container_file {
+    width: 100%;
+    height: 10rem;
+    border-radius: var(--radius);
+    border: 2px dashed var(--blue);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    background: #f8faff;
+    transition: background 0.2s, border-color 0.2s;
+}
+.image_container_file:hover { background: #eff6ff; border-color: var(--blue-dark); }
+
+.image_container_file img {
+    width: 4rem;
+    height: 4rem;
+    opacity: 0.6;
+}
+
+/* ── Gender selector ── */
+.gender-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+    max-width: 36rem;
+}
+
+.gender-group .label_text { font-size: 1.4rem; }
+
+.gender-options {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.gender-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    padding: 1.2rem 1.6rem;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 1.2rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+.gender-option:hover { background: #eff6ff; border-color: var(--blue); }
+
+.gender-option input[type="radio"] { display: none; }
+
+.gender-radio-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+
+.gender-radio-circle::after {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--blue);
+    transform: scale(0);
+    transition: transform 0.2s;
+}
+
+.gender-option input[type="radio"]:checked ~ .gender-radio-circle { border-color: var(--blue); }
+.gender-option input[type="radio"]:checked ~ .gender-radio-circle::after { transform: scale(1); }
+.gender-option input[type="radio"]:checked ~ .gender-pill { color: var(--blue); font-weight: 600; }
+
+.gender-pill {
+    font-size: 1.5rem;
+    color: #6b7280;
+    transition: color 0.2s;
+}
+
+/* ── Step progress bar ── */
+.step-progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.sp-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #e2e8f0;
+    transition: background 0.25s, transform 0.25s;
+}
+
+.sp-dot.sp-done {
+    background: var(--blue);
+    opacity: 0.4;
+}
+
+.sp-dot.sp-active {
+    background: var(--blue);
+    width: 2.4rem;
+    border-radius: 9999px;
+}
+
+/* ── Password strength bar ── */
+.pwd-strength-wrap {
+    width: 100%;
+    max-width: 36rem;
+    margin-top: -0.8rem;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.pwd-strength-bar {
+    display: flex;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.pwd-strength-bar span {
+    flex: 1;
+    height: 0.4rem;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    transition: background 0.3s;
+}
+
+.pwd-strength-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 7rem;
+    text-align: right;
+    white-space: nowrap;
+    transition: color 0.3s;
+}
+
+/* ── Role cards — always visible (mobile + desktop) ── */
+.role_cards { display: none; }
+
+/* ── Role card small description text ── */
+.image_card1 small,
+.image_card2 small,
+.image_card3 small {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-align: center;
+}
+
+/* ── Role cards — visible on all screen sizes when shown by JS ── */
+.role_cards {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+    width: 100%;
+    min-height: 100vh;
+    padding: 7rem 2rem 6rem;
+    position: relative;
+}
+
+.role_cards .step-progress-bar {
+    position: absolute;
+    top: 1.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.role_cards .step-counter {
+    position: absolute;
+    top: 3.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.role_cards h1 {
+    position: absolute;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 2.2rem;
+    margin: 0;
+}
+
+.back-from-roles {
+    position: absolute;
+    top: 1.6rem;
+    left: 2rem;
+}
+
+.image-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 36rem;
+    height: 10rem;
+    border-radius: 1.6rem;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.image-card-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.16);
+    border-color: var(--blue);
+}
+
+.image_card1,
+.image_card2,
+.image_card3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 1.6rem;
+    width: 100%;
+    height: 100%;
+    padding: 0 2.4rem;
+}
+
+.image_card1 img,
+.image_card2 svg,
+.image_card3 svg {
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.image_card2 svg { fill: #2563eb; }
+.image_card3 svg { fill: #f59e0b; }
+
+.image-card-container:hover .image_card1 img,
+.image-card-container:hover .image_card2 svg,
+.image-card-container:hover .image_card3 svg { transform: scale(1.08); transition: transform 0.2s; }
+
+.role_cards span:not(.step-counter):not(.sp-dot) {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Card label + description column */
+.image_card1 > div,
+.image_card2 > div,
+.image_card3 > div {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Mobile keeps the original behavior — hide the desktop-only check badge and Continue button */
+.card-check { display: none; }
+.role-continue-btn { display: none; }
+
+/* Mobile: grid wrapper just stacks cards (preserves original mobile layout) */
+.role-cards-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+    width: 100%;
+}
+
+/* ── Desktop (≥768px) ── */
+@media (min-width: 768px) {
+
+    body {
+        background: linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #e0e7ff 100%);
+    }
+
+    /* Role card grid — side by side on desktop */
+    .role_cards {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 2.8rem;
+        padding: 10rem 2rem 6rem;
+    }
+
+    .role_cards h1 {
+        font-size: 3.2rem;
+        top: 5.6rem;
+    }
+
+    /* Per-role accent variables — set on the card itself */
+    .image-card-container[data-role-color="rose"]  { --role-accent: #e11d48; --role-accent-2: #f43f5e; --role-deep: #be123c; --role-soft: rgba(225, 29, 72, 0.10); --role-glow: rgba(225, 29, 72, 0.36); --role-ring: rgba(225, 29, 72, 0.50); }
+    .image-card-container[data-role-color="blue"]  { --role-accent: #2563eb; --role-accent-2: #3b82f6; --role-deep: #1d4ed8; --role-soft: rgba(37, 99, 235, 0.10); --role-glow: rgba(37, 99, 235, 0.36); --role-ring: rgba(37, 99, 235, 0.50); }
+    .image-card-container[data-role-color="amber"] { --role-accent: #f59e0b; --role-accent-2: #fbbf24; --role-deep: #d97706; --role-soft: rgba(245, 158, 11, 0.12); --role-glow: rgba(245, 158, 11, 0.40); --role-ring: rgba(245, 158, 11, 0.55); }
+
+    /* Larger hero-style cards */
+    .image-card-container {
+        width: 26rem;
+        height: 38rem;
+        flex-direction: column;
+        max-width: 26rem;
+        background: #fff;
+        border: 1.5px solid rgba(226, 232, 240, 0.9);
+        border-radius: 2.4rem;
+        box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+                    border-color 0.2s;
+    }
+
+    /* Top hero area — colored gradient with icon */
+    .image-card-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 14rem;
+        background: linear-gradient(135deg, var(--role-accent) 0%, var(--role-accent-2) 100%);
+        z-index: 0;
+    }
+
+    /* Decorative circles in the hero area */
+    .image-card-container::after {
+        content: '';
+        position: absolute;
+        top: -4rem;
+        right: -4rem;
+        width: 14rem;
+        height: 14rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Hover: card lift + stronger shadow + icon dance */
+    .image-card-container:hover {
+        transform: translateY(-12px) scale(1.03);
+        box-shadow: 0 28px 60px var(--role-glow);
+        border-color: var(--role-accent);
+    }
+
+    /* Inner card column */
+    .image_card1,
+    .image_card2,
+    .image_card3 {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0;
+        justify-content: flex-start;
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Icon: floats over the hero gradient, white tinted circle */
+    .image_card1 img,
+    .image_card2 svg,
+    .image_card3 svg {
+        width: 9.6rem;
+        height: 9.6rem;
+        padding: 2rem;
+        border-radius: 50%;
+        margin: 2.4rem auto 0;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15), inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+        transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+        position: relative;
+        z-index: 2;
+    }
+    /* Make sure SVGs render in role accent on the white disc */
+    .image_card2 svg { fill: var(--role-accent); }
+    .image_card3 svg { fill: var(--role-accent); }
+
+    .image-card-container:hover .image_card1 img,
+    .image-card-container:hover .image_card2 svg,
+    .image-card-container:hover .image_card3 svg {
+        transform: scale(1.08) rotate(-4deg);
+    }
+
+    /* Role name — larger and bolder */
+    .role_cards span:not(.step-counter):not(.sp-dot) {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        position: relative;
+        z-index: 1;
+        margin-top: 4.2rem;
+        padding: 0 1.6rem;
+    }
+
+    /* Underline accent under the role name */
+    .image_card1 > span:not(.step-counter):not(.sp-dot)::after,
+    .image_card2 > span:not(.step-counter):not(.sp-dot)::after,
+    .image_card3 > span:not(.step-counter):not(.sp-dot)::after {
+        content: '';
+        display: block;
+        width: 2.8rem;
+        height: 0.35rem;
+        background: linear-gradient(90deg, var(--role-accent) 0%, var(--role-accent-2) 100%);
+        border-radius: 9999px;
+        margin: 0.8rem auto 0;
+        transition: width 0.28s ease;
+    }
+    .image-card-container:hover .image_card1 > span:not(.step-counter):not(.sp-dot)::after,
+    .image-card-container:hover .image_card2 > span:not(.step-counter):not(.sp-dot)::after,
+    .image-card-container:hover .image_card3 > span:not(.step-counter):not(.sp-dot)::after,
+    .image-card-container.selected .image_card1 > span:not(.step-counter):not(.sp-dot)::after,
+    .image-card-container.selected .image_card2 > span:not(.step-counter):not(.sp-dot)::after,
+    .image-card-container.selected .image_card3 > span:not(.step-counter):not(.sp-dot)::after {
+        width: 6rem;
+    }
+
+    /* Role description */
+    .image_card1 small,
+    .image_card2 small,
+    .image_card3 small {
+        font-size: 1.35rem;
+        line-height: 1.55;
+        padding: 0 1.8rem;
+        color: #475569;
+        position: relative;
+        z-index: 1;
+        margin-top: 0.6rem;
+    }
+
+    /* Selected state — full coverage colored border + strong ring */
+    .image-card-container.selected {
+        border-color: var(--role-accent);
+        border-width: 2.5px;
+        box-shadow: 0 0 0 5px var(--role-ring), 0 28px 56px var(--role-glow);
+        transform: translateY(-10px) scale(1.04);
+    }
+    .image-card-container.selected .image_card1 img,
+    .image-card-container.selected .image_card2 svg,
+    .image-card-container.selected .image_card3 svg {
+        transform: scale(1.12);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22), inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+    }
+
+    /* Checkmark badge (top-right) */
+    .card-check {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 1.2rem;
+        right: 1.2rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--role-accent);
+        color: #fff;
+        box-shadow: 0 4px 12px var(--role-glow);
+        opacity: 0;
+        transform: scale(0.6);
+        transition: opacity 0.2s, transform 0.2s;
+        z-index: 3;
+        pointer-events: none;
+    }
+    .card-check svg { width: 1.6rem; height: 1.6rem; }
+    .image-card-container.selected .card-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Continue button under the role cards */
+    .role-continue-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.6rem;
+        height: 5rem;
+        width: auto;
+        min-width: 22rem;
+        max-width: 26rem;
+        align-self: center;
+        padding: 0 3.2rem;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 9999px;
+        font-family: 'Poppins', Arial, sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        opacity: 0.45;
+        pointer-events: none;
+        transform: translateY(4px);
+        transition: opacity 0.25s, transform 0.25s, background 0.2s, box-shadow 0.2s;
+    }
+    .role-continue-btn:not(:disabled) {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    .role-continue-btn:not(:disabled):hover {
+        background: var(--blue-dark);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.28);
+        transform: translateY(-2px);
+    }
+
+    /* Cards laid out in a row, Continue button on the line below */
+    .role_cards {
+        flex-direction: column;
+        gap: 2.4rem;
+    }
+    .role-cards-grid {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: stretch;
+        gap: 2.8rem;
+        width: 100%;
+    }
+
+    /* Form card on desktop — wider */
+    .form_submit {
+        padding: 4rem 2rem 6rem;
+        min-height: 100vh;
+        justify-content: center;
+    }
+
+    .step_1,
+    .step_2,
+    .basicinfo,
+    .organisation_role {
+        max-width: 52rem;
+        padding: 4rem 4.8rem;
+    }
+}
+
+/* ── Password show/hide toggle ── */
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-wrap input {
+    padding-right: 4.4rem;
+    width: 100%;
+}
+
+.pwd-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    height: auto;
+    width: auto;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+}
+
+.pwd-toggle svg {
+    stroke: #9ca3af;
+    transition: stroke 0.15s;
+}
+
+.pwd-toggle:hover svg { stroke: #6b7280; }

@@ -1,0 +1,96 @@
+/*
+ * Sawa Design Tokens
+ * Single source of truth for all colors, typography, spacing, and effects.
+ * Import this before any page-specific stylesheet.
+ */
+
+:root {
+
+  /* ─── Colors ──────────────────────────────────── */
+  --color-primary:        #2563eb;
+  --color-primary-dark:   #1d4ed8;
+  --color-primary-light:  #eff6ff;
+  --color-primary-glow:   rgba(37, 99, 235, 0.4);
+
+  --color-success:        #16a34a;
+  --color-success-dark:   #15803d;
+  --color-success-light:  #dcfce7;
+  --color-success-border: #86efac;
+
+  --color-danger:         #ef4444;
+  --color-danger-light:   #fef2f2;
+
+  --color-warning:        #f59e0b;
+  --color-warning-light:  #fffbeb;
+
+  --color-purple:         #7c3aed;
+  --color-purple-light:   #f5f3ff;
+
+  --color-text:           #1f2937;
+  --color-text-muted:     #6b7280;
+  --color-text-light:     #9ca3af;
+  --color-text-navy:      #1A3D5D;   /* Sawa brand dark navy, used on access page */
+
+  --color-surface:        #ffffff;
+  --color-bg:             #f8fafc;
+  --color-border:         #e5e7eb;
+  --color-dark:           #111827;
+
+  /* ─── Typography ─────────────────────────────── */
+  --font:       'Poppins', Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+
+  --text-xs:   1.2rem;   /* hints, captions    */
+  --text-sm:   1.4rem;   /* secondary body     */
+  --text-base: 1.6rem;   /* primary body       */
+  --text-lead: 1.8rem;   /* lead paragraph     */
+  --text-h4:   2.0rem;
+  --text-h3:   2.4rem;
+  --text-h2:   3.2rem;
+  --text-h1:   4.8rem;   /* hero heading       */
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semi:   600;
+  --weight-bold:   700;
+
+  /* ─── Spacing (4 px grid) ────────────────────── */
+  --sp-1:  0.4rem;
+  --sp-2:  0.8rem;
+  --sp-3:  1.2rem;
+  --sp-4:  1.6rem;
+  --sp-5:  2.0rem;
+  --sp-6:  2.4rem;
+  --sp-8:  3.2rem;
+  --sp-10: 4.0rem;
+  --sp-12: 4.8rem;
+  --sp-16: 6.4rem;
+  --sp-20: 8.0rem;
+  --sp-24: 9.6rem;
+
+  /* ─── Radii ──────────────────────────────────── */
+  --r-sm:   6px;
+  --r:      12px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-full: 9999px;
+
+  /* ─── Shadows ────────────────────────────────── */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow:    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ─── Transitions ────────────────────────────── */
+  --t:      0.2s ease;
+  --t-slow: 0.4s ease;
+
+  /* ─── Component tokens ───────────────────────── */
+  --input-height:  4.8rem;
+  --btn-radius:    var(--r-full);
+
+  /* ─── Layout ─────────────────────────────────── */
+  --nav-height:    6.4rem;
+  --sidebar-width: 24rem;
+  --container:     112rem;
+}

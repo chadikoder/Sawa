@@ -1,0 +1,309 @@
+* { box-sizing: border-box; }
+
+html { font-size: 62.5%; }
+
+:root {
+    --blue: var(--color-primary);
+    --blue-dark: var(--color-primary-dark);
+    --border: #e2e8f0;
+    --text-body: #1e293b;
+    --text-label: #374151;
+    --text-muted: var(--color-text-muted);
+}
+
+/* ── Base ── */
+body {
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: linear-gradient(160deg, #eff6ff 0%, #dbeafe 55%, #e0e7ff 100%);
+    display: flex;
+    align-items: stretch;
+}
+
+/* ── Back link ── */
+.back-home {
+    position: fixed;
+    top: 1.6rem;
+    left: 1.6rem;
+    width: 3.8rem;
+    height: 3.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: 50%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    z-index: 100;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.back-home:hover {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+}
+
+/* ── Page layout ── */
+.login-page {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Brand panel — desktop only */
+.login-brand { display: none; }
+
+/* Card fills full screen on mobile */
+.login-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 2.4rem 4rem;
+    background: #fff;
+}
+
+/* Mini logo shown on mobile */
+.card-logo {
+    width: 5.6rem;
+    height: 5.6rem;
+    margin-bottom: 1.6rem;
+}
+
+/* ── Headings ── */
+h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--blue);
+    margin: 0 0 0.4rem;
+    text-align: center;
+}
+
+.auth-sub {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    margin: 0 0 3.2rem;
+    text-align: center;
+}
+
+/* ── Form ── */
+.login_form {
+    width: 100%;
+    max-width: 36rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+label {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--text-label);
+    display: block;
+}
+
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrap input {
+    width: 100%;
+    height: 4.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 1.2rem;
+    background: #fff;
+    padding: 0 4.4rem 0 4.4rem;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 1.5rem;
+    color: var(--text-body);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-wrap input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.input-wrap input::placeholder {
+    color: #c0c9d6;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1.4rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    pointer-events: none;
+    stroke: #9ca3af;
+    flex-shrink: 0;
+}
+
+.pwd-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    height: auto;
+    width: auto;
+    border-radius: 0;
+}
+.pwd-toggle svg { stroke: #9ca3af; transition: stroke 0.15s; }
+.pwd-toggle:hover svg { stroke: #6b7280; }
+
+.forgot-link {
+    font-size: 1.3rem;
+    color: var(--blue);
+    text-decoration: none;
+    text-align: right;
+    display: block;
+    margin-top: -0.6rem;
+    transition: opacity 0.15s;
+}
+.forgot-link:hover { text-decoration: underline; opacity: 0.8; }
+
+/* ── Submit button ── */
+.login_form [type="submit"] {
+    width: 100%;
+    height: 5rem;
+    border: none;
+    border-radius: 9999px;
+    background: var(--blue);
+    color: #fff;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.4rem;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    padding: 0;
+}
+.login_form [type="submit"]:hover {
+    background: var(--blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.28);
+}
+.login_form [type="submit"]:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ── Auth switch ── */
+.auth-switch {
+    font-size: 1.3rem;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 2.4rem;
+}
+.auth-switch a {
+    color: var(--blue);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* ── Error messages (injected by login.js into .input-wrap) ── */
+.field-error {
+    display: block;
+    font-size: 1.2rem !important;
+    color: #ef4444 !important;
+    margin-top: 0.4rem;
+    padding-left: 0.4rem !important;
+    width: auto !important;
+    max-width: none !important;
+}
+
+/* ── Desktop (≥780px) ── */
+@media (min-width: 780px) {
+    body {
+        background: linear-gradient(145deg, #1d4ed8 0%, #2563eb 50%, #4338ca 100%);
+    }
+
+    .login-brand {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2.4rem;
+        padding: 4rem;
+    }
+
+    .brand-logo {
+        width: 10rem;
+        height: 10rem;
+        filter: brightness(0) invert(1);
+    }
+
+    .brand-name {
+        font-size: 5.6rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: #fff;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .brand-tagline {
+        font-size: 1.7rem;
+        color: rgba(255, 255, 255, 0.78);
+        text-align: center;
+        line-height: 1.8;
+        margin: 0;
+        max-width: 28rem;
+    }
+
+    .login-card {
+        width: 52rem;
+        min-width: 52rem;
+        flex: 0 0 52rem;
+        min-height: 100vh;
+        border-radius: 0;
+        padding: 4rem 5.6rem;
+        box-shadow: -24px 0 64px rgba(0, 0, 0, 0.14);
+        justify-content: center;
+    }
+
+    .card-logo { display: none; }
+
+    h1 { font-size: 3.2rem; }
+}
+
+/* ── PHP redirect toast ── */
+.toast {
+    position: fixed;
+    bottom: 2.4rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(2rem);
+    background: #1f2937;
+    color: #fff;
+    padding: 1.2rem 2.4rem;
+    border-radius: 9999px;
+    font-size: 1.4rem;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 9999;
+    white-space: nowrap;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast.toast-error { background: #ef4444; }

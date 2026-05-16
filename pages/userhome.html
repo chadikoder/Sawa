@@ -1,0 +1,1130 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../images/sawa.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/userhome.css">
+  <title>Dashboard — Sawa</title>
+</head>
+<body class="is-auth role-donor">
+  <!--
+    Body classes drive what's visible. PHP sets them server-side:
+
+      Auth state:  is-auth | is-guest
+      User role:   role-donor | role-taker | role-org   (only when is-auth)
+
+    Example:
+      <?php $mode = isset($_SESSION['user_id']) ? 'is-auth' : 'is-guest'; ?>
+      <?php $role = $_SESSION['user_role'] ?? 'donor'; // donor|taker|org ?>
+      <body class="<?= $mode ?> role-<?= $role ?>">
+
+    For testing without PHP:
+      ?guest=1          → forces is-guest
+      ?role=taker       → forces role-taker
+      ?role=org         → forces role-org
+  -->
+
+  <nav>
+    <div class="nav-user">
+      <img src="../images/user-profile.svg" alt="avatar" id="nav-avatar">
+      <span id="nav-name">User</span>
+    </div>
+    <div class="nav-links">
+      <a href="#" onclick="document.querySelector('[data-section=&quot;dashboard&quot;]').click(); return false;">Home</a>
+      <a href="#" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click(); return false;">Campaigns</a>
+      <a href="about-us.html">About</a>
+    </div>
+  </nav>
+
+  <div class="mobile-overlay"></div>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <button class="sidebar-close">&times;</button>
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-circle">
+          <img src="../images/sawa_v2.svg" alt="Sawa">
+        </div>
+        <span>Sawa</span>
+        <button class="sidebar-toggle" aria-label="Collapse sidebar" title="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+      <button class="sidebar-item active" data-section="dashboard">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="sidebar-item" data-section="discover">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <span>Discover</span>
+      </button>
+      <button class="sidebar-item auth-only" data-section="profile">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span>My Profile</span>
+      </button>
+      <button class="sidebar-item auth-only" data-section="wallet">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <span>My Wallet</span>
+      </button>
+      <button class="sidebar-item auth-only" data-section="campaign-new">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Create Campaign</span>
+      </button>
+      <button class="sidebar-item auth-only" data-section="campaigns">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <span>My Campaigns</span>
+      </button>
+
+      <!-- Logged-in only: logout -->
+      <button class="sidebar-item logout auth-only" onclick="window.location.href='../php/logout.php'">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span>Logout</span>
+      </button>
+
+      <!-- Guests only: Sign Up + Log In CTA pair -->
+      <a class="sidebar-item sidebar-cta guest-only" href="signup.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8v6M16 11h6"/></svg>
+        <span>Sign Up</span>
+      </a>
+      <a class="sidebar-item guest-only" href="login.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 003 3h2a3 3 0 003-3V7a3 3 0 00-3-3h-2a3 3 0 00-3 3v1"/></svg>
+        <span>Log In</span>
+      </a>
+    </aside>
+
+    <main class="main-content">
+
+      <section id="dashboard" class="section active">
+        <!-- Guest hero (only shown when body.is-guest) -->
+        <div class="guest-hero guest-only">
+          <div class="guest-hero-text">
+            <span class="guest-hero-eyebrow">Lebanon's transparent donation platform</span>
+            <h1>Help families across Lebanon — directly.</h1>
+            <p>No middlemen, no hidden fees. Every dollar reaches the family or NGO that needs it. Browse campaigns and donate as a guest, or sign up to unlock wallet, campaigns, and impact tracking.</p>
+            <div class="guest-hero-actions">
+              <a href="signup.html" class="guest-hero-btn primary">Sign Up Free
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+              <button class="guest-hero-btn secondary" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
+                Browse Campaigns
+              </button>
+            </div>
+          </div>
+          <div class="guest-hero-glow" aria-hidden="true"></div>
+        </div>
+
+        <!-- Top header: greeting + search + bell + CTA (auth only) -->
+        <div class="dash-header auth-only">
+          <div class="dash-greeting">
+            <h1><span id="dash-greeting-word">Welcome back</span>, <span id="dash-name">User</span></h1>
+            <p>Here's your giving overview.</p>
+          </div>
+          <div class="dash-header-actions">
+            <label class="dash-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="dash-search-input" placeholder="Search campaigns…" autocomplete="off">
+            </label>
+            <div class="dash-bell-wrap">
+              <button class="dash-bell" id="dash-bell-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span class="dash-bell-dot"></span>
+              </button>
+              <div class="dash-notif-panel" id="dash-notif-panel" role="menu">
+                <div class="dash-notif-head">
+                  <strong>Notifications</strong>
+                  <a href="#" class="dash-notif-mark" id="dash-notif-mark">Mark all read</a>
+                </div>
+                <ul class="dash-notif-list" id="dash-notif-list">
+                  <li class="dash-notif-row unread">
+                    <span class="dash-notif-icon icon-heart"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
+                    <div class="dash-notif-text">
+                      <strong>New donation received</strong>
+                      <small>$50 to "Help Sara Beat Cancer" &middot; 12 min ago</small>
+                    </div>
+                  </li>
+                  <li class="dash-notif-row unread">
+                    <span class="dash-notif-icon icon-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <div class="dash-notif-text">
+                      <strong>Campaign verified</strong>
+                      <small>Your campaign passed review &middot; 1 hour ago</small>
+                    </div>
+                  </li>
+                  <li class="dash-notif-row">
+                    <span class="dash-notif-icon icon-bell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                    <div class="dash-notif-text">
+                      <strong>Goal almost reached</strong>
+                      <small>"Winter Food Packages" at 88% &middot; Yesterday</small>
+                    </div>
+                  </li>
+                  <li class="dash-notif-row">
+                    <span class="dash-notif-icon icon-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
+                    <div class="dash-notif-text">
+                      <strong>5 new donors today</strong>
+                      <small>Across your active campaigns &middot; 2 days ago</small>
+                    </div>
+                  </li>
+                </ul>
+                <a href="#" class="dash-notif-foot">View all notifications</a>
+              </div>
+            </div>
+            <button class="dash-cta donor-only" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>New Donation</span>
+            </button>
+            <button class="dash-cta taker-only" type="button" onclick="document.querySelector('[data-section=&quot;campaign-new&quot;]').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>New Request</span>
+            </button>
+            <button class="dash-cta org-only" type="button" onclick="document.querySelector('[data-section=&quot;campaign-new&quot;]').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>New Campaign</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 stat tiles — DONOR variant -->
+        <div class="dash-stats donor-only">
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Total Donated</span>
+              <span class="stat-tile-icon stat-icon-trend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="dash-donated">$0</strong>
+            <span class="stat-tile-delta delta-up">+12% from last month</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Families Helped</span>
+              <span class="stat-tile-icon stat-icon-users">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="dash-helped">0</strong>
+            <span class="stat-tile-delta delta-up">+3 from last month</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">This Month</span>
+              <span class="stat-tile-icon stat-icon-cal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="dash-month">$0</strong>
+            <span class="stat-tile-delta delta-up">+8% from last month</span>
+          </div>
+        </div>
+
+        <!-- 3 stat tiles — TAKER variant (your campaign progress) -->
+        <div class="dash-stats taker-only">
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Campaign Goal</span>
+              <span class="stat-tile-icon stat-icon-cal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="taker-goal">$10,000</strong>
+            <span class="stat-tile-delta">your fundraising target</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Total Raised</span>
+              <span class="stat-tile-icon stat-icon-trend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="taker-raised">$3,200</strong>
+            <span class="stat-tile-delta delta-up">32% of goal reached</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Donors</span>
+              <span class="stat-tile-icon stat-icon-users">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="taker-donors">14</strong>
+            <span class="stat-tile-delta delta-up">+2 this week</span>
+          </div>
+        </div>
+
+        <!-- 3 stat tiles — ORGANISATION variant -->
+        <div class="dash-stats org-only">
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Active Campaigns</span>
+              <span class="stat-tile-icon stat-icon-cal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="org-active">4</strong>
+            <span class="stat-tile-delta">in progress</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Total Raised</span>
+              <span class="stat-tile-icon stat-icon-trend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="org-raised">$28,400</strong>
+            <span class="stat-tile-delta delta-up">+$1,200 this month</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">People Helped</span>
+              <span class="stat-tile-icon stat-icon-users">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="org-helped">312</strong>
+            <span class="stat-tile-delta delta-up">across all campaigns</span>
+          </div>
+        </div>
+
+        <!-- 3 stat tiles — GUEST variant (platform-wide stats) -->
+        <div class="dash-stats guest-only">
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Total Raised on Sawa</span>
+              <span class="stat-tile-icon stat-icon-trend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="platform-raised">$250k+</strong>
+            <span class="stat-tile-delta delta-up">across all campaigns</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Families Helped</span>
+              <span class="stat-tile-icon stat-icon-users">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="platform-helped">1,200+</strong>
+            <span class="stat-tile-delta delta-up">since launch</span>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile-head">
+              <span class="stat-tile-label">Active Campaigns</span>
+              <span class="stat-tile-icon stat-icon-cal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+            </div>
+            <strong class="stat-tile-value" id="platform-campaigns">48</strong>
+            <span class="stat-tile-delta delta-up">looking for support</span>
+          </div>
+        </div>
+
+        <!-- Two-column lower: recent donations | urgent campaigns -->
+        <div class="dash-lower">
+          <div class="dash-card donor-only">
+            <div class="dash-card-head">
+              <h3>Recent Donations</h3>
+              <a class="dash-card-link" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click(); return false;" href="#">View All
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <ul class="recent-donations" id="recent-donations-list">
+              <!-- Mock rows — PHP will populate from the donations table -->
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Ahmed Family</strong><small>Food Supplies</small></div>
+                <div class="rd-right"><span class="rd-amount">$75</span><small class="rd-time">2 hours ago</small></div>
+                <span class="rd-status status-delivered">Delivered</span>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Fatima Hassan</strong><small>Medical Aid</small></div>
+                <div class="rd-right"><span class="rd-amount">$150</span><small class="rd-time">Yesterday</small></div>
+                <span class="rd-status status-transit">In Transit</span>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Youth Center NGO</strong><small>Educational Materials</small></div>
+                <div class="rd-right"><span class="rd-amount">$200</span><small class="rd-time">3 days ago</small></div>
+                <span class="rd-status status-delivered">Delivered</span>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Sara Ibrahim</strong><small>Clothing</small></div>
+                <div class="rd-right"><span class="rd-amount">$50</span><small class="rd-time">1 week ago</small></div>
+                <span class="rd-status status-delivered">Delivered</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Urgent Campaigns: shown for donors + guests -->
+          <div class="dash-card donor-only guest-show">
+            <div class="dash-card-head">
+              <h3>Urgent Campaigns</h3>
+              <a class="dash-card-link" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click(); return false;" href="#">View All
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <div class="urgent-list" id="urgent-list">
+              <article class="urgent-item">
+                <div class="urgent-row">
+                  <div class="urgent-meta">
+                    <strong>Winter Clothing Needed</strong>
+                    <small>Community Care</small>
+                  </div>
+                  <span class="urgent-priority priority-high">High</span>
+                </div>
+                <div class="urgent-progress-row">
+                  <small>Raised: <strong>$320</strong></small>
+                  <small>$500</small>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:64%"></div></div>
+                <button class="urgent-donate" data-camp-id="urgent-1" data-camp-title="Winter Clothing Needed">Donate Now</button>
+              </article>
+
+              <article class="urgent-item">
+                <div class="urgent-row">
+                  <div class="urgent-meta">
+                    <strong>School Supplies for 50 Kids</strong>
+                    <small>Education First</small>
+                  </div>
+                  <span class="urgent-priority priority-medium">Medium</span>
+                </div>
+                <div class="urgent-progress-row">
+                  <small>Raised: <strong>$450</strong></small>
+                  <small>$800</small>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:56%"></div></div>
+                <button class="urgent-donate" data-camp-id="urgent-2" data-camp-title="School Supplies for 50 Kids">Donate Now</button>
+              </article>
+            </div>
+          </div>
+
+          <!-- TAKER variant: Campaign Status (wide) + Recent Donors -->
+          <div class="dash-card taker-only dash-card-wide">
+            <div class="dash-card-head">
+              <h3>Your Campaign</h3>
+              <span class="status-pill status-active">Active &middot; Verified</span>
+            </div>
+            <div class="taker-camp-summary">
+              <h4>Medical aid for my daughter Lina</h4>
+              <p>Lina is 4 and needs ongoing treatment at Saint George Hospital.</p>
+              <div class="urgent-progress-row">
+                <small>Raised: <strong>$3,200</strong></small>
+                <small>$10,000 goal</small>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:32%"></div></div>
+              <div class="taker-camp-actions">
+                <button type="button" class="btn btn-outline" onclick="document.querySelector('[data-section=&quot;campaigns&quot;]').click()">Edit Campaign</button>
+                <button type="button" class="btn btn-primary" id="taker-share-btn">Share Link</button>
+              </div>
+            </div>
+          </div>
+          <div class="dash-card taker-only">
+            <div class="dash-card-head">
+              <h3>Recent Donors</h3>
+              <a class="dash-card-link" href="#">View All
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <ul class="donors-list">
+              <li class="donor-row"><span class="donor-avatar">AK</span><div class="donor-meta"><strong>Ahmad K.</strong><small>2 days ago</small></div><span class="donor-amount">$50</span></li>
+              <li class="donor-row"><span class="donor-avatar">SH</span><div class="donor-meta"><strong>Sara H.</strong><small>3 days ago</small></div><span class="donor-amount">$120</span></li>
+              <li class="donor-row"><span class="donor-avatar donor-anon">?</span><div class="donor-meta"><strong>Anonymous</strong><small>5 days ago</small></div><span class="donor-amount">$200</span></li>
+              <li class="donor-row"><span class="donor-avatar">LF</span><div class="donor-meta"><strong>Layla F.</strong><small>1 week ago</small></div><span class="donor-amount">$30</span></li>
+            </ul>
+          </div>
+
+          <!-- ORGANISATION variant: Recent Donations Received + Top Campaigns -->
+          <div class="dash-card org-only">
+            <div class="dash-card-head">
+              <h3>Recent Donations Received</h3>
+              <a class="dash-card-link" href="#">View All
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <ul class="recent-donations">
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Layla F.</strong><small>to Winter Food Packages</small></div>
+                <div class="rd-right"><span class="rd-amount">$100</span><small class="rd-time">1 hour ago</small></div>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Anonymous</strong><small>to School Supplies for Akkar</small></div>
+                <div class="rd-right"><span class="rd-amount">$500</span><small class="rd-time">Yesterday</small></div>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Yousef H.</strong><small>to Blankets for Bekaa</small></div>
+                <div class="rd-right"><span class="rd-amount">$75</span><small class="rd-time">2 days ago</small></div>
+              </li>
+              <li class="recent-donation">
+                <span class="rd-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                <div class="rd-meta"><strong>Rania N.</strong><small>to Heart Surgery for Ali</small></div>
+                <div class="rd-right"><span class="rd-amount">$200</span><small class="rd-time">3 days ago</small></div>
+              </li>
+            </ul>
+          </div>
+          <div class="dash-card org-only">
+            <div class="dash-card-head">
+              <h3>Top Performing Campaigns</h3>
+              <a class="dash-card-link" href="#">View All
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            </div>
+            <div class="urgent-list">
+              <article class="urgent-item">
+                <div class="urgent-row">
+                  <div class="urgent-meta">
+                    <strong>Winter Food Packages</strong>
+                    <small>67 donors</small>
+                  </div>
+                  <span class="urgent-priority priority-medium">88%</span>
+                </div>
+                <div class="urgent-progress-row">
+                  <small>Raised: <strong>$8,800</strong></small>
+                  <small>$10,000</small>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+              </article>
+              <article class="urgent-item">
+                <div class="urgent-row">
+                  <div class="urgent-meta">
+                    <strong>School Supplies for Akkar</strong>
+                    <small>21 donors</small>
+                  </div>
+                  <span class="urgent-priority priority-medium">45%</span>
+                </div>
+                <div class="urgent-progress-row">
+                  <small>Raised: <strong>$2,250</strong></small>
+                  <small>$5,000</small>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="discover" class="section">
+        <div class="section-header">
+          <h2>Discover Campaigns</h2>
+          <p>Browse active campaigns and make a donation.</p>
+        </div>
+        <div class="campaign-filters">
+          <div class="filter-primary-row">
+            <div class="filter-scroll">
+              <button class="filter-btn active">All</button>
+              <button class="filter-btn">Medical</button>
+              <button class="filter-btn">Educational</button>
+              <button class="filter-btn">Food</button>
+              <button class="filter-btn">Shelter</button>
+              <button class="filter-btn">Other</button>
+            </div>
+            <button class="filter-toggle-btn" id="filter-toggle" aria-expanded="false" aria-controls="filter-advanced">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+              </svg>
+              <span>Filters</span>
+            </button>
+          </div>
+          <div class="filter-advanced" id="filter-advanced" hidden>
+            <div class="devider-filter"></div>
+            <div class="filter-row location">
+              <div class="filter-group">
+                <button class="active">All</button>
+                <button>High</button>
+                <button>Medium</button>
+                <button>Low</button>
+              </div>
+              <div class="time-period">
+                <select name="time-period" id="discover-time-period">
+                  <option value="Today" selected>Today</option>
+                  <option value="Last Week">7 Days Ago</option>
+                  <option value="Last month">30 Days Ago</option>
+                </select>
+              </div>
+              <div class="location">
+                <select name="location-select" id="discover-location-select">
+                  <option value="all" selected>All Location</option>
+                  <option value="Akkar">Akkar</option>
+                  <option value="Tripoli">Tripoli</option>
+                  <option value="Batroun">Batroun</option>
+                  <option value="Beirut">Beirut</option>
+                  <option value="Baalbek">Baalbek</option>
+                  <option value="south">South_lb</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="discover-grid" class="campaign-grid">
+          <!-- Mock campaigns — PHP will replace this loop with real data later -->
+          <article class="camp-card" data-category="Medical" data-camp-id="1" data-camp-title="Help Sara Beat Cancer">
+            <div class="camp-card-media cat-medical">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="camp-cat-tag">Medical</span>
+              <span class="camp-urgent-badge">Urgent</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Help Sara Beat Cancer</h3>
+              <p class="camp-card-desc">6-year-old Sara needs urgent chemotherapy in Beirut. Every dollar brings her closer to recovery.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$14,400</strong> raised</span>
+                <span class="camp-pct">72%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 42 donors</span>
+                <button class="camp-donate" data-camp-id="1" data-camp-title="Help Sara Beat Cancer">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Medical" data-camp-id="2" data-camp-title="Dialysis for Uncle Khaled">
+            <div class="camp-card-media cat-medical">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="camp-cat-tag">Medical</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Dialysis for Uncle Khaled</h3>
+              <p class="camp-card-desc">60-year-old Khaled needs weekly dialysis sessions. His family can no longer afford the rising costs.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$5,400</strong> raised</span>
+                <span class="camp-pct">54%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:54%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 18 donors</span>
+                <button class="camp-donate" data-camp-id="2" data-camp-title="Dialysis for Uncle Khaled">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Medical" data-camp-id="3" data-camp-title="Heart Surgery for Ali">
+            <div class="camp-card-media cat-medical">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="camp-cat-tag">Medical</span>
+              <span class="camp-urgent-badge">Urgent</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Heart Surgery for Ali</h3>
+              <p class="camp-card-desc">7-year-old Ali was born with a heart defect. His family needs $15,000 for the surgery at AUH.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$5,700</strong> raised</span>
+                <span class="camp-pct">38%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:38%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 25 donors</span>
+                <button class="camp-donate" data-camp-id="3" data-camp-title="Heart Surgery for Ali">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Food" data-camp-id="4" data-camp-title="Winter Food Packages">
+            <div class="camp-card-media cat-food">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+              <span class="camp-cat-tag">Food</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Winter Food Packages</h3>
+              <p class="camp-card-desc">Families in Tripoli's poorest neighbourhoods need warm meals this winter. Help us reach 50 families.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$8,800</strong> raised</span>
+                <span class="camp-pct">88%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 67 donors</span>
+                <button class="camp-donate" data-camp-id="4" data-camp-title="Winter Food Packages">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Shelter" data-camp-id="5" data-camp-title="Emergency Roof Repair">
+            <div class="camp-card-media cat-shelter">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span class="camp-cat-tag">Shelter</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Emergency Roof Repair</h3>
+              <p class="camp-card-desc">A Beirut family's home was damaged in the blast. Help them rebuild before the rainy season arrives.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$3,100</strong> raised</span>
+                <span class="camp-pct">31%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:31%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 12 donors</span>
+                <button class="camp-donate" data-camp-id="5" data-camp-title="Emergency Roof Repair">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Shelter" data-camp-id="6" data-camp-title="Blankets for Bekaa Families">
+            <div class="camp-card-media cat-shelter">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span class="camp-cat-tag">Shelter</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Blankets for Bekaa Families</h3>
+              <p class="camp-card-desc">250 displaced families in the Bekaa Valley need blankets and heating fuel before winter deepens.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$4,800</strong> raised</span>
+                <span class="camp-pct">60%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 33 donors</span>
+                <button class="camp-donate" data-camp-id="6" data-camp-title="Blankets for Bekaa Families">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Educational" data-camp-id="7" data-camp-title="School Supplies for Akkar">
+            <div class="camp-card-media cat-edu">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <span class="camp-cat-tag">Educational</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">School Supplies for Akkar</h3>
+              <p class="camp-card-desc">120 children in Akkar need notebooks, uniforms, and bags to start the school year with dignity.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$2,250</strong> raised</span>
+                <span class="camp-pct">45%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 21 donors</span>
+                <button class="camp-donate" data-camp-id="7" data-camp-title="School Supplies for Akkar">Donate</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="camp-card" data-category="Educational" data-camp-id="8" data-camp-title="Batroun School Renovation">
+            <div class="camp-card-media cat-edu">
+              <svg class="camp-card-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <span class="camp-cat-tag">Educational</span>
+            </div>
+            <div class="camp-card-content">
+              <h3 class="camp-card-title">Batroun School Renovation</h3>
+              <p class="camp-card-desc">A public school in Batroun needs new desks, windows, and a safe playground for 200 students.</p>
+              <div class="camp-progress-info">
+                <span class="camp-raised"><strong>$4,400</strong> raised</span>
+                <span class="camp-pct">22%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:22%"></div></div>
+              <div class="camp-card-footer">
+                <span class="camp-donor-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 9 donors</span>
+                <button class="camp-donate" data-camp-id="8" data-camp-title="Batroun School Renovation">Donate</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="profile" class="section">
+        <div class="section-header">
+          <h2>My Profile</h2>
+          <p>Update your personal information and photo.</p>
+        </div>
+        <div class="card">
+          <form action="../php/update_profile.php" method="POST" enctype="multipart/form-data" class="profile-header">
+            <div class="avatar-upload">
+              <img src="../images/user-profile.svg" alt="avatar" id="avatar-preview">
+              <div class="avatar-overlay" onclick="document.getElementById('avatar-input').click()">Change Photo</div>
+              <input type="file" name="profile_image" id="avatar-input" accept="image/*" hidden>
+            </div>
+            <div class="profile-fields">
+              <label for="profile-name">Full Name</label>
+              <input type="text" name="full_name" id="profile-name" placeholder="Your name" maxlength="50">
+              
+              <label for="profile-bio">Bio</label>
+              <textarea name="bio" id="profile-bio" placeholder="Tell us about yourself..." maxlength="250"></textarea>
+              
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="wallet" class="section">
+        <div class="section-header">
+          <h2>My Wallet</h2>
+          <p>Manage your donation balance and view transaction history.</p>
+        </div>
+        <div class="card wallet-card">
+          <div class="balance-display">
+            <div class="balance-label">Available Balance</div>
+            <div class="wallet-balance" id="wallet-balance">$0.00</div>
+          </div>
+          <form action="../php/topup.php" method="POST" class="top-up-form">
+            <div class="preset-amounts">
+              <button type="button" class="preset-btn" data-amount="10">$10</button>
+              <button type="button" class="preset-btn" data-amount="25">$25</button>
+              <button type="button" class="preset-btn" data-amount="50">$50</button>
+              <button type="button" class="preset-btn" data-amount="100">$100</button>
+            </div>
+            <div class="top-up-input-row">
+              <input type="number" name="amount" id="top-up-amount" placeholder="Or enter amount ($)" min="1" step="1" required>
+              <button type="submit" class="btn btn-white">Add Funds</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Transaction History</h3>
+          <ul class="transaction-list" id="transaction-list">
+            <li class="activity-empty">No transactions yet.</li>
+            </ul>
+        </div>
+      </section>
+
+      <section id="campaign-new" class="section">
+        <div class="section-header">
+          <h2>Create Campaign</h2>
+          <p>Launch a new fundraising campaign. Fill in all the details below.</p>
+        </div>
+        <div class="card">
+          <form action="../php/create_campaign.php" method="POST" enctype="multipart/form-data" class="campaign-form">
+            <label for="camp-title">Campaign Title</label>
+            <input type="text" name="title" id="camp-title" placeholder="e.g. Help Ahmed's Family" maxlength="100" required>
+
+            <label for="camp-desc">Description</label>
+            <textarea name="description" id="camp-desc" placeholder="Tell your story..." required></textarea>
+
+            <div class="form-row">
+              <div>
+                <label for="camp-goal">Goal Amount ($)</label>
+                <input type="number" name="goal" id="camp-goal" placeholder="1000" min="1" required>
+              </div>
+              <div>
+                <label for="camp-category">Category</label>
+                <select name="category" id="camp-category" required>
+                  <option value="">Select category</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Educational">Educational</option>
+                  <option value="Food">Food</option>
+                  <option value="Shelter">Shelter</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <label for="camp-location">Location</label>
+            <select name="location" id="camp-location" required>
+              <option value="">Select location</option>
+              <option value="Beirut">Beirut</option>
+              <option value="Tripoli">Tripoli</option>
+              <option value="Akkar">Akkar</option>
+              <option value="Batroun">Batroun</option>
+              <option value="Baalbek">Baalbek</option>
+              <option value="South_lb">South Lebanon</option>
+            </select>
+
+            <label>Campaign Image</label>
+            <div class="campaign-upload" onclick="document.getElementById('camp-image-input').click()">
+              <div id="camp-upload-preview">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Click to upload campaign image</span>
+              </div>
+              <input type="file" name="camp_image" id="camp-image-input" accept="image/*" hidden>
+            </div>
+
+            <button type="submit" class="btn btn-green">Launch Campaign</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="campaigns" class="section">
+        <div class="section-header">
+          <h2>My Campaigns</h2>
+          <p>All campaigns you have created.</p>
+        </div>
+        <div id="my-campaigns-list" class="campaign-grid">
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <h3>No Campaigns Yet</h3>
+            <p>Start a campaign to help those in need.</p>
+            <button class="btn btn-primary" onclick="document.querySelector('[data-section=campaign-new]').click()">Create Your First Campaign</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="donate-modal">
+    <div class="modal">
+      <button class="modal-close" type="button">&times;</button>
+
+      <!-- Step 1: Select amount -->
+      <div class="modal-step" id="modal-step-1">
+        <h3 id="modal-camp-title">Donate</h3>
+
+        <div class="modal-goal-info" id="modal-goal-info">
+          <div class="progress-bar" style="margin-bottom:0.6rem;">
+            <div class="progress-fill" id="modal-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="modal-goal-text">
+            <span id="modal-raised" class="raised">$0</span>
+            raised of
+            <span id="modal-goal">$0</span> goal
+            &mdash; <span id="modal-remaining" style="color:var(--color-primary);font-weight:600;">$0 remaining</span>
+          </div>
+        </div>
+
+        <form id="donate-form" action="../php/process_donation.php" method="POST">
+          <input type="hidden" name="campaign_id" id="modal-camp-id-hidden">
+          <label for="modal-amount">Donation Amount ($)</label>
+          <div class="preset-amounts modal-presets">
+            <button type="button" class="preset-btn" data-amount="5">$5</button>
+            <button type="button" class="preset-btn" data-amount="10">$10</button>
+            <button type="button" class="preset-btn" data-amount="25">$25</button>
+            <button type="button" class="preset-btn" data-amount="50">$50</button>
+          </div>
+          <input type="number" name="amount" id="modal-amount" placeholder="Or enter amount" min="1" step="1">
+
+          <!-- Guest-only fields (shown when body.is-guest) -->
+          <div class="guest-only" style="display: contents;">
+            <label for="modal-donor-name" class="guest-only-label">Your name</label>
+            <input type="text" name="donor_name" id="modal-donor-name" placeholder="Full name" autocomplete="name">
+            <label for="modal-donor-email" class="guest-only-label">Email (optional)</label>
+            <input type="email" name="donor_email" id="modal-donor-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+        </form>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="modal-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="modal-review-btn">Continue &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment details (mock card form) -->
+      <div class="modal-step" id="modal-step-payment" hidden>
+        <h3>Payment Details</h3>
+        <p class="modal-sub">Secure payment — we never store your card details.</p>
+
+        <div class="card-preview" id="card-preview">
+          <div class="card-preview-chip"></div>
+          <div class="card-preview-brand" id="card-preview-brand">VISA</div>
+          <div class="card-preview-number" id="card-preview-number">•••• •••• •••• ••••</div>
+          <div class="card-preview-row">
+            <span><small>CARDHOLDER</small><strong id="card-preview-name">YOUR NAME</strong></span>
+            <span><small>EXPIRES</small><strong id="card-preview-expiry">MM/YY</strong></span>
+          </div>
+        </div>
+
+        <label for="card-number">Card Number</label>
+        <input type="text" id="card-number" name="card_number" placeholder="1234 5678 9012 3456" inputmode="numeric" autocomplete="cc-number" maxlength="19">
+
+        <div class="card-row-2">
+          <div>
+            <label for="card-expiry">Expiry</label>
+            <input type="text" id="card-expiry" name="card_expiry" placeholder="MM/YY" autocomplete="cc-exp" maxlength="5">
+          </div>
+          <div>
+            <label for="card-cvv">CVV</label>
+            <input type="text" id="card-cvv" name="card_cvv" placeholder="123" inputmode="numeric" autocomplete="cc-csc" maxlength="4">
+          </div>
+        </div>
+
+        <label for="card-name">Name on Card</label>
+        <input type="text" id="card-name" name="card_name" placeholder="John Smith" autocomplete="cc-name">
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="payment-back-btn">&larr; Back</button>
+          <button type="button" class="btn btn-primary" id="payment-next-btn">Review &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirm -->
+      <div class="modal-step" id="modal-step-2" hidden>
+        <div class="modal-confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+            <circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/>
+          </svg>
+        </div>
+        <p class="modal-confirm-label">You are donating</p>
+        <div class="modal-confirm-amount" id="review-amount-display">$0</div>
+        <p class="modal-confirm-to">to <strong id="review-campaign-display">—</strong></p>
+        <p class="modal-confirm-note">Your donation goes directly to this campaign &mdash; 0 intermediaries.</p>
+        <p class="modal-confirm-card" id="review-card-display">paying with Visa ending in ••••</p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="review-back-btn">&larr; Back</button>
+          <button type="submit" class="btn btn-primary" form="donate-form" id="confirm-donate-btn">Confirm &amp; Donate</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Thank you -->
+      <div class="modal-step modal-thanks" id="modal-step-thanks" hidden>
+        <div class="thanks-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Thank you for your donation!</h3>
+        <p class="thanks-amount-line">Your contribution of <strong id="thanks-amount">$0</strong> goes directly to <strong id="thanks-campaign">this campaign</strong>.</p>
+        <p class="thanks-receipt">A receipt has been sent to your email.</p>
+
+        <!-- Guest-only sign-up CTA shown after donating -->
+        <div class="thanks-guest-cta guest-only">
+          <p class="thanks-cta-title">Want to do more?</p>
+          <p class="thanks-cta-body">Sign up for free to <strong>track your donations</strong>, manage a <strong>wallet</strong>, and create your own <strong>campaigns</strong>.</p>
+          <a href="signup.html" class="btn btn-primary thanks-cta-btn">Sign Up Free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <div class="modal-actions" style="justify-content:center;">
+          <button type="button" class="btn btn-outline" id="thanks-close-btn">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Donors modal — opens when a campaign card is clicked -->
+  <div class="modal-overlay" id="donors-modal">
+    <div class="modal donors-modal-content">
+      <button class="modal-close" type="button" id="donors-modal-close" aria-label="Close">&times;</button>
+
+      <div class="donors-modal-head">
+        <h3 id="donors-modal-title">Donors</h3>
+        <p id="donors-modal-subtitle">People who supported this campaign</p>
+        <div class="donors-summary">
+          <div class="donors-summary-item">
+            <strong id="donors-total-amount">$0</strong>
+            <small>Total raised</small>
+          </div>
+          <div class="donors-summary-divider"></div>
+          <div class="donors-summary-item">
+            <strong id="donors-total-count">0</strong>
+            <small>Donors</small>
+          </div>
+        </div>
+      </div>
+
+      <ul class="donors-list" id="donors-list">
+        <!-- Mock rows — PHP will replace with a loop over donations for this campaign -->
+        <li class="donor-row">
+          <span class="donor-avatar">AK</span>
+          <div class="donor-meta">
+            <strong>Ahmad K.</strong>
+            <small>2 days ago</small>
+          </div>
+          <span class="donor-amount">$50</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar">SH</span>
+          <div class="donor-meta">
+            <strong>Sara H.</strong>
+            <small>3 days ago</small>
+          </div>
+          <span class="donor-amount">$120</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar">MA</span>
+          <div class="donor-meta">
+            <strong>Mohamed A.</strong>
+            <small>4 days ago</small>
+          </div>
+          <span class="donor-amount">$25</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar donor-anon">?</span>
+          <div class="donor-meta">
+            <strong>Anonymous</strong>
+            <small>5 days ago</small>
+          </div>
+          <span class="donor-amount">$200</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar">LF</span>
+          <div class="donor-meta">
+            <strong>Layla F.</strong>
+            <small>1 week ago</small>
+          </div>
+          <span class="donor-amount">$30</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar">YH</span>
+          <div class="donor-meta">
+            <strong>Yousef H.</strong>
+            <small>1 week ago</small>
+          </div>
+          <span class="donor-amount">$75</span>
+        </li>
+        <li class="donor-row">
+          <span class="donor-avatar">RN</span>
+          <div class="donor-meta">
+            <strong>Rania N.</strong>
+            <small>2 weeks ago</small>
+          </div>
+          <span class="donor-amount">$15</span>
+        </li>
+      </ul>
+
+      <div class="donors-modal-foot">
+        <button type="button" class="btn btn-primary" id="donors-modal-donate">Donate to this campaign</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Bottom nav (mobile only) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-section="dashboard">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="bottom-nav-item" data-section="discover">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <span>Discover</span>
+    </button>
+    <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" title="New Campaign" aria-label="Create new campaign">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+    </button>
+    <button class="bottom-nav-item" data-section="wallet">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+      <span>Wallet</span>
+    </button>
+    <button class="bottom-nav-item" data-section="profile">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-modal">
+      <div class="auth-logo-wrap">
+        <img src="../images/sawa_v2.svg" alt="Sawa">
+      </div>
+      <h2 class="auth-title">Welcome to Sawa</h2>
+      <p class="auth-subtitle">Sign in or create a free account to access your dashboard, support campaigns, and make a real difference.</p>
+      <div class="auth-links">
+        <a href="signup.html" class="auth-btn auth-btn-primary">Sign Up Free</a>
+        <a href="login.html" class="auth-btn auth-btn-outline">Log In</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/userhome.js"></script>
+</body>
+</html>
+
+
+
