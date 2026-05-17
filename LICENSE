@@ -1,0 +1,43 @@
+MIT License with Attribution Required
+
+Copyright (c) 2026 Chadi Ikhoder (chadikhoder571@gmail.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+ATTRIBUTION REQUIREMENT:
+All copies or substantial portions of the Software must include:
+1. The above copyright notice
+2. This permission notice and license text
+3. Clear attribution to Chadi khoder as the original author
+4. A link to the original repository (https://github.com/chadikhoder/sawa)
+
+DISCLAIMER OF WARRANTIES:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+PROOF OF ORIGINAL AUTHORSHIP:
+This work was created entirely from scratch by Chadi Ikhoder between
+January 2026 and May 2026. See DEVELOPMENT_LOG.md for detailed timeline
+of architecture decisions and implementation phases.
+
+All commits in the Git history are authored by the copyright holder and
+serve as verifiable proof of original authorship.
+
+---
+
+For complete project documentation, see:
+- README.md — Project overview & features
+- DEVELOPMENT_LOG.md — Detailed development timeline & decisions
+- sawa_er_diagram.svg — Database schema visualization

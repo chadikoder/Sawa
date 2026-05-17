@@ -1,7 +1,9 @@
 /*
  * Sawa Design Tokens
+ * © 2026 Chadi Ikhoder — Original work built from scratch
  * Single source of truth for all colors, typography, spacing, and effects.
  * Import this before any page-specific stylesheet.
+ * Protected under MIT License with Attribution Required.
  */
 
 :root {

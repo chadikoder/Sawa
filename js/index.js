@@ -1,3 +1,10 @@
+/**
+ * Sawa Platform — Main Application Logic
+ * © 2026 Chadi Ikhoder — Original work built from scratch
+ * Protected under MIT License with Attribution Required.
+ * GitHub: https://github.com/chadikhoder/sawa
+ */
+
 // ==========================================
 // HAMBURGER MENU (mobile)
 // ==========================================
