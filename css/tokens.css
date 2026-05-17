@@ -96,3 +96,8 @@
   --sidebar-width: 24rem;
   --container:     112rem;
 }
+
+html, body {
+  overflow-x: clip;
+  max-width: 100%;
+}

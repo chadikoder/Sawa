@@ -1,5 +1,5 @@
 // Press feedback for nav/sidebar/buttons on all devices
-document.querySelectorAll('nav a, .sidebar-item, .sidebar-close, .sidebar-toggle, .bottom-nav-item, .btn, .action-btn').forEach(el => {
+document.querySelectorAll('nav a, .sidebar-item, .sidebar-toggle, .sidebar-user, .bottom-nav-item, .btn, .action-btn').forEach(el => {
   el.addEventListener('mousedown', () => el.classList.add('pressed'));
   el.addEventListener('touchstart', () => el.classList.add('pressed'), {passive: true});
   el.addEventListener('mouseup', () => el.classList.remove('pressed'));
@@ -98,17 +98,74 @@ function openSidebar() {
 })();
 
 document.querySelector('.mobile-overlay')?.addEventListener('click', closeSidebar);
-document.querySelector('.sidebar-close')?.addEventListener('click', closeSidebar);
-document.getElementById('nav-hamburger')?.addEventListener('click', () => {
-  const sidebar = document.querySelector('.sidebar');
-  if (sidebar?.classList.contains('open')) closeSidebar(); else openSidebar();
+
+/* Sidebar user card → opens profile section (and closes drawer on mobile) */
+document.querySelector('.sidebar-user')?.addEventListener('click', () => {
+  switchSection('profile');
 });
-document.querySelector('.nav-user')?.addEventListener('click', () => {
-  if (window.innerWidth <= 768) {
+
+const MOBILE_BREAKPOINT = 768;
+const isMobile = () => window.innerWidth <= MOBILE_BREAKPOINT;
+
+/* The top-left profile widget opens the sidebar drawer (which holds
+   My Campaigns + Logout + secondary nav) at every viewport width. */
+document.getElementById('nav-user-btn')?.addEventListener('click', () => {
+  if (document.body.classList.contains('is-auth')) {
     openSidebar();
   } else {
     switchSection('dashboard');
   }
+});
+
+/* Sign-in-required prompt for guests trying to use auth-only bottom-nav items.
+   Reuses #auth-overlay; rewrites the subtitle for context. */
+const _AUTH_SUBTITLE_DEFAULT = document.querySelector('#auth-overlay .auth-subtitle')?.textContent || '';
+const _AUTH_TITLE_DEFAULT    = document.querySelector('#auth-overlay .auth-title')?.textContent || '';
+function promptSignIn(feature) {
+  const overlay  = document.getElementById('auth-overlay');
+  const title    = overlay?.querySelector('.auth-title');
+  const subtitle = overlay?.querySelector('.auth-subtitle');
+  if (title)    title.textContent    = 'Sign in to continue';
+  if (subtitle) subtitle.textContent = `You need to sign in to use ${feature}. Create a free Sawa account in seconds — it only takes a minute.`;
+  overlay?.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthPrompt() {
+  const overlay  = document.getElementById('auth-overlay');
+  const title    = overlay?.querySelector('.auth-title');
+  const subtitle = overlay?.querySelector('.auth-subtitle');
+  overlay?.classList.remove('show');
+  document.body.style.overflow = '';
+  if (title    && _AUTH_TITLE_DEFAULT)    title.textContent    = _AUTH_TITLE_DEFAULT;
+  if (subtitle && _AUTH_SUBTITLE_DEFAULT) subtitle.textContent = _AUTH_SUBTITLE_DEFAULT;
+}
+
+document.getElementById('auth-overlay')?.addEventListener('click', (e) => {
+  if (e.target.id === 'auth-overlay') closeAuthPrompt();
+});
+document.getElementById('auth-modal-close')?.addEventListener('click', closeAuthPrompt);
+document.getElementById('auth-modal-cancel')?.addEventListener('click', closeAuthPrompt);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('auth-overlay')?.classList.contains('show')) {
+    closeAuthPrompt();
+  }
+});
+
+/* Bottom-nav: gate auth-only items for guests (show 'Sign in' prompt) */
+const GUEST_RESTRICTED = {
+  'wallet':       'your wallet',
+  'profile':      'your profile',
+  'campaign-new': 'create a campaign',
+};
+document.querySelectorAll('.bottom-nav-item[data-section]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    const target = item.dataset.section;
+    if (document.body.classList.contains('is-guest') && GUEST_RESTRICTED[target]) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      promptSignIn(GUEST_RESTRICTED[target]);
+    }
+  }, true);
 });
 
 document.addEventListener('keydown', e => {
@@ -838,8 +895,26 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
 });
 
 /* ── Profile form inline validation ── */
-const profileNameInput = document.getElementById('profile-name');
-const profileBioInput  = document.getElementById('profile-bio');
+const profileNameInput   = document.getElementById('profile-name');
+const profileBioInput    = document.getElementById('profile-bio');
+const profileDisplayName = document.getElementById('profile-display-name');
+
+if (profileNameInput && profileDisplayName) {
+  const sidebarUserName = document.getElementById('sidebar-user-name');
+  const syncDisplayName = () => {
+    const val = profileNameInput.value.trim();
+    if (val.length === 0) {
+      profileDisplayName.textContent = 'Your Name';
+      profileDisplayName.classList.add('is-placeholder');
+    } else {
+      profileDisplayName.textContent = val;
+      profileDisplayName.classList.remove('is-placeholder');
+      if (sidebarUserName) sidebarUserName.textContent = val;
+    }
+  };
+  syncDisplayName();
+  profileNameInput.addEventListener('input', syncDisplayName);
+}
 
 if (profileBioInput) {
   const bioCounter = document.createElement('span');

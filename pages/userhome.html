@@ -47,9 +47,6 @@
         <a href="login.html" class="site-auth-link">Log In</a>
         <a href="signup.html" class="site-auth-btn">Sign Up Free</a>
       </div>
-      <button class="site-header-burger" id="site-burger" type="button" aria-label="Open menu" aria-controls="guest-drawer" aria-expanded="false">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
     </div>
   </header>
 
@@ -85,26 +82,30 @@
     </div>
   </aside>
 
-  <!-- ─── Auth-only top nav (used by logged-in users alongside the sidebar) ─── -->
-  <nav class="auth-only">
-    <button class="nav-hamburger" id="nav-hamburger" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-    <div class="nav-user">
-      <img src="../images/user-profile.svg" alt="avatar" id="nav-avatar">
-      <span id="nav-name">User</span>
+  <!-- ─── Auth-only top header (logo replaced with user profile chip on userhome) ─── -->
+  <header class="site-header auth-only site-header--user-lead" role="banner">
+    <div class="site-header-inner">
+      <!-- Profile chip pinned to the left; nav links sit on the right. -->
+      <button class="site-header-user" id="nav-user-btn" type="button" aria-label="Open account menu">
+        <img src="../images/user-profile.svg" alt="" id="nav-avatar">
+        <span class="site-header-user-text">
+          <strong id="nav-name">User</strong>
+          <small class="site-header-user-role" aria-hidden="true"></small>
+        </span>
+      </button>
+      <nav class="site-header-nav" aria-label="Primary navigation">
+        <button class="site-nav-link is-active" type="button" data-jump="dashboard">Home</button>
+        <button class="site-nav-link" type="button" data-jump="discover">Campaigns</button>
+        <a class="site-nav-link" href="about-us.html">About</a>
+      </nav>
     </div>
-    <div class="nav-links">
-      <a href="about-us.html">About</a>
-    </div>
-  </nav>
+  </header>
 
   <div class="mobile-overlay"></div>
 
   <div class="layout">
 
     <aside class="sidebar">
-      <button class="sidebar-close">&times;</button>
       <div class="sidebar-brand">
         <div class="sidebar-logo-circle">
           <img src="../images/sawa_v2.svg" alt="Sawa">
@@ -114,6 +115,16 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
       </div>
+
+      <!-- User profile card (auth only) — sits at top of sidebar, common dashboard pattern -->
+      <button type="button" class="sidebar-user auth-only" data-section="profile" aria-label="Go to my profile">
+        <img class="sidebar-user-avatar" src="../images/user-profile.svg" alt="" id="sidebar-user-avatar">
+        <span class="sidebar-user-info">
+          <strong class="sidebar-user-name" id="sidebar-user-name">User</strong>
+          <small class="sidebar-user-role"></small>
+        </span>
+        <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
       <button class="sidebar-item active" data-section="dashboard">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         <span>Dashboard</span>
@@ -141,7 +152,6 @@
 
       <!-- Auth section — pinned to bottom, visually separated from primary nav -->
       <div class="sidebar-auth-section">
-        <span class="sidebar-section-label auth-only">Account</span>
         <span class="sidebar-section-label guest-only">Join Sawa</span>
 
         <!-- Logged-in only: logout -->
@@ -1107,21 +1117,33 @@
           <h2>My Profile</h2>
           <p>Update your personal information and photo.</p>
         </div>
-        <div class="card">
+        <div class="card profile-card">
           <form action="../php/update_profile.php" method="POST" enctype="multipart/form-data" class="profile-header">
-            <div class="avatar-upload">
-              <img src="../images/user-profile.svg" alt="avatar" id="avatar-preview">
-              <div class="avatar-overlay" onclick="document.getElementById('avatar-input').click()">Change Photo</div>
-              <input type="file" name="profile_image" id="avatar-input" accept="image/*" hidden>
+            <div class="avatar-column">
+              <div class="avatar-upload" onclick="document.getElementById('avatar-input').click()">
+                <img src="../images/user-profile.svg" alt="avatar" id="avatar-preview">
+                <div class="avatar-overlay">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <span>Change Photo</span>
+                </div>
+                <input type="file" name="profile_image" id="avatar-input" accept="image/*" hidden>
+              </div>
+              <h3 class="profile-display-name is-placeholder" id="profile-display-name">Your Name</h3>
+              <!--
+                Role badge under the avatar. Label text is driven by the body class
+                (role-donor | role-taker | role-org) set by PHP — see userhome.css.
+                No JS or inline PHP echo needed; PHP already sets <body class="role-…">.
+              -->
+              <span class="profile-role-badge" aria-label="Account role"></span>
             </div>
             <div class="profile-fields">
               <label for="profile-name">Full Name</label>
               <input type="text" name="full_name" id="profile-name" placeholder="Your name" maxlength="50">
-              
+
               <label for="profile-bio">Bio</label>
               <textarea name="bio" id="profile-bio" placeholder="Tell us about yourself..." maxlength="250"></textarea>
-              
-              <button type="submit" class="btn btn-primary">Save Changes</button>
+
+              <button type="submit" class="btn btn-primary profile-save-btn">Save Changes</button>
             </div>
           </form>
         </div>
@@ -1510,6 +1532,7 @@
 
   <div class="auth-overlay" id="auth-overlay">
     <div class="auth-modal">
+      <button type="button" class="auth-modal-close" id="auth-modal-close" aria-label="Close">&times;</button>
       <div class="auth-logo-wrap">
         <img src="../images/sawa_v2.svg" alt="Sawa">
       </div>
@@ -1519,6 +1542,7 @@
         <a href="signup.html" class="auth-btn auth-btn-primary">Sign Up Free</a>
         <a href="login.html" class="auth-btn auth-btn-outline">Log In</a>
       </div>
+      <button type="button" class="auth-modal-cancel" id="auth-modal-cancel">Keep browsing as guest</button>
     </div>
   </div>
 
