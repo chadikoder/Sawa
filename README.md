@@ -59,7 +59,6 @@ Sawa is a **full-stack charity platform** built entirely from scratch, designed 
 
 ```
 sawa/
-├── index.html              # Homepage
 ├── access.html             # Access control page
 ├── css/                    # Stylesheets
 │   ├── tokens.css         # Design system (colors, spacing, typography)
