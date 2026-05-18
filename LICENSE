@@ -1,16 +1,17 @@
-STRICT NON-COMMERCIAL LICENSE (WITH ATTRIBUTION REQUIRED)
+STRICT EDUCATIONAL & NON-COMMERCIAL LICENSE
 
 Copyright (c) 2026 Chadi Ikhoder (chadikoder571@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to view,
-study, and run the Software for personal, educational, and non-commercial 
-purposes only, subject to the following conditions:
+of this software and associated documentation files (the "Software"), strictly
+and exclusively for EDUCATIONAL, STUDY, AND LEARNING PURPOSES ONLY, subject to
+the following conditions:
 
-COMMERCIAL USE PROHIBITED:
-You are STRICTLY PROHIBITED from selling, renting, leasing, sublicensing, or 
-using this Software or any derivative works for any commercial purpose or 
-financial gain.
+SELLING & COMMERCIAL USE STRICTLY PROHIBITED:
+You are STRICTLY PROHIBITED from selling this Software UNDER ANY CIRCUMSTANCES.
+It cannot be rented, leased, sublicensed, monetized, or used for any commercial
+purpose or financial gain. This code is provided solely as an educational 
+reference and for study purposes.
 
 ATTRIBUTION REQUIREMENT:
 All copies or substantial portions of the Software must include:
@@ -47,17 +48,18 @@ For complete project documentation, see:
 
 ================================================================================
 
-رخصة صارمة للاستخدام غير التجاري (مع إلزامية ذكر المصدر)
+رخصة تعليمية صارمة (استخدام غير تجاري)
 
-حقوق النشر (c) 2026 شادي (chadikoder571@gmail.com)
+حقوق النشر (c) 2026 شادي خضر (chadikoder571@gmail.com)
 
 يُمنح الإذن بموجب هذا، مجاناً، لأي شخص يحصل على نسخة من هذا البرنامج والملفات
-الوثائقية المرتبطة به ("البرنامج")، لمعاينة البرنامج، ودراسته، وتشغيله لأغراض
-شخصية وتعليمية وغير تجارية فقط، ويخضع ذلك للشروط التالية:
+الوثائقية المرتبطة به ("البرنامج")، حصرياً لأغراض الدراسة والتعلم والتعليم فقط
+لا غير، ويخضع ذلك للشروط التالية:
 
-حظر الاستخدام التجاري والبيع:
-يُمنع منعاً باتاً بيع هذا البرنامج أو تأجيره أو ترخيصه أو استخدامه هو أو أي
-أعمال مشتقة منه لأي غرض تجاري أو لتحقيق مكاسب مالية.
+منع البيع والاستخدام التجاري تحت أي ظرف:
+يُمنع منعاً باتاً وتحت أي ظرف من الظروف بيع هذا البرنامج أو الكود الخاص به.
+لا يُسمح بتأجيره، أو إعادة ترخيصه، أو استخدامه في أي مشروع يهدف لتحقيق أي مكاسب
+مالية أو تجارية. هذا الكود مخصص كمرجع للدراسة والتعلم فقط.
 
 شرط ذكر المصدر:
 يجب أن تتضمن جميع النسخ أو الأجزاء الجوهرية من البرنامج ما يلي:
