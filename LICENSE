@@ -1,20 +1,23 @@
-MIT License with Attribution Required
+STRICT NON-COMMERCIAL LICENSE (WITH ATTRIBUTION REQUIRED)
 
-Copyright (c) 2026 Chadi Ikhoder (chadikhoder571@gmail.com)
+Copyright (c) 2026 Chadi Ikhoder (chadikoder571@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+of this software and associated documentation files (the "Software"), to view,
+study, and run the Software for personal, educational, and non-commercial 
+purposes only, subject to the following conditions:
+
+COMMERCIAL USE PROHIBITED:
+You are STRICTLY PROHIBITED from selling, renting, leasing, sublicensing, or 
+using this Software or any derivative works for any commercial purpose or 
+financial gain.
 
 ATTRIBUTION REQUIREMENT:
 All copies or substantial portions of the Software must include:
 1. The above copyright notice
 2. This permission notice and license text
-3. Clear attribution to Chadi khoder as the original author
-4. A link to the original repository (https://github.com/chadikhoder/sawa)
+3. Clear attribution to Chadi Khoder as the original author
+4. A link to the original repository (https://github.com/chadikoder/sawa)
 
 DISCLAIMER OF WARRANTIES:
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -38,6 +41,50 @@ serve as verifiable proof of original authorship.
 ---
 
 For complete project documentation, see:
-- README.md — Project overview & features
-- DEVELOPMENT_LOG.md — Detailed development timeline & decisions
-- sawa_er_diagram.svg — Database schema visualization
+- README.md - Project overview & features
+- DEVELOPMENT_LOG.md - Detailed development timeline & decisions
+- sawa_er_diagram.svg - Database schema visualization
+
+================================================================================
+
+رخصة صارمة للاستخدام غير التجاري (مع إلزامية ذكر المصدر)
+
+حقوق النشر (c) 2026 شادي (chadikoder571@gmail.com)
+
+يُمنح الإذن بموجب هذا، مجاناً، لأي شخص يحصل على نسخة من هذا البرنامج والملفات
+الوثائقية المرتبطة به ("البرنامج")، لمعاينة البرنامج، ودراسته، وتشغيله لأغراض
+شخصية وتعليمية وغير تجارية فقط، ويخضع ذلك للشروط التالية:
+
+حظر الاستخدام التجاري والبيع:
+يُمنع منعاً باتاً بيع هذا البرنامج أو تأجيره أو ترخيصه أو استخدامه هو أو أي
+أعمال مشتقة منه لأي غرض تجاري أو لتحقيق مكاسب مالية.
+
+شرط ذكر المصدر:
+يجب أن تتضمن جميع النسخ أو الأجزاء الجوهرية من البرنامج ما يلي:
+1. إشعار حقوق النشر المذكور أعلاه
+2. نص هذا الإذن وهذه الرخصة
+3. إشارة واضحة وصريحة لشادي خضر (Chadi Khoder) كمؤلف أصلي
+4. رابط للمستودع الأصلي (https://github.com/chadikoder/sawa)
+
+إخلاء المسؤولية:
+يُقدّم البرنامج "كما هو"، دون أي ضمان من أي نوع، صريحاً كان أو ضمنياً،
+بما في ذلك على سبيل المثال لا الحصر ضمانات القابلية للتسويق والملاءمة لغرض
+معين وعدم الانتهاك. لا يتحمل المؤلف أو أصحاب حقوق النشر بأي حال من الأحوال
+المسؤولية عن أي مطالبة أو أضرار أو مسؤوليات أخرى.
+
+---
+
+إثبات الملكية الفكرية:
+تم إنشاء هذا العمل بالكامل من الصفر بواسطة شادي إيخودر بين
+يناير 2026 ومايو 2026. راجع ملف DEVELOPMENT_LOG.md للحصول على جدول
+زمني مفصل لقرارات الهندسة البرمجية ومراحل التنفيذ.
+
+تمت كتابة جميع التعديلات (commits) في تاريخ Git بواسطة صاحب حقوق النشر
+وهي بمثابة دليل قاطع وقابل للتحقق على الملكية الأصلية.
+
+---
+
+للحصول على توثيق المشروع بالكامل، راجع:
+- README.md - نظرة عامة على المشروع وميزاته
+- DEVELOPMENT_LOG.md - جدول زمني مفصل للتطوير والقرارات
+- sawa_er_diagram.svg - رسم بياني لمخطط قاعدة البيانات
