@@ -1,72 +1,205 @@
-STRICT EDUCATIONAL & NON-COMMERCIAL LICENSE
+PolyForm Noncommercial License 1.0.0
+=====================================
 
-Copyright (c) 2026 Chadi Ikhoder (chadikoder571@gmail.com)
+Copyright (c) 2026 Chadi Ikhoder (chadikhoder571@gmail.com)
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), strictly
-and exclusively for EDUCATIONAL, STUDY, AND LEARNING PURPOSES ONLY, subject to
-the following conditions:
+Required Notice: Copyright (c) 2026 Chadi Ikhoder — https://github.com/chadikoder/Sawa
 
-SELLING & COMMERCIAL USE STRICTLY PROHIBITED:
-You are STRICTLY PROHIBITED from selling this Software UNDER ANY CIRCUMSTANCES.
-It cannot be rented, leased, sublicensed, monetized, or used for any commercial
-purpose or financial gain. This code is provided solely as an educational 
-reference and for study purposes.
+This software (the "Sawa Lebanese Charity Platform") was created entirely
+from scratch by Chadi Ikhoder between January 2026 and May 2026.
 
-ATTRIBUTION REQUIREMENT:
-All copies or substantial portions of the Software must include:
-1. The above copyright notice
-2. This permission notice and license text
-3. Clear attribution to Chadi Khoder as the original author
-4. A link to the original repository (https://github.com/chadikoder/sawa)
+This software is licensed under the PolyForm Noncommercial License 1.0.0.
+The full, unmodified text of that license follows below and is the
+governing legal agreement for any use, copy, modification, or distribution
+of this software. In the case of any conflict between this header, the
+plain-language summaries, and the formal license text below, the formal
+license text governs.
 
-DISCLAIMER OF WARRANTIES:
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+PLAIN-LANGUAGE SUMMARY (English — not legally binding; see license below):
 
----
+  - You MAY read, study, and learn from this code.
+  - You MAY use it for personal study, research, hobby projects, or
+    teaching, with no commercial purpose.
+  - You MAY NOT sell this software, in whole or in part.
+  - You MAY NOT use this software, in whole or in part, for any
+    commercial purpose, including running it as part of a paid product
+    or service, or any activity intended for commercial advantage or
+    monetary compensation.
+  - You MAY NOT remove or alter this copyright notice or the author's
+    name. The copyright, authorship, and Required Notice above must
+    appear in all copies and substantial portions of the software.
+  - All rights not expressly granted by the PolyForm Noncommercial
+    License 1.0.0 below are reserved by the copyright holder,
+    Chadi Ikhoder.
 
-PROOF OF ORIGINAL AUTHORSHIP:
-This work was created entirely from scratch by Chadi Ikhoder between
-January 2026 and May 2026. See DEVELOPMENT_LOG.md for detailed timeline
-of architecture decisions and implementation phases.
+If you wish to use this software for any commercial purpose, you must
+obtain a separate written license from the copyright holder. Contact:
+chadikhoder571@gmail.com
 
-All commits in the Git history are authored by the copyright holder and
-serve as verifiable proof of original authorship.
+-------------------------------------------------------------------------
+                  PolyForm Noncommercial License 1.0.0
+                <https://polyformproject.org/licenses/noncommercial/1.0.0>
+-------------------------------------------------------------------------
 
----
+## Acceptance
 
-For complete project documentation, see:
-- README.md - Project overview & features
-- DEVELOPMENT_LOG.md - Detailed development timeline & decisions
-- sawa_er_diagram.svg - Database schema visualization
+In order to get any license under these terms, you must agree
+to them as both strict obligations and conditions to all
+your licenses.
+
+## Copyright License
+
+The licensor grants you a copyright license for the
+software to do everything you might do with the software
+that would otherwise infringe the licensor's copyright
+in it for any permitted purpose. However, you may
+only distribute the software according to [Distribution
+License](#distribution-license) and make changes or new works
+based on the software according to [Changes and New Works
+License](#changes-and-new-works-license).
+
+## Distribution License
+
+The licensor grants you an additional copyright license to
+distribute copies of the software. Your license to distribute
+covers distributing the software with changes and new works
+permitted by [Changes and New Works
+License](#changes-and-new-works-license).
+
+## Notices
+
+You must ensure that anyone who gets a copy of any part of
+the software from you also gets a copy of these terms or the
+URL for them above, as well as copies of any plain-text lines
+beginning with `Required Notice:` that the licensor provided
+with the software. For example:
+
+> Required Notice: Copyright Yoyodyne, Inc. (http://example.com)
+
+## Changes and New Works License
+
+The licensor grants you an additional copyright license to make
+changes and new works based on the software for any permitted
+purpose.
+
+## Patent License
+
+The licensor grants you a patent license for the software that
+covers patent claims the licensor can license, or becomes able
+to license, that you would infringe by using the software.
+
+## Noncommercial Purposes
+
+Any noncommercial purpose is a permitted purpose.
+
+## Personal Uses
+
+Personal use for research, experiment, and testing for
+the benefit of public knowledge, personal study, private
+entertainment, hobby projects, amateur pursuits, or religious
+observance, without any anticipated commercial application,
+is use for a permitted purpose.
+
+## Noncommercial Organizations
+
+Use by any charitable organization, educational institution,
+public research organization, public safety or health
+organization, environmental protection organization,
+or government institution is use for a permitted purpose
+regardless of the source of funding or obligations resulting
+from the funding.
+
+## Fair Use
+
+You may have "fair use" rights for the software under the
+law. These terms do not limit them.
+
+## No Other Rights
+
+These terms do not allow you to sublicense or transfer any of
+your licenses to anyone else, or prevent the licensor from
+granting licenses to anyone else. These terms do not imply
+any other licenses.
+
+## Patent Defense
+
+If you make any written claim that the software infringes or
+contributes to infringement of any patent, your patent license
+for the software granted under these terms ends immediately. If
+your company makes such a claim, your patent license ends
+immediately for work on behalf of your company.
+
+## Violations
+
+The first time you are notified in writing that you have
+violated any of these terms, or done anything with the software
+not covered by your licenses, your licenses can nonetheless
+continue if you come into full compliance with these terms,
+and take practical steps to correct past violations, within
+32 days of receiving notice. Otherwise, all your licenses
+end immediately.
+
+## No Liability
+
+***As far as the law allows, the software comes as is, without
+any warranty or condition, and the licensor will not be liable
+to you for any damages arising out of these terms or the use
+or nature of the software, under any kind of legal claim.***
+
+## Definitions
+
+The **licensor** is the individual or entity offering these
+terms, and the **software** is the software the licensor makes
+available under these terms.
+
+**You** refers to the individual or entity agreeing to these
+terms.
+
+**Your company** is any legal entity, sole proprietorship,
+or other kind of organization that you work for, plus all
+organizations that have control over, are under the control of,
+or are under common control with that organization. **Control**
+means ownership of substantially all the assets of an entity,
+or the power to direct its management and policies by vote,
+contract, or otherwise. Control can be direct or indirect.
+
+**Your licenses** are all the licenses granted to you for the
+software under these terms.
+
+**Use** means anything you do with the software requiring one
+of your licenses.
 
 ================================================================================
 
-رخصة تعليمية صارمة (استخدام غير تجاري)
+ملخص بالعربية — للتوضيح فقط (النص الإنجليزي أعلاه هو النص القانوني الملزم)
 
-حقوق النشر (c) 2026 شادي خضر (chadikoder571@gmail.com)
+حقوق النشر (c) 2026 شادي إخضر (chadikhoder571@gmail.com)
+جميع الحقوق محفوظة.
 
-يُمنح الإذن بموجب هذا، مجاناً، لأي شخص يحصل على نسخة من هذا البرنامج والملفات
-الوثائقية المرتبطة به ("البرنامج")، حصرياً لأغراض الدراسة والتعلم والتعليم فقط
-لا غير، ويخضع ذلك للشروط التالية:
+تم إنشاء هذا البرنامج ("منصة سوا الخيرية اللبنانية") بالكامل من الصفر
+بواسطة شادي إخضر بين يناير 2026 ومايو 2026.
+
+هذا البرنامج مرخّص بموجب رخصة PolyForm Noncommercial License 1.0.0
+(الموضحة بالكامل بالأعلى باللغة الإنجليزية). النص الإنجليزي للرخصة هو
+النص الملزم قانونياً، وما يلي هو ملخص توضيحي بالعربية فقط:
 
 منع البيع والاستخدام التجاري تحت أي ظرف:
 يُمنع منعاً باتاً وتحت أي ظرف من الظروف بيع هذا البرنامج أو الكود الخاص به.
-لا يُسمح بتأجيره، أو إعادة ترخيصه، أو استخدامه في أي مشروع يهدف لتحقيق أي مكاسب
-مالية أو تجارية. هذا الكود مخصص كمرجع للدراسة والتعلم فقط.
+لا يُسمح بتأجيره، أو إعادة ترخيصه، أو استخدامه في أي مشروع يهدف لتحقيق أي
+مكاسب مالية أو تجارية. هذا الكود مخصص كمرجع للدراسة والتعلم فقط.
+
+ما هو مسموح:
+- القراءة والدراسة والتعلم من الكود
+- الاستخدام الشخصي للدراسة أو البحث أو المشاريع الهاوية
+- الاستخدام من قبل المؤسسات التعليمية والخيرية وغير الربحية
 
 شرط ذكر المصدر:
 يجب أن تتضمن جميع النسخ أو الأجزاء الجوهرية من البرنامج ما يلي:
 1. إشعار حقوق النشر المذكور أعلاه
 2. نص هذا الإذن وهذه الرخصة
-3. إشارة واضحة وصريحة لشادي خضر (Chadi Khoder) كمؤلف أصلي
-4. رابط للمستودع الأصلي (https://github.com/chadikoder/sawa)
+3. إشارة واضحة وصريحة لشادي إخضر (Chadi Ikhoder) كمؤلف أصلي
+4. رابط للمستودع الأصلي (https://github.com/chadikoder/Sawa)
 
 إخلاء المسؤولية:
 يُقدّم البرنامج "كما هو"، دون أي ضمان من أي نوع، صريحاً كان أو ضمنياً،
@@ -74,20 +207,19 @@ For complete project documentation, see:
 معين وعدم الانتهاك. لا يتحمل المؤلف أو أصحاب حقوق النشر بأي حال من الأحوال
 المسؤولية عن أي مطالبة أو أضرار أو مسؤوليات أخرى.
 
----
-
 إثبات الملكية الفكرية:
-تم إنشاء هذا العمل بالكامل من الصفر بواسطة  شادي خضر بين
-يناير 2026 ومايو 2026. راجع ملف DEVELOPMENT_LOG.md للحصول على جدول
+تم إنشاء هذا العمل بالكامل من الصفر بواسطة شادي إخضر بين يناير 2026
+ومايو 2026. راجع ملف DEVELOPMENT_LOG.md و NOTICE.md للحصول على جدول
 زمني مفصل لقرارات الهندسة البرمجية ومراحل التنفيذ.
 
 تمت كتابة جميع التعديلات (commits) في تاريخ Git بواسطة صاحب حقوق النشر
 وهي بمثابة دليل قاطع وقابل للتحقق على الملكية الأصلية.
 
----
+للاستفسارات التجارية أو الترخيص التجاري: chadikhoder571@gmail.com
 
-للحصول على توثيق المشروع بالكامل، راجع:
-- README.md - نظرة عامة على المشروع وميزاته
-- DEVELOPMENT_LOG.md - جدول زمني مفصل للتطوير والقرارات
-- sawa_er_diagram.svg - رسم بياني لمخطط قاعدة البيانات
-15/5/2026
+================================================================================
+
+For complete project documentation, see:
+- README.md — Project overview & features
+- NOTICE.md — Formal declaration of original authorship
+- DEVELOPMENT_LOG.md — Detailed development timeline & decisions

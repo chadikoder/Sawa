@@ -1,8 +1,9 @@
 /**
  * Sawa Platform — Main Application Logic
  * © 2026 Chadi Ikhoder — Original work built from scratch
- * Protected under MIT License with Attribution Required.
- * GitHub: https://github.com/chadikhoder/sawa
+ * Licensed under the PolyForm Noncommercial License 1.0.0.
+ * Selling or any commercial use is FORBIDDEN. See LICENSE and NOTICE.md.
+ * GitHub: https://github.com/chadikoder/Sawa
  */
 
 // ==========================================

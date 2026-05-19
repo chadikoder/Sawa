@@ -118,7 +118,7 @@ For detailed timeline with specific features, see [DEVELOPMENT_LOG.md](./DEVELOP
 
 **Built by:** Chadi Ikhoder  
 **Email:** chadikhoder571@gmail.com  
-**GitHub:** https://github.com/chadikhoder/sawa  
+**GitHub:** https://github.com/chadikoder/Sawa  
 **Built:** January – May 2026 | Entirely from scratch
 
 This project represents **original work** with all architecture, design, and implementation decisions made by the author.
@@ -127,27 +127,32 @@ This project represents **original work** with all architecture, design, and imp
 
 ## 📜 License
 
-MIT License with Attribution Required
+**PolyForm Noncommercial License 1.0.0** (with bilingual English/Arabic summary)
 
-```
-© 2026 Chadi Ikhoder
+> Copyright (c) 2026 Chadi Ikhoder. **All Rights Reserved.**
+> Original work created entirely from scratch by Chadi Ikhoder
+> between January 2026 and May 2026.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, and distribute, subject to the following
-conditions:
+### What you CAN do
 
-1. The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
-2. Attribution: Any use, modification, or distribution must include a clear
-   credit to Chadi Ikhoder as the original author.
+- ✅ Read and study the code
+- ✅ Use it for personal study, learning, or research
+- ✅ Use it for hobby or academic projects
+- ✅ Use by non-profit educational, charitable, or research organizations
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED...
-```
+### What you CANNOT do
 
-**Full license text in LICENSE file.**
+- ❌ **Sell this software, in whole or in part**
+- ❌ **Use this software for any commercial purpose**
+- ❌ Incorporate it into a paid product, paid service, or any
+     revenue-generating activity
+- ❌ Remove or alter the copyright notice or author attribution
+- ❌ Claim authorship of this work or any substantial portion
+
+For commercial licensing inquiries, contact **chadikhoder571@gmail.com**.
+
+See [`LICENSE`](./LICENSE) for the full legal text (English + Arabic summary)
+and [`NOTICE.md`](./NOTICE.md) for the proof-of-authorship declaration.
 
 ---
 
