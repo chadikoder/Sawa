@@ -1,181 +1,121 @@
-# Sawa — Lebanese Charity Platform
+<div align="center">
 
-> Connecting donors with families in need — transparently and directly, with zero intermediaries.
+# Sawa
 
-## 🎯 Project Overview
+**A Lebanese charity platform — connecting donors with families in need, transparently and directly.**
 
-Sawa is a **full-stack charity platform** built entirely from scratch, designed to connect Lebanese donors with families in need. The platform emphasizes:
+[![Made by Chadi Khoder](https://img.shields.io/badge/made_by-Chadi_Khoder-2563eb?style=for-the-badge)](https://github.com/chadikoder)
+[![PHP](https://img.shields.io/badge/PHP-8.x-2563eb?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-2563eb?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/license-PolyForm_NC-2563eb?style=for-the-badge)](#license)
 
-- **Direct connection:** No intermediaries between donors and recipients
-- **Transparency:** Real-time donation tracking and wallet management
-- **Trust:** Organization verification, audit trails, and accountability
-- **Accessibility:** Arabic & English support, mobile-responsive design
+[**Open the platform →**](https://www.sawa-together.com)
+
+</div>
 
 ---
 
-## 📋 Features
+## What is this
 
-### For Donors
+A full-stack donation platform. Verified organisations list campaigns; donors give directly; admins keep the system honest. No intermediaries between donor and recipient.
+
+```
+18  · database tables
+3   · roles (donor / organisation / admin)
+2   · languages (Arabic + English)
+1   · wallet system with audit trail
+```
+
+## Features
+
+**Donors**
 - Browse verified campaigns by category & location
-- Donate securely with transaction history
-- Save campaigns for later
-- Receive notifications about campaign updates
-- Comment & engage with creators
+- Donate securely with full transaction history
+- Save campaigns, follow updates, comment
+- Notifications for campaign milestones
 
-### For Organizations
-- Create & manage fundraising campaigns
-- Upload images & post progress updates
-- Track donations in real-time
-- Manage digital wallet & transactions
-- Build trust with transparency
+**Organisations**
+- Create and manage fundraising campaigns
+- Upload images, post progress updates
+- Real-time donation tracking
+- Manage a digital wallet
 
-### For Admin
-- Verify organizations & campaigns
-- Monitor platform activity (audit logs)
-- Moderate content & handle reports
-- Track all admin actions
+**Admins**
+- Verify organisations and campaigns
+- Audit log of all admin actions
+- Content moderation and report handling
 
----
+## Architecture
 
-## 🏗️ Architecture
+**Database (18 tables)**
 
-### Database (18 tables)
-- **Users & Auth (5):** users, organisations, password_resets, email_verifications, login_attempts
-- **Campaigns (4):** campaigns, campaign_images, campaign_updates, saved_campaigns
-- **Money (3):** donations, wallet_transactions, donation_status_history
-- **Engagement (3):** notifications, comments, reports
-- **Lookups (2):** categories, locations
-- **Admin (1):** audit_log
+| Domain | Tables |
+|---|---|
+| Users & Auth | `users`, `organisations`, `password_resets`, `email_verifications`, `login_attempts` |
+| Campaigns | `campaigns`, `campaign_images`, `campaign_updates`, `saved_campaigns` |
+| Money | `donations`, `wallet_transactions`, `donation_status_history` |
+| Engagement | `notifications`, `comments`, `reports` |
+| Lookups | `categories`, `locations` |
+| Admin | `audit_log` |
 
-### Tech Stack
-- **Frontend:** HTML, CSS, JavaScript (vanilla, no frameworks)
-- **Backend:** [Your backend tech]
-- **Database:** PostgreSQL
-- **Authentication:** JWT-based with email verification
+## Security
 
----
+- JWT auth with refresh-token rotation
+- Email verification on signup
+- Password reset via secure single-use tokens
+- Role-based access control (user / organisation / admin)
+- Brute-force protection (login-attempt tracking)
+- Full audit trail of admin actions
 
-## 📂 Project Structure
+## Tech stack
+
+| | |
+|---|---|
+| Frontend | HTML5, CSS3, vanilla JavaScript |
+| Backend | PHP 8.x |
+| Database | PostgreSQL |
+| Auth | JWT + email verification |
+| Hosting | sawa-together.com |
+
+## Quick start
+
+```bash
+git clone https://github.com/chadikoder/Sawa.git
+cd Sawa
+# Configure your PHP + PostgreSQL environment, then serve index.html.
+```
+
+## Project structure
 
 ```
-sawa/
-├── access.html             # Access control page
-├── css/                    # Stylesheets
-│   ├── tokens.css         # Design system (colors, spacing, typography)
-│   ├── nav.css
-│   ├── login.css
+Sawa/
+├── index.html
+├── access.html
+├── css/                  ← design system + per-page styles
+│   ├── tokens.css        ← colors, spacing, typography
 │   └── ...
-├── js/                     # JavaScript logic
-│   ├── index.js           # Main app logic
-│   └── ...
-├── images/                 # SVG & asset files
-├── explanation/            # Project documentation
-└── DEVELOPMENT_LOG.md     # Detailed development timeline
+├── js/                   ← page logic (vanilla)
+├── pages/                ← about, login, signup, userhome, etc.
+├── php/                  ← backend endpoints
+└── images/               ← SVG + assets
 ```
 
----
+## Author
 
-## 🔐 Security
+<div align="center">
 
-- JWT-based authentication with refresh token rotation
-- Email verification for account creation
-- Password reset with secure tokens
-- Role-based access control (User, Organisation, Admin)
-- Brute-force protection via login attempt tracking
-- Complete audit trail of all admin actions
+<a href="https://github.com/chadikoder">
+  <img src="https://github.com/chadikoder.png" width="110" alt="Chadi Khoder" />
+</a>
 
----
+### Chadi Khoder
 
-## 📊 Database Design
+[![GitHub](https://img.shields.io/badge/@chadikoder-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/chadikoder)
 
-The schema is normalized and properly indexed with:
-- Foreign key constraints for referential integrity
-- Status tracking for donations (pending → verified → completed)
-- Audit logs for compliance & accountability
-- Multi-currency wallet support
+</div>
 
-See [DEVELOPMENT_LOG.md](./DEVELOPMENT_LOG.md) for detailed architecture rationale.
+## License
 
----
+**PolyForm Noncommercial License 1.0.0** — Copyright © 2026 Chadi Ikhoder. All rights reserved.
 
-## 📈 Development Timeline
-
-| Phase | Period | Focus |
-|-------|--------|-------|
-| Phase 1 | Jan 2026 | Database Design & ER Diagram |
-| Phase 2 | Jan-Feb | Auth System & Authorization |
-| Phase 3 | Feb | Campaign Management |
-| Phase 4 | Feb-Mar | Donation & Wallet System |
-| Phase 5 | Mar | Community & Engagement |
-| Phase 6 | Mar-Apr | Admin & Moderation Tools |
-| Phase 7 | May | UI/UX Redesign & Polish |
-
-For detailed timeline with specific features, see [DEVELOPMENT_LOG.md](./DEVELOPMENT_LOG.md).
-
----
-
-## 👤 Author
-
-**Built by:** Chadi Ikhoder  
-**Email:** chadikhoder571@gmail.com  
-**GitHub:** https://github.com/chadikoder/Sawa  
-**Built:** January – May 2026 | Entirely from scratch
-
-This project represents **original work** with all architecture, design, and implementation decisions made by the author.
-
----
-
-## 📜 License
-
-**PolyForm Noncommercial License 1.0.0** (with bilingual English/Arabic summary)
-
-> Copyright (c) 2026 Chadi Ikhoder. **All Rights Reserved.**
-> Original work created entirely from scratch by Chadi Ikhoder
-> between January 2026 and May 2026.
-
-### What you CAN do
-
-- ✅ Read and study the code
-- ✅ Use it for personal study, learning, or research
-- ✅ Use it for hobby or academic projects
-- ✅ Use by non-profit educational, charitable, or research organizations
-
-### What you CANNOT do
-
-- ❌ **Sell this software, in whole or in part**
-- ❌ **Use this software for any commercial purpose**
-- ❌ Incorporate it into a paid product, paid service, or any
-     revenue-generating activity
-- ❌ Remove or alter the copyright notice or author attribution
-- ❌ Claim authorship of this work or any substantial portion
-
-For commercial licensing inquiries, contact **chadikhoder571@gmail.com**.
-
-See [`LICENSE`](./LICENSE) for the full legal text (English + Arabic summary)
-and [`NOTICE.md`](./NOTICE.md) for the proof-of-authorship declaration.
-
----
-
-## 🛠️ Setup & Deployment
-
-[Add your setup instructions here]
-
----
-
-## 📝 Contributing
-
-Since this is an original student project, contributions are not currently accepted. 
-However, you can fork this repository to learn from it (with attribution to the original author).
-
----
-
-## ❓ Questions?
-
-For questions about the project, architecture, or usage:
-- Email: chadikhoder571@gmail.com
-- GitHub Issues: [Project Issues]
-
----
-
-**Last Updated:** May 18, 2026  
-**Status:** ✅ Complete & Deployed
+You may read, study, and use this for personal, educational, and non-commercial purposes. You may **not** sell it or use it for any commercial purpose. See [`LICENSE`](./LICENSE) for the full text.
