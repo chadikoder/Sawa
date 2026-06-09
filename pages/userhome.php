@@ -1798,10 +1798,10 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <span>Discover</span>
     </button>
     <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" title="New Campaign" aria-label="Create new campaign">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
     </button>
     <button class="bottom-nav-item" data-section="messages">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.1" d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.1" d="M8 9h8M8 13h5"/></svg>
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 13h5"/></svg>
       <span>Chat</span>
     </button>
     <button class="bottom-nav-item" data-section="wallet">
