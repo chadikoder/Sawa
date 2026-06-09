@@ -1,0 +1,311 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__) . '/php/bootstrap.php';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/signup.css" type="text/css">
+    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+    <script src="../js/theme.js" defer></script>
+
+
+
+    <title>Sign Up — Sawa</title>
+
+</head>
+<body>
+
+    <button class="theme-toggle theme-toggle--floating" type="button" data-theme-toggle aria-label="Switch to dark mode">
+        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+
+    <a href="../index.html" class="back-home" aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <p class="auth-switch">Already have an account? <a href="login.php">Log in</a></p>
+
+     <div class="role_cards">
+
+        <div class="step-progress-bar" data-step="2">
+            <span class="sp-dot sp-done"></span>
+            <span class="sp-dot sp-active"></span>
+            <span class="sp-dot"></span>
+        </div>
+        <span class="step-counter">Step 2 of 3</span>
+        <h1>Choose Your Role</h1>
+
+            <div class="role-cards-grid">
+            <div class="image-card-container" data-role-color="rose">
+                <span class="card-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div class="image_card1">
+                    <img src="../images/red-heart-icon.svg" alt="redheart">
+                    <span>Donor</span>
+                    <small>Support people across Lebanon by making secure donations to verified campaigns.</small>
+                </div>
+            </div>
+
+            <div class="image-card-container" data-role-color="blue">
+                <span class="card-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div class="image_card2">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 102.36" fill="#2563eb">
+                        <g fill-rule="evenodd" clip-rule="evenodd">
+                            <path d="M29.83,89.55V52.63h16.61c7.04,1.26,14.08,5.08,21.12,9.51h12.9c5.84,0.35,8.9,6.27,3.22,10.16 c-4.52,3.32-10.49,3.13-16.61,2.58c-4.22-0.21-4.4,5.46,0,5.48c1.53,0.12,3.19-0.24,4.64-0.24c7.64-0.01,13.92-1.47,17.77-7.5 l1.93-4.51l19.19-9.51c9.6-3.16,16.42,6.88,9.35,13.87c-13.9,10.11-28.15,18.43-42.73,25.15c-10.59,6.44-21.18,6.22-31.76,0 L29.83,89.55L29.83,89.55z M76.08,7.8c3.63-3.79,6.17-7.06,11.77-7.7c10.5-1.21,20.16,9.55,14.86,20.14 c-1.51,3.02-4.58,6.6-7.98,10.12c-3.73,3.86-7.86,7.65-10.76,10.52l-7.89,7.83l-6.52-6.28c-7.84-7.55-20.63-17.06-21.05-28.84 c-0.3-8.25,6.22-13.54,13.7-13.44C68.91,0.23,71.72,3.56,76.08,7.8L76.08,7.8L76.08,7.8z M0,49.08h24.83v44.18H0V49.08L0,49.08z"/>
+                        </g>
+                    </svg>
+                    <span>Recipient</span>
+                    <small>Request help for medical, food, education, or shelter needs for your family.</small>
+                </div>
+            </div>
+
+            <div class="image-card-container" data-role-color="amber">
+                <span class="card-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div class="image_card3">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f59e0b">
+                        <path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5h16.5a.75.75 0 0 0 0-1.5h-.75V3.75a.75.75 0 0 0 0-1.5h-15ZM9 6a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm-.75 3.75A.75.75 0 0 1 9 9h1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM9 12a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm3.75-5.25A.75.75 0 0 1 13.5 6H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM13.5 9a.75.75 0 0 0 0 1.5H15A.75.75 0 0 0 15 9h-1.5Zm-.75 3.75a.75.75 0 0 1 .75-.75H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM9 19.5v-2.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 9 19.5Z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Organisation</span>
+                    <small>Register your NGO or charity to manage campaigns and reach donors transparently.</small>
+                </div>
+            </div>
+
+            </div>
+            <button type="button" class="role-continue-btn" disabled>Continue</button>
+
+        </div>
+
+    
+    <form action="../php/auth/signup.php" method="POST" enctype="multipart/form-data" class="form_submit">
+    <?= Csrf::field() ?>
+
+    <div class="step_1" style="display: flex;">
+
+    <div class="step-progress-bar" data-step="1">
+        <span class="sp-dot sp-active"></span>
+        <span class="sp-dot"></span>
+        <span class="sp-dot"></span>
+    </div>
+    <span class="step-counter">Step 1 of 3</span>
+    <h1>Enter your account details</h1>
+
+    <div class="navbar">
+        <span class="active_btn slide"></span>
+        <button type="button" class="phone_btn" >Phone</button>
+        <button type="button" class="email_btn">Email</button>
+    </div>
+
+
+        <label class="field-fullname">
+        <span class="label_text">Full Name</span>
+        <input type="text" name="full_name" placeholder="Your full name" autocomplete="name" maxlength="80" required>
+        </label>
+
+        <label class="contact-email">
+
+        <span class="label_text">Email</span>
+        <input type="email" name="user_email" placeholder="you@example.com" autocomplete="email" value="">
+
+        </label>
+
+        <label class="contact-phone">
+
+        <span class="label_text">Phone Number</span>
+        <input type="tel" name="user_phone" placeholder="+961 XX XXX XXX" autocomplete="tel" value="">
+
+        </label>
+
+        <label class="field-password">
+            <span class="label_text">Password</span>
+            <div class="input-wrap">
+                <input type="password" name="user_password" id="user_password" placeholder="Min. 6 chars, letters &amp; numbers" autocomplete="new-password">
+                <button type="button" class="pwd-toggle" id="pwd-toggle-1" aria-label="Show password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </div>
+        </label>
+
+        <div class="pwd-strength-wrap">
+            <div class="pwd-strength-bar">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <span class="pwd-strength-label"></span>
+        </div>
+
+        <label class="field-password-confirm">
+            <span class="label_text">Confirm Password</span>
+            <div class="input-wrap">
+                <input type="password" name="user_password_confirm" id="user_password_confirm" placeholder="Repeat your password" autocomplete="new-password">
+                <button type="button" class="pwd-toggle" id="pwd-toggle-2" aria-label="Show password">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </div>
+        </label>
+
+        <label>
+            <span>Birthday</span>
+            <input type="date" name="user_birthdate">
+        </label>
+
+        <div class="gender-group">
+            <span class="label_text">Gender</span>
+            <div class="gender-options">
+                <label class="gender-option">
+                    <input type="radio" name="user_gender" value="Male">
+                    <span class="gender-radio-circle"></span>
+                    <span class="gender-pill">Male</span>
+                </label>
+                <label class="gender-option">
+                    <input type="radio" name="user_gender" value="Female">
+                    <span class="gender-radio-circle"></span>
+                    <span class="gender-pill">Female</span>
+                </label>
+            </div>
+        </div>
+
+        <input type="button" value="Next" class="nextstep_2">
+
+        </div>
+
+        <!-- hidden role value, kept for PHP form submission -->
+        <select name="user_role" id="role" style="display:none" aria-hidden="true">
+            <option value="">None</option>
+            <option value="user">Donor</option>
+            <option value="beneficiary">Recipient</option>
+            <option value="organisation">Organisation</option>
+        </select>
+
+        <div class="basicinfo" style="display: none;">
+
+            <div class="step-progress-bar" data-step="3">
+                <span class="sp-dot sp-done"></span>
+                <span class="sp-dot sp-done"></span>
+                <span class="sp-dot sp-active"></span>
+            </div>
+            <span class="step-counter">Step 3 of 3</span>
+
+            <div class="profile-upload-container">
+                <label for="profile_pic_upload" class="profile-upload-label">
+                    <div class="image_circle">
+                        <img src="../images/user-profile.svg" alt="profile" id="profile_preview">
+                    </div>
+                    <span class="edit_text">Edit</span>
+                </label>
+
+                <input type="file" name="profile_image" id="profile_pic_upload" accept="image/png,image/jpeg,.jpg,image/webp" hidden>
+            </div>
+
+            <div class="input-group">
+
+            <label for="user_description_basic">Bio</label>
+            <textarea name="user_description" id="user_description_basic" rows="5" cols="15" maxlength="250"></textarea>
+            <span class="bio-counter" id="basic-bio-counter">0 / 250</span>
+
+            </div>
+
+            <div class="input-group">
+
+            <label for="user_location">Location</label>
+            <input type="text" name="user_location" id="user_location" maxlength="50" placeholder="e.g. Tripoli, North Lebanon">
+
+            </div>
+
+            <input type="submit" value="Save &amp; Continue">
+            </div>
+
+        <div class="organisation_role" style="display: none;">
+
+            <div class="step-progress-bar" data-step="3">
+                <span class="sp-dot sp-done"></span>
+                <span class="sp-dot sp-done"></span>
+                <span class="sp-dot sp-active"></span>
+            </div>
+            <span class="step-counter">Step 3 of 3</span>
+
+             <div class="organisation-upload-container">
+                <label for="organisation_pic_upload" class="organisation-upload-label">
+                    <div class="image_circle">
+                        <img src="../images/org-placeholder.svg" alt="profile" id="organisation_preview">
+                    </div>
+                    <span class="edit_text">Edit</span>
+                </label>
+
+                <input type="file" name="org_image" id="organisation_pic_upload" accept="image/png,image/jpeg,.jpg,image/webp" hidden>
+            </div>
+
+            <div class="input-group">
+
+            <label for="organisation_name">Organisation Name</label>
+            <input type="text" name="organisation_name" id="organisation_name" maxlength="120" placeholder="Registered organisation name">
+
+            </div>
+
+            <div class="input-group">
+
+            <label for="user_description_org">Bio</label>
+            <textarea name="user_description" id="user_description_org" rows="5" cols="15" maxlength="250"></textarea>
+            <span class="bio-counter" id="org-bio-counter">0 / 250</span>
+
+            </div>
+
+            <div class="input-group">
+
+            <label for="user_contact">Contact</label>
+            <input type="tel" name="user_contact" id="user_contact" maxlength="15" placeholder="+961 XX XXX XXX">
+
+            </div>
+
+            <div class="input-group">
+
+            <label for="user_website">Website</label>
+            <input type="url" name="user_website" id="user_website" >
+
+            </div>
+
+             <div class="file_organisation_upload_container">
+
+                <label for="file_organisation_upload" class="file_organisation_upload_label">
+
+                    <div class="image_container_file">
+
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="50" height="50" style="color:royalblue;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+
+                    </div>
+
+
+                </label>
+
+                    <span class="file_text">Upload registration document</span>
+                    <span class="upload-hint">PNG, JPG or PDF · max 5MB</span>
+
+                <input type="file" name="org_registration" id="file_organisation_upload" accept="image/png,image/jpeg,.pdf" hidden>
+
+            </div>
+
+            <input type="submit" value="Submit for Verification">
+
+
+        </div>
+
+
+
+    </form>
+
+    <script src="../js/signup.js"></script>
+
+</body>
+</html>

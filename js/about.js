@@ -36,7 +36,6 @@ document.querySelectorAll('.faq-question').forEach(btn => {
         // Close all
         document.querySelectorAll('.faq-question').forEach(b => {
             b.setAttribute('aria-expanded', 'false');
-            b.nextElementSibling?.removeAttribute('hidden');
             b.nextElementSibling?.setAttribute('hidden', '');
         });
         // Open clicked if it was closed

@@ -90,7 +90,6 @@ cd Sawa
 ```
 Sawa/
 ├── index.html
-├── access.html
 ├── css/                  ← design system + per-page styles
 │   ├── tokens.css        ← colors, spacing, typography
 │   └── ...

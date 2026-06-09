@@ -6,6 +6,11 @@
  * Licensed under the PolyForm Noncommercial License 1.0.0. See LICENSE.
  */
 
+html {
+  font-size: 62.5%;
+  color-scheme: light;
+}
+
 :root {
 
   /* ─── Colors ──────────────────────────────────── */
@@ -99,7 +104,147 @@
   --container:     112rem;
 }
 
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary:        #60a5fa;
+  --color-primary-dark:   #3b82f6;
+  --color-primary-light:  #172554;
+  --color-primary-glow:   rgba(96, 165, 250, 0.35);
+
+  --color-success:        #4ade80;
+  --color-success-dark:   #22c55e;
+  --color-success-light:  #052e16;
+  --color-success-border: #166534;
+
+  --color-danger:         #f87171;
+  --color-danger-light:   #450a0a;
+
+  --color-warning:        #fbbf24;
+  --color-warning-light:  #422006;
+
+  --color-purple:         #a78bfa;
+  --color-purple-light:   #2e1065;
+
+  --color-text:           #e5e7eb;
+  --color-text-muted:     #cbd5e1;
+  --color-text-light:     #94a3b8;
+  --color-text-navy:      #e0f2fe;
+
+  --color-surface:        #111827;
+  --color-bg:             #0f172a;
+  --color-bg-deep:        #1e293b;
+  --color-border:         #334155;
+  --color-dark:           #020617;
+  --color-dark-soft:      #0f172a;
+}
+
 html, body {
   overflow-x: clip;
   max-width: 100%;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #0f172a;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #64748b;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .dash-card,
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .step_1,
+html[data-theme="dark"] .basicinfo,
+html[data-theme="dark"] .organisation_role,
+html[data-theme="dark"] .role_cards,
+html[data-theme="dark"] .action-card,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .guest-donate-modal,
+html[data-theme="dark"] #info_popover {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+html[data-theme="dark"] .site-nav,
+html[data-theme="dark"] .site-header,
+html[data-theme="dark"] .nav-links-wrap {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+html[data-theme="dark"] .nav-link,
+html[data-theme="dark"] .site-nav-link,
+html[data-theme="dark"] .site-brand-name,
+html[data-theme="dark"] .nav-brand-name,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4 {
+  color: var(--color-text);
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] small,
+html[data-theme="dark"] label,
+html[data-theme="dark"] .auth-sub,
+html[data-theme="dark"] .auth-switch,
+html[data-theme="dark"] .stat-tile-label,
+html[data-theme="dark"] .camp-card-desc,
+html[data-theme="dark"] .modal-sub {
+  color: var(--color-text-muted);
+}
+
+.theme-toggle {
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-full);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--t), border-color var(--t), transform var(--t);
+}
+
+.theme-toggle:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--color-primary-glow);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.theme-toggle .theme-sun { display: none; }
+html[data-theme="dark"] .theme-toggle .theme-moon { display: none; }
+html[data-theme="dark"] .theme-toggle .theme-sun { display: block; }
+
+.theme-toggle--floating {
+  position: fixed;
+  top: 1.6rem;
+  right: 1.6rem;
+  z-index: 120;
 }

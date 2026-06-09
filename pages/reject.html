@@ -9,17 +9,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/reject.css">
-    <link rel="icon" href="../images/sawa.svg" type="image/svg">
+    <link rel="stylesheet" href="../css/status.css">
+    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+    <script src="../js/theme.js" defer></script>
 
 </head>
 <body>
-    <img src="../images/reject.avif" alt="Rejected" width="400px" height="400px">
-    <h2>Application Not Approved</h2>
-    <p>Your documents could not be verified. Please try again with valid registration documents.</p>
-    <div class="btn-group">
-        <a href="signup.html" class="exit-btn">Try Again</a>
-        <a href="../access.html" class="exit-btn secondary">Go Home</a>
-    </div>
+    <main class="status-shell" aria-labelledby="status-title">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+            <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <section class="status-copy">
+            <img class="status-logo" src="../images/sawa_v2.svg" alt="Sawa">
+            <p class="status-eyebrow">Review Declined</p>
+            <h1 id="status-title">Application not approved.</h1>
+            <p>Your documents could not be verified. The Sawa review team has left details below.</p>
+            <div class="status-detail">Review details: upload a valid registration document, clear organisation contact information, and any missing proof requested by Sawa.</div>
+            <div class="status-actions">
+                <a href="signup.php" class="status-btn">Try Again</a>
+                <a href="../index.html" class="status-btn secondary">Home</a>
+            </div>
+        </section>
+        <div class="status-art">
+            <svg class="status-illustration" viewBox="0 0 240 240" role="img" aria-labelledby="declined-svg-title">
+                <title id="declined-svg-title">Declined review illustration</title>
+                <circle class="status-bg" cx="120" cy="120" r="104"/>
+                <rect class="status-panel" x="58" y="66" width="124" height="112" rx="18"/>
+                <path class="status-muted" d="M84 94h72v10H84zM84 117h44v10H84zM84 140h64v10H84z" opacity=".72"/>
+                <circle class="status-danger" cx="166" cy="158" r="30"/>
+                <path d="M154 146l24 24M178 146l-24 24" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+                <path class="status-warning" d="M62 178h58l-29-50z" opacity=".18"/>
+            </svg>
+        </div>
+    </main>
 </body>
 </html>

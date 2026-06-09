@@ -1,0 +1,92 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__) . '/php/bootstrap.php';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+    <script src="../js/theme.js" defer></script>
+    <title>Sawa — Log In</title>
+</head>
+<body>
+
+    <button class="theme-toggle theme-toggle--floating" type="button" data-theme-toggle aria-label="Switch to dark mode">
+        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+
+    <a href="../index.html" class="back-home" aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="login-page">
+
+        <div class="login-brand">
+            <img src="../images/sawa_v2.svg" alt="Sawa" class="brand-logo">
+            <p class="brand-name">SAWA</p>
+            <p class="brand-tagline">Connecting Lebanese donors<br>with families in need</p>
+        </div>
+
+        <div class="login-card">
+            <img src="../images/sawa_v2.svg" alt="Sawa" class="card-logo">
+            <h1>Welcome Back</h1>
+            <p class="auth-sub">We're glad to see you again</p>
+
+            <form class="login_form" action="../php/auth/login.php" method="POST">
+                <?= Csrf::field() ?>
+
+                <div class="field-group">
+                    <label for="email">Email</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <input type="password" id="password" name="password" placeholder="Your password" autocomplete="current-password" required>
+                        <button type="button" class="pwd-toggle" aria-label="Show password">
+                            <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember_me" value="1">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="forgot-password.php" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <input type="submit" value="Log In">
+
+            </form>
+
+            <p class="auth-switch">Don't have an account? <a href="signup.php">Sign up</a></p>
+        </div>
+
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+</html>

@@ -7,15 +7,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/getverified.css">
-    <link rel="icon" href="../images/sawa.svg" type="image/svg">
+    <link rel="stylesheet" href="../css/status.css">
+    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+    <script src="../js/theme.js" defer></script>
 
     <title>Verified — Sawa</title>
 </head>
 <body>
-    <img src="../images/getverified.avif" alt="Verified badge" width="400px" height="400px">
-    <h2>You're Verified!</h2>
-    <p>Your organisation account is ready. Head to your dashboard to get started.</p>
-    <a href="userhome.html" class="exit-btn">Go to Dashboard</a>
+    <main class="status-shell" aria-labelledby="status-title">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+            <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <section class="status-copy">
+            <img class="status-logo" src="../images/sawa_v2.svg" alt="Sawa">
+            <p class="status-eyebrow">Organisation Approved</p>
+            <h1 id="status-title">You're verified.</h1>
+            <p>Your organisation account is ready. You can now publish campaigns and receive donations.</p>
+            <div class="status-actions">
+                <a href="userhome.php" class="status-btn">Go to Dashboard</a>
+                <a href="../index.html" class="status-btn secondary">Home</a>
+            </div>
+        </section>
+        <div class="status-art">
+            <svg class="status-illustration" viewBox="0 0 240 240" role="img" aria-labelledby="approved-svg-title">
+                <title id="approved-svg-title">Approved organisation illustration</title>
+                <circle class="status-bg" cx="120" cy="120" r="104"/>
+                <rect class="status-panel" x="58" y="72" width="124" height="92" rx="18"/>
+                <path class="status-primary" d="M84 96h72v10H84zM84 118h48v10H84zM84 140h34v10H84z"/>
+                <circle class="status-success" cx="166" cy="154" r="30"/>
+                <path d="M153 154l9 9 18-20" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="status-success" d="M120 33l13 12 18 3 5 18 13 12-13 13-5 18-18 4-13 12-13-12-18-4-5-18-13-13 13-12 5-18 18-3z" opacity=".18"/>
+            </svg>
+        </div>
+    </main>
 </body>
 </html>

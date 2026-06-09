@@ -4,7 +4,6 @@ function showError(input, msg) {
     const el = document.createElement('span');
     el.className = 'field-error';
     el.textContent = msg;
-    el.style.cssText = 'color:#ef4444;font-size:1rem;width:95%;max-width:350px;padding-left:15px;margin-top:-4px;';
     input.parentElement.insertBefore(el, input.nextSibling);
   }
 }
@@ -62,21 +61,31 @@ document.querySelector('.pwd-toggle')?.addEventListener('click', () => {
   if (pwd.type === 'password') {
     pwd.type = 'text';
     icon.style.opacity = '0.45';
+    document.querySelector('.pwd-toggle')?.setAttribute('aria-label', 'Hide password');
   } else {
     pwd.type = 'password';
     icon.style.opacity = '1';
+    document.querySelector('.pwd-toggle')?.setAttribute('aria-label', 'Show password');
   }
 });
 
-// PHP redirect toast (?status=success|error&msg=...)
+// PHP redirect toast with fixed status codes only.
 (function () {
   const params = new URLSearchParams(window.location.search);
+  const messages = {
+    success: { text: 'Logged in successfully.', error: false },
+    logged_out: { text: 'You have been logged out.', error: false },
+    reset_sent: { text: 'Password reset instructions were sent if the email exists.', error: false },
+    invalid: { text: 'Email or password is incorrect.', error: true },
+    expired: { text: 'Your session expired. Please log in again.', error: true },
+    error: { text: 'Something went wrong. Please try again.', error: true },
+  };
   const status = params.get('status');
-  const msg    = params.get('msg');
-  if (status && msg) {
+  const entry = messages[status];
+  if (entry) {
     const t = document.createElement('div');
-    t.className = 'toast' + (status === 'error' ? ' toast-error' : '');
-    t.textContent = decodeURIComponent(msg);
+    t.className = 'toast' + (entry.error ? ' toast-error' : '');
+    t.textContent = entry.text;
     document.body.appendChild(t);
     requestAnimationFrame(() => t.classList.add('show'));
     setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);

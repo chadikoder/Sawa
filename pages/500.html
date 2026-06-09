@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 — Sawa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/status.css">
+    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+    <script src="../js/theme.js" defer></script>
+</head>
+<body>
+    <main class="status-shell" aria-labelledby="status-title">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+            <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <section class="status-copy">
+            <img class="status-logo" src="../images/sawa_v2.svg" alt="Sawa">
+            <p class="status-eyebrow">500</p>
+            <h1 id="status-title">Something went wrong.</h1>
+            <p>We hit an unexpected error and could not complete your request. Your donation status is not affected by this screen — please retry from your dashboard.</p>
+            <div class="status-actions">
+                <a href="userhome.php" class="status-btn">Return to Dashboard</a>
+                <a href="mailto:sawatogether961@gmail.com" class="status-btn secondary">Contact Sawa</a>
+            </div>
+        </section>
+        <div class="status-art">
+            <svg class="status-illustration" viewBox="0 0 240 240" role="img" aria-labelledby="server-svg-title">
+                <title id="server-svg-title">Server error illustration</title>
+                <circle class="status-bg" cx="120" cy="120" r="104"/>
+                <rect class="status-panel" x="58" y="68" width="124" height="44" rx="12"/>
+                <rect class="status-panel" x="58" y="122" width="124" height="44" rx="12"/>
+                <circle class="status-success" cx="82" cy="90" r="6"/>
+                <circle class="status-warning" cx="82" cy="144" r="6"/>
+                <path class="status-muted" d="M100 86h56v8h-56zM100 140h44v8h-44z" opacity=".7"/>
+                <circle class="status-danger" cx="166" cy="168" r="28"/>
+                <path d="M154 156l24 24M178 156l-24 24" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+        </div>
+    </main>
+</body>
+</html>

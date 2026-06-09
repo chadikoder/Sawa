@@ -1,2 +1,7 @@
 CLAUDE.md
 .claude/
+.env
+storage/
+uploads/
+artifacts/
+test-results/

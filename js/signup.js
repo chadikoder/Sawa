@@ -5,7 +5,6 @@ function showError(input, msg) {
     const el = document.createElement('span');
     el.className = 'field-error';
     el.textContent = msg;
-    el.style.cssText = 'color:#ef4444;font-size:1.1rem;width:100%;margin-top:4px;display:block;';
     container.appendChild(el);
   }
 }
@@ -25,15 +24,15 @@ const PHONE_RE    = /^(?:\+961|00961|0)[0-9]{6,11}$/;
 const URL_RE      = /^https?:\/\/.+/i;
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 
-let currentContactMethod = 'phone';
+let currentContactMethod = 'email';
 let chosenRole = '';
 
 // ==========================================
 // 1. PHONE / EMAIL TOGGLE (Step 1)
 // ==========================================
 document.querySelector('.phone_btn').addEventListener('click', () => {
-    document.querySelector('#email').style.display = 'none';
-    document.querySelector('#phone').style.display = 'flex';
+    document.querySelector('.contact-email').style.display = 'none';
+    document.querySelector('.contact-phone').style.display = 'flex';
     document.querySelector('.slide').style.transform = 'translateX(0%)';
     document.querySelector('.phone_btn').style.color = 'royalblue';
     document.querySelector('.email_btn').style.color = 'rgba(84, 84, 84,0.8)';
@@ -42,8 +41,8 @@ document.querySelector('.phone_btn').addEventListener('click', () => {
 });
 
 document.querySelector('.email_btn').addEventListener('click', () => {
-    document.querySelector('#email').style.display = 'flex';
-    document.querySelector('#phone').style.display = 'none';
+    document.querySelector('.contact-email').style.display = 'flex';
+    document.querySelector('.contact-phone').style.display = 'none';
     document.querySelector('.slide').style.transform = 'translateX(100%)';
     document.querySelector('.phone_btn').style.color = 'rgba(84, 84, 84,0.8)';
     document.querySelector('.email_btn').style.color = 'royalblue';
@@ -54,18 +53,21 @@ document.querySelector('.email_btn').addEventListener('click', () => {
 // ==========================================
 // 2. IMAGE UPLOAD PREVIEWS
 // ==========================================
+function setPreview(previewEl, file) {
+    if (!file) return;
+    const prev = previewEl.dataset.objUrl;
+    if (prev) URL.revokeObjectURL(prev);
+    const url = URL.createObjectURL(file);
+    previewEl.dataset.objUrl = url;
+    previewEl.src = url;
+}
+
 document.querySelector('#profile_pic_upload').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        document.querySelector('#profile_preview').src = URL.createObjectURL(file);
-    }
+    setPreview(document.querySelector('#profile_preview'), event.target.files[0]);
 });
 
 document.querySelector('#organisation_pic_upload').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        document.querySelector('#organisation_preview').src = URL.createObjectURL(file);
-    }
+    setPreview(document.querySelector('#organisation_preview'), event.target.files[0]);
 });
 
 // ==========================================
@@ -90,14 +92,21 @@ function validateStep1() {
     let valid = true;
     clearAllErrors();
 
+    const fullNameInput = document.querySelector('[name="full_name"]');
+    if (!fullNameInput.value.trim() || fullNameInput.value.trim().length < 2) {
+        showError(fullNameInput, 'Enter your full name');
+        valid = false;
+    }
+
+    const emailInput = document.querySelector('.contact-email input');
+    const phoneInput = document.querySelector('.contact-phone input');
+
     if (currentContactMethod === 'email') {
-        const emailInput = document.querySelector('#email input');
         if (!EMAIL_RE.test(emailInput.value.trim())) {
             showError(emailInput, 'Enter a valid email address');
             valid = false;
         }
     } else {
-        const phoneInput = document.querySelector('#phone input');
         if (!PHONE_RE.test(phoneInput.value.trim())) {
             showError(phoneInput, 'Enter a valid Lebanese phone number');
             valid = false;
@@ -119,7 +128,11 @@ function validateStep1() {
         showError(birthday, 'Please select your birth date');
         valid = false;
     } else {
-        const age = (new Date() - new Date(birthday.value)) / 31557600000;
+        const dob = new Date(birthday.value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
         if (age < 10) {
             showError(birthday, 'You must be at least 10 years old');
             valid = false;
@@ -131,9 +144,8 @@ function validateStep1() {
         const genderGroup = document.querySelector('.gender-group');
         if (!genderGroup.querySelector('.field-error')) {
             const el = document.createElement('span');
-            el.className = 'field-error';
+            el.className = 'field-error field-error--centered';
             el.textContent = 'Please select your gender';
-            el.style.cssText = 'color:#ef4444;font-size:1.1rem;width:100%;display:block;text-align:center;';
             genderGroup.appendChild(el);
         }
         valid = false;
@@ -183,6 +195,12 @@ function validateOrgInfo() {
         valid = false;
     }
 
+    const organisationName = document.getElementById('organisation_name');
+    if (!organisationName.value.trim() || organisationName.value.trim().length < 2) {
+        showError(organisationName, 'Enter the registered organisation name');
+        valid = false;
+    }
+
     return valid;
 }
 
@@ -217,9 +235,9 @@ cards.forEach(card => {
         const img2 = card.querySelector('.image_card2');
         const img3 = card.querySelector('.image_card3');
 
-        if (img1) { chosenRole = 'basic'; roleDropdown.value = 'Donor'; }
-        else if (img2) { chosenRole = 'basic'; roleDropdown.value = 'Taker'; }
-        else if (img3) { chosenRole = 'org'; roleDropdown.value = 'Organisation'; }
+        if (img1) { chosenRole = 'basic'; roleDropdown.value = 'user'; }
+        else if (img2) { chosenRole = 'basic'; roleDropdown.value = 'beneficiary'; }
+        else if (img3) { chosenRole = 'org'; roleDropdown.value = 'organisation'; }
 
         if (window.innerWidth >= 768) {
             // Desktop: mark selected, enable Continue, don't advance
@@ -251,7 +269,7 @@ document.querySelector('.nextstep_2').addEventListener('click', () => {
 // 6. BACK BUTTONS
 // ==========================================
 
-// Smart .back-home: walks back step 3 → step 2 → step 1 → access.html
+// Smart .back-home: walks back step 3 -> step 2 -> step 1 -> index.html
 document.querySelector('.back-home')?.addEventListener('click', (e) => {
     if (basicinfo.style.display === 'flex' || orginfo.style.display === 'flex') {
         e.preventDefault();
@@ -272,7 +290,7 @@ document.querySelector('.back-home')?.addEventListener('click', (e) => {
         step1.style.display = 'flex';
         window.scrollTo(0, 0);
     }
-    // else: on step 1, let the default <a href="../access.html"> navigation happen
+    // else: on step 1, let the default <a href="../index.html"> navigation happen
 });
 
 // ==========================================
@@ -342,16 +360,13 @@ document.querySelectorAll('input, textarea, select').forEach(el => {
 function makePwdToggle(inputId, btnId) {
     document.getElementById(btnId)?.addEventListener('click', () => {
         const inp = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
         if (!inp) return;
-        inp.type = inp.type === 'password' ? 'text' : 'password';
+        const shouldShow = inp.type === 'password';
+        inp.type = shouldShow ? 'text' : 'password';
+        btn?.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
     });
 }
 makePwdToggle('user_password', 'pwd-toggle-1');
 makePwdToggle('user_password_confirm', 'pwd-toggle-2');
 
-// 11. SUBMIT LOADING STATE
-// ==========================================
-document.querySelector('form.form_submit')?.addEventListener('submit', () => {
-    const btn = document.querySelector('input[type="submit"]:not([disabled])');
-    if (btn) { btn.value = 'Please wait...'; btn.disabled = true; }
-});

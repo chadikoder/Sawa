@@ -4,20 +4,25 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sawa connects Lebanese donors with families in need — transparently and directly, with 0 intermediaries.">
-    <meta http-equiv="author" content="chadi khoder">
+    <meta name="description" content="Sawa connects Lebanese donors with families in need transparently, with verified campaigns and clear platform fees.">
+    <meta name="author" content="Chadi Khoder">
 
-    <link rel="icon" href="images/sawa.svg" type="image/svg">
+    <link rel="icon" href="images/sawa.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/access.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="js/theme.js" defer></script>
 
     <title>Sawa — Connecting Donors with Families in Need</title>
 
 </head>
 <body>
+    <button class="theme-toggle theme-toggle--floating" type="button" data-theme-toggle aria-label="Switch to dark mode">
+        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
 
     <!-- ── Brand Panel (left on desktop, top on mobile) ── -->
     <div class="brand-panel">
@@ -46,7 +51,7 @@
                 </span>
                 <div>
                     <h4>0 Intermediaries</h4>
-                    <p>Every donation goes directly to the family or organisation</p>
+                    <p>Every donation route and Sawa fee is shown clearly before payment</p>
                 </div>
             </li>
             <li class="feature-item">
@@ -84,13 +89,15 @@
         <p class="card-sub">Join 120+ donors making a real difference in Lebanon</p>
 
         <div class="button-group">
-            <a href="pages/signup.html" class="button_signup">Create Free Account</a>
-            <a href="pages/login.html" class="button_login">Log In</a>
+            <a href="pages/signup.php" class="button_signup">Create Free Account</a>
+            <a href="pages/login.php" class="button_login">Log In</a>
         </div>
 
-        <p class="trust-line">300+ families helped &middot; 100% direct impact</p>
+        <p class="trust-line">300+ families helped &middot; 5% member fee &middot; 10% for guests</p>
 
-        <a href="pages/userhome.html?guest=1" class="link_visitors">Browse campaigns as a guest &rarr;</a>
+        <a href="pages/userhome.php" class="link_visitors">Browse campaigns as a guest
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
 
         <div class="footer">
             <div class="social-links">
