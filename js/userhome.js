@@ -10,6 +10,14 @@ document.querySelectorAll('nav a, .sidebar-item, .sidebar-toggle, .sidebar-user,
 
 /* ── Section switching ── */
 function switchSection(sectionId) {
+  // If the campaign-detail modal is open, close it first — otherwise the
+  // section change happens behind the modal and looks like a broken click.
+  const cm = document.getElementById('campaign-modal');
+  if (cm?.classList.contains('show')) {
+    cm.classList.remove('show');
+    cm.setAttribute('aria-hidden', 'true');
+  }
+
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active', 'section-entering', 'campaign-entering'));
