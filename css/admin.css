@@ -1507,6 +1507,13 @@ html[data-theme="dark"] .admin-self-note { background: rgba(148,163,184,0.12); c
 
 /* Ensure table action buttons meet 44px minimum on mobile so touch targets are usable */
 @media (max-width: 768px) {
+  /* The first selector is the reason this block works at all. Table action
+     buttons are matched by `.admin-table td:last-child .admin-inline-form
+     button` (0,3,2), which sets min-height:3.4rem and outranks the 0,1,1
+     selectors below — so this rule, whose whole purpose is the 44px touch
+     target, had never applied to the buttons it was written for. They were
+     rendering at 34px. */
+  .admin-table td:last-child .admin-inline-form button,
   .admin-inline-form button,
   .admin-action-grid button,
   .admin-table button {
@@ -1518,6 +1525,14 @@ html[data-theme="dark"] .admin-self-note { background: rgba(148,163,184,0.12); c
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
+  }
+  .admin-action-grid button {
+    /* The base rule sets width:100% so each button fills its cell in the
+       two-column grid. Once this block turns the container into a flex row,
+       that same 100% made every button span the full width and wrap onto its
+       own line — three stacked full-width buttons per row, which is exactly
+       what flex-wrap was meant to avoid. Size to content instead. */
+    width: auto;
   }
 }
 
@@ -1758,35 +1773,60 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
     white-space: nowrap;
   }
 
+  /* Two fields per row rather than one. Stacking all nine cells of a user
+     made each card 368px and the page 9 screens tall — trading the sideways
+     scroll for an equally tedious vertical one. Pairing them halves that
+     without hiding anything, which matters in an admin tool. */
   .admin-table tbody tr {
-    display: block;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     margin-bottom: 1.2rem;
-    padding: 0.4rem 0.2rem;
+    padding: 0.6rem 0.4rem;
     border: 1px solid #e5eaf1;
     border-radius: 1.2rem;
     background: var(--color-surface);
   }
 
+  /* Label and value share a line. Stacking them vertically ate the entire
+     saving from the two-column grid — 355px a card versus 368px stacked. */
   .admin-table tbody td {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 1.2rem;
+    /* If a label and its value cannot share the line, the value drops below
+       rather than the label being squeezed. */
+    flex-wrap: wrap;
+    gap: 0.2rem 0.8rem;
     width: auto;
-    padding: 0.8rem 1.2rem;
+    padding: 0.55rem 1rem;
     border-top: none;
     text-align: right;
   }
 
   .admin-table tbody td[data-label]::before {
     content: attr(data-label);
+    /* 0 0 auto, never 0 1 auto: as a shrinkable item a one-word label like
+       VERIFICATION had nowhere to wrap and was clipped to "VERIFICATIC". */
     flex: 0 0 auto;
     color: #64748b;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 900;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     text-align: left;
+  }
+
+  /* The identity column and the action buttons need the full width; the empty
+     select-checkbox cell should not consume half a row on its own. */
+  .admin-table tbody td:nth-child(2),
+  .admin-table tbody td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-table tbody td:first-child:not([data-label]) {
+    grid-column: 1 / -1;
+    padding-bottom: 0;
   }
 
   /* Every cell renders label + value the same way. An earlier version treated
@@ -1800,10 +1840,30 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
     background: none;
   }
 
-  /* Actions wrap instead of forcing the card wide. */
+  /* Actions sit in a row and wrap, rather than one full-width button each. */
   .admin-table tbody td:last-child {
+    display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .admin-table tbody td:last-child::before {
+    width: 100%;
+  }
+
+  /* Page-level and toolbar controls pair up too, instead of a stack of
+     full-width buttons. */
+  .admin-page-actions,
+  .admin-table-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .admin-page-actions > select,
+  .admin-table-toolbar > input {
+    grid-column: 1 / -1;
   }
 }
 
