@@ -918,6 +918,7 @@ body.admin-page select {
   scroll-snap-align: start;
 }
 
+
 .admin-table {
   width: 100%;
   min-width: 96rem;
@@ -1230,6 +1231,7 @@ html[data-theme="dark"] .admin-sidebar,
 html[data-theme="dark"] .admin-topbar,
 html[data-theme="dark"] .admin-stat-card,
 html[data-theme="dark"] .admin-summary-card,
+
 /* The scroll-shadow gradients hardcode the light panel colour, so restate them
    against #111c2f with a stronger shadow that reads on a dark surface. */
 html[data-theme="dark"] .admin-table-wrap {
@@ -1719,3 +1721,102 @@ html[data-theme="dark"] .admin-spark--danger  { color: #f87171; }
 html[data-theme="dark"] .admin-spark--warn    { color: #fbbf24; }
 html[data-theme="dark"] .admin-spark--info,
 html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
+
+/* ─────────────────────────────────────────────────────────────
+   Phones: stop being a table.
+
+   A 96rem table in a 325px viewport meant 635px of every row lived
+   off-screen behind a horizontal scroll, so columns were cut mid-word and
+   you had to swipe sideways on every row to read or act on it. Below 640px
+   each row becomes a self-contained card: cells stack, and each one prints
+   its column name from the data-label that js/admin.js copies off <thead>.
+   min-width goes to 0 so nothing overflows and the sideways scroll — plus
+   its shadows and snapping — is gone entirely.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .admin-table-wrap {
+    overflow-x: visible;
+    background: none;
+    scroll-snap-type: none;
+  }
+
+  .admin-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .admin-table thead {
+    /* Not display:none — that drops the headers from the accessibility tree
+       too. Clipped instead, so screen readers still announce them. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .admin-table tbody tr {
+    display: block;
+    margin-bottom: 1.2rem;
+    padding: 0.4rem 0.2rem;
+    border: 1px solid #e5eaf1;
+    border-radius: 1.2rem;
+    background: var(--color-surface);
+  }
+
+  .admin-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    width: auto;
+    padding: 0.8rem 1.2rem;
+    border-top: none;
+    text-align: right;
+  }
+
+  .admin-table tbody td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: #64748b;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
+  }
+
+  /* Every cell renders label + value the same way. An earlier version treated
+     nth-child(2) as the card's heading and hid its label, but that column is
+     only the identity on the users table — on campaigns it is Creator, which
+     then rendered as a bare unlabelled name. The sticky positioning from the
+     scrolling layout has to be undone here whatever the column is. */
+  .admin-table tbody td:nth-child(2) {
+    position: static;
+    box-shadow: none;
+    background: none;
+  }
+
+  /* Actions wrap instead of forcing the card wide. */
+  .admin-table tbody td:last-child {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+/* Dark equivalent of the stacked mobile cards above. */
+@media (max-width: 640px) {
+  html[data-theme="dark"] .admin-table tbody tr {
+    border-color: #273449;
+    background: #111c2f;
+  }
+  html[data-theme="dark"] .admin-table tbody td[data-label]::before {
+    color: #94a3b8;
+  }
+  html[data-theme="dark"] .admin-table-wrap {
+    background: none;
+  }
+}

@@ -192,6 +192,29 @@
         });
     }
 
+    // Narrow screens stack each row as a card instead of scrolling a 96rem
+    // table sideways (see .admin-table in css/admin.css). A stacked cell has no
+    // column header above it any more, so copy each column's name onto its
+    // cells and let CSS print it via ::before. Done here rather than in the PHP
+    // because the four admin sections all render different column sets, and
+    // reading them off <thead> stays correct whatever the section emits.
+    document.querySelectorAll('table.admin-table').forEach((table) => {
+        const headings = [...table.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+        if (!headings.length) {
+            return;
+        }
+        table.querySelectorAll('tbody tr').forEach((row) => {
+            [...row.cells].forEach((cell, i) => {
+                const label = headings[i];
+                // Skip the checkbox and actions columns: their headers are
+                // blank or redundant once the controls are stacked.
+                if (label) {
+                    cell.dataset.label = label;
+                }
+            });
+        });
+    });
+
     document.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && searchInput) {
             event.preventDefault();

@@ -9,6 +9,14 @@ if ($auth && $user === []) {
     $auth = false;
 }
 
+// Admins belong in the console, not the member dashboard. php/auth/login.php
+// already sends role=admin to /admin, but nothing stopped an admin session
+// loading this page directly — it then rendered the full donor dashboard,
+// wallet and campaign cards included, for an account that has none of that.
+if ($auth && Auth::role() === 'admin') {
+    Response::redirect('admin');
+}
+
 $bodyClass = $auth ? 'is-auth ' . Auth::bodyRoleClass() : 'is-guest';
 $displayName = htmlspecialchars((string) ($user['full_name'] ?? 'User'), ENT_QUOTES, 'UTF-8');
 $avatarUrl = !empty($user['avatar_path'])
