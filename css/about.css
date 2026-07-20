@@ -903,7 +903,7 @@ html[data-theme="dark"] #privacy [style] {
 .about-eyebrow {
     display: inline-block;
     font-family: 'Poppins', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1057,7 +1057,7 @@ html[data-theme="dark"] .about-hero-proof {
     margin-bottom: 0.4rem;
 }
 .about-hero-proof span {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     color: var(--muted-text);
     line-height: 1.4;
 }
@@ -1099,7 +1099,7 @@ html[data-theme="dark"] .about-hero-proof {
     margin-bottom: 0.2rem;
 }
 .about-hero-badge span {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     color: #64748b;
     line-height: 1.4;
 }
@@ -1150,7 +1150,7 @@ html[data-theme="dark"] .about-hero-badge span { color: #cbd5e1; }
 .about-story-year {
     display: inline-block;
     font-family: 'Poppins', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     color: var(--primary);
@@ -1198,7 +1198,7 @@ html[data-theme="dark"] .about-story-card p { color: #cbd5e1; }
 .how-card-head--recipient svg { color: var(--color-success); }
 .how-card-role {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1300,7 +1300,7 @@ html[data-theme="dark"] .about-trust-card p { color: #cbd5e1; }
 }
 .about-payment-label {
     font-family: 'Poppins', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;

@@ -734,6 +734,73 @@ WHERE c.organisation_id IS NOT NULL
       )
 ORDER BY d.id;
 
+-- Donor wallet ledger for the wallet-paid donations above.
+-- The seed marks every member donation as payment_method='wallet', but seeded
+-- no user_wallet_ledger rows — so those donors had spent from wallets that had
+-- never existed, WalletService::balance() returned 0.0 for all of them, and the
+-- admin Users view reported "With Wallets: 0" against 25 wallet payments.
+-- Guest donations use hosted_checkout and correctly get no ledger.
+--
+-- Step 1: one top-up per donor covering everything they spend, plus $200 left
+-- over so the wallet still shows a live balance (the admin metric counts users
+-- whose latest balance_after is > 0, so netting exactly to zero would still
+-- have read as "no wallet").
+INSERT INTO user_wallet_ledger
+  (user_id, type, amount, balance_after, description, payment_ref, created_at)
+SELECT t.donor_id,
+       'topup',
+       t.spend + 200.00,
+       t.spend + 200.00,
+       'Wallet top-up',
+       CONCAT('SEED-TOPUP-', t.donor_id),
+       DATE_SUB(NOW(), INTERVAL 30 DAY)
+FROM (
+  SELECT d.donor_id AS donor_id, SUM(d.total_charged) AS spend
+  FROM donations d
+  WHERE d.donor_id IS NOT NULL
+    AND d.payment_method = 'wallet'
+    AND d.status IN ('verified','completed')
+  GROUP BY d.donor_id
+) AS t
+WHERE t.donor_id NOT IN (
+  SELECT existing.user_id FROM (SELECT user_id FROM user_wallet_ledger) AS existing
+);
+
+-- Step 2: one debit per wallet donation, carrying a running balance. Ordered
+-- by donor then donation id, so each donor's highest-id row holds their final
+-- balance — which is what WalletService::balance() reads.
+INSERT INTO user_wallet_ledger
+  (user_id, type, amount, balance_after, related_donation_id, description, created_at)
+SELECT d.donor_id,
+       'donation',
+       d.total_charged,
+       (SELECT tt.spend + 200.00 FROM (
+          SELECT d4.donor_id AS dz, SUM(d4.total_charged) AS spend
+          FROM donations d4
+          WHERE d4.donor_id IS NOT NULL
+            AND d4.payment_method = 'wallet'
+            AND d4.status IN ('verified','completed')
+          GROUP BY d4.donor_id
+        ) AS tt WHERE tt.dz = d.donor_id)
+       - (SELECT SUM(d2.total_charged) FROM donations d2
+           WHERE d2.donor_id = d.donor_id
+             AND d2.payment_method = 'wallet'
+             AND d2.status IN ('verified','completed')
+             AND d2.id <= d.id),
+       d.id,
+       CONCAT('Donation #', d.id),
+       d.verified_at
+FROM donations d
+WHERE d.donor_id IS NOT NULL
+  AND d.payment_method = 'wallet'
+  AND d.status IN ('verified','completed')
+  AND d.id NOT IN (
+    SELECT existing.related_donation_id FROM (
+      SELECT related_donation_id FROM user_wallet_ledger WHERE related_donation_id IS NOT NULL
+    ) AS existing
+  )
+ORDER BY d.donor_id, d.id;
+
 -- =============================================================================
 -- End of database_complete.sql
 -- =============================================================================

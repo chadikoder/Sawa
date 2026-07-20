@@ -445,7 +445,10 @@ $year = date('Y');
           <ul>
             <li><a href="tel:+96171612269">+961 71 61 22 69</a></li>
             <li><a href="mailto:sawatogether961@gmail.com">sawatogether961@gmail.com</a></li>
-            <li><span style="opacity:0.75;font-size:0.875rem;">Lebanon — Tripoli</span></li>
+            <!-- 1.4rem, not 0.875rem: the root is 62.5%, so 1rem is 10px and
+                 0.875rem rendered this at 8.75px rather than the intended 14px.
+                 Matches .footer-section a in css/about.css. -->
+            <li><span style="opacity:0.75;font-size:1.4rem;">Lebanon — Tripoli</span></li>
           </ul>
         </div>
         <div class="footer-section">
