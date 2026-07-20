@@ -1252,15 +1252,19 @@ html[data-theme="dark"] .admin-stat-card small,
 html[data-theme="dark"] .admin-summary-card span,
 html[data-theme="dark"] .admin-panel-head span,
 html[data-theme="dark"] .admin-table th,
-html[data-theme="dark"] .admin-table td span,
-html[data-theme="dark"] .admin-list-row span,
+/* Same :not(.admin-badge) exclusion as the light-theme rule above, for the
+   same reason: `… .admin-table td span` (0,2,3) outranks
+   `… .admin-badge--verified` (0,2,1), so every status chip was flattened to
+   #cbd5e1 and the dark green/amber/red foregrounds defined below never won. */
+html[data-theme="dark"] .admin-table td span:not(.admin-badge),
+html[data-theme="dark"] .admin-list-row span:not(.admin-badge),
 html[data-theme="dark"] .admin-report-card p,
 html[data-theme="dark"] .admin-report-card small,
 html[data-theme="dark"] .admin-timeline span,
 html[data-theme="dark"] .admin-empty,
 html[data-theme="dark"] .admin-modal-card p,
 html[data-theme="dark"] .admin-bar-list span,
-html[data-theme="dark"] .admin-profile-card span {
+html[data-theme="dark"] .admin-profile-card span:not(.admin-badge) {
   color: #cbd5e1;
 }
 
