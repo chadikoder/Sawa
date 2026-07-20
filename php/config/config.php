@@ -10,6 +10,21 @@ function env(string $key, ?string $default = null): ?string
     static $loaded = false;
     if (!$loaded) {
         $loaded = true;
+        $hostingFile = __DIR__ . DIRECTORY_SEPARATOR . 'hosting.php';
+        if (is_readable($hostingFile)) {
+            $hostingConfig = require $hostingFile;
+            if (is_array($hostingConfig)) {
+                foreach ($hostingConfig as $name => $value) {
+                    $name = (string) $name;
+                    if ($name !== '' && getenv($name) === false) {
+                        $stringValue = (string) $value;
+                        putenv("$name=$stringValue");
+                        $_ENV[$name] = $stringValue;
+                    }
+                }
+            }
+        }
+
         $envFile = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env';
         if (is_readable($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

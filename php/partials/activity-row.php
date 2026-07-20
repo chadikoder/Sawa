@@ -4,7 +4,7 @@ declare(strict_types=1);
 $billId = htmlspecialchars((string) ($row['bill_id'] ?? 'PENDING'), ENT_QUOTES, 'UTF-8');
 $total = '$' . number_format((float) ($row['total_charged'] ?? $row['total_paid'] ?? 0), 2);
 $method = htmlspecialchars((string) ($row['method_label'] ?? 'Payment'), ENT_QUOTES, 'UTF-8');
-$date = date('F j, Y \a\t g:i A', strtotime((string) ($row['created_at']));
+$date = date('F j, Y \a\t g:i A', strtotime((string) ($row['created_at'])));
 $ref = htmlspecialchars((string) ($row['payment_ref'] ?? $row['provider_ref'] ?? ''), ENT_QUOTES, 'UTF-8');
 $recipient = htmlspecialchars((string) ($row['campaign_title'] ?? $row['recipient_label'] ?? 'Sawa'), ENT_QUOTES, 'UTF-8');
 $icon = ($row['payment_method'] ?? '') === 'wallet' ? 'wallet' : (($row['payment_method'] ?? '') === 'hosted_checkout' ? 'card-pay' : 'paid');

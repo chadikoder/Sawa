@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<!--
+  Sawa — User Guide
+  © 2026 Chadi Ikhoder. PolyForm Noncommercial 1.0.0. See LICENSE.
+  Static informational page. No PHP, no database. Linked from the sidebar.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sawa user guide — how donations, the wallet, campaigns, profile, and reports work.">
+  <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/guide.css">
+  <script src="../js/theme.js"></script>
+  <script>
+    // Back-to-dashboard uses history.back() when the referrer is same-origin
+    // so we return to the exact section the user was on, not a fresh reload.
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-back]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          if (document.referrer && new URL(document.referrer).origin === location.origin) {
+            e.preventDefault();
+            history.back();
+          }
+        });
+      });
+
+      // Highlight the active section in the sticky TOC as the user scrolls.
+      const tocLinks = document.querySelectorAll('.guide-toc-side a');
+      const sections = document.querySelectorAll('.guide-step, .guide-tips, .guide-help-block');
+      if (tocLinks.length && sections.length && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) {
+              tocLinks.forEach(l => l.classList.toggle('is-active', l.getAttribute('href') === '#' + e.target.id));
+            }
+          });
+        }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+        sections.forEach(s => s.id && io.observe(s));
+      }
+    });
+  </script>
+  <title>Guide — Sawa</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="guide-header">
+    <a href="userhome.php" data-back class="guide-back" aria-label="Back to dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <div class="guide-header-title">
+      <strong>Sawa Guide</strong>
+      <small>Everything you need to use the platform</small>
+    </div>
+    <a href="mailto:sawatogether961@gmail.com" class="guide-header-help" aria-label="Contact support">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span>Contact support</span>
+    </a>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+      <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+  </header>
+
+  <!-- Mobile-only chip TOC — replaces the desktop sticky sidebar on <1024px -->
+  <nav class="guide-toc-chips" aria-label="Guide sections">
+    <a href="#donate">1. Donate</a>
+    <a href="#wallet">2. Wallet</a>
+    <a href="#campaigns">3. Campaigns</a>
+    <a href="#profile">4. Profile</a>
+    <a href="#reports">5. Reports</a>
+    <a href="#tips">Tips</a>
+  </nav>
+
+  <div class="guide-shell">
+
+    <!-- Desktop-only sticky TOC (≥1024px). Active section auto-highlighted via IntersectionObserver. -->
+    <aside class="guide-toc-side" aria-label="On this page">
+      <p class="guide-toc-label">On this page</p>
+      <a href="#donate">
+        <span class="guide-toc-dot" style="--g-tone: #2563eb;"></span>
+        <span>Donate to a campaign</span>
+      </a>
+      <a href="#wallet">
+        <span class="guide-toc-dot" style="--g-tone: #16a34a;"></span>
+        <span>Use your wallet</span>
+      </a>
+      <a href="#campaigns">
+        <span class="guide-toc-dot" style="--g-tone: #7c3aed;"></span>
+        <span>Create or follow campaigns</span>
+      </a>
+      <a href="#profile">
+        <span class="guide-toc-dot" style="--g-tone: #f59e0b;"></span>
+        <span>Set up your profile</span>
+      </a>
+      <a href="#reports">
+        <span class="guide-toc-dot" style="--g-tone: #ef4444;"></span>
+        <span>Report suspicious activity</span>
+      </a>
+      <a href="#tips">
+        <span class="guide-toc-dot" style="--g-tone: #06b6d4;"></span>
+        <span>Quick tips</span>
+      </a>
+      <a href="#help">
+        <span class="guide-toc-dot" style="--g-tone: #64748b;"></span>
+        <span>Still stuck?</span>
+      </a>
+    </aside>
+
+    <main class="guide-main" id="main">
+
+      <!-- Hero: two-column on desktop with a stylised SVG mockup -->
+      <section class="guide-hero">
+        <div class="guide-hero-copy">
+          <span class="guide-eyebrow">User guide</span>
+          <h1>Everything you need to use Sawa.</h1>
+          <p>From your first donation to running a campaign — five short sections, real screenshots, and a straight answer to every fee.</p>
+          <div class="guide-hero-chips">
+            <span class="guide-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              5-min read
+            </span>
+            <span class="guide-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              5 sections
+            </span>
+            <span class="guide-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Updated Jul 2026
+            </span>
+          </div>
+          <div class="guide-hero-actions">
+            <a href="#donate" class="guide-btn-primary">Start with donating</a>
+            <a href="mailto:sawatogether961@gmail.com" class="guide-btn-ghost">Need help now?</a>
+          </div>
+        </div>
+
+        <!-- Hand-built dashboard mockup — no image asset, no dark-mode issue -->
+        <div class="guide-hero-visual" aria-hidden="true">
+          <svg viewBox="0 0 380 300" role="presentation">
+            <defs>
+              <linearGradient id="ghc1" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#3b82f6"/>
+                <stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+              <linearGradient id="ghc2" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#10b981"/>
+                <stop offset="1" stop-color="#059669"/>
+              </linearGradient>
+            </defs>
+            <!-- Back card (tilted) -->
+            <g transform="rotate(-4 190 150)">
+              <rect x="30" y="40" width="320" height="220" rx="18" fill="#ffffff" opacity="0.14"/>
+              <rect x="46" y="60" width="140" height="10" rx="5" fill="#ffffff" opacity="0.4"/>
+              <rect x="46" y="80" width="90" height="8" rx="4" fill="#ffffff" opacity="0.3"/>
+            </g>
+            <!-- Main dashboard card -->
+            <rect x="42" y="46" width="296" height="208" rx="18" fill="#ffffff"/>
+            <!-- Wallet balance tile -->
+            <rect x="58" y="62" width="128" height="80" rx="12" fill="url(#ghc1)"/>
+            <text x="70" y="86" font-family="Poppins" font-size="10" fill="#ffffff" opacity="0.85">Wallet balance</text>
+            <text x="70" y="112" font-family="Poppins" font-size="22" font-weight="700" fill="#ffffff">$248.00</text>
+            <text x="70" y="128" font-family="Poppins" font-size="8" fill="#ffffff" opacity="0.7">3 recent top-ups</text>
+            <!-- Impact tile -->
+            <rect x="194" y="62" width="128" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0"/>
+            <text x="206" y="86" font-family="Poppins" font-size="10" fill="#64748b">Families helped</text>
+            <text x="206" y="112" font-family="Poppins" font-size="22" font-weight="700" fill="#0f172a">12</text>
+            <text x="206" y="128" font-family="Poppins" font-size="8" fill="#16a34a">+2 this month</text>
+            <!-- Row 1 (donation) -->
+            <rect x="58" y="158" width="264" height="34" rx="10" fill="#f1f5f9"/>
+            <circle cx="76" cy="175" r="10" fill="url(#ghc2)"/>
+            <path d="M71 175l4 4 7-7" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="94" y="172" font-family="Poppins" font-size="9" font-weight="600" fill="#0f172a">Donation to Sara's medical fund</text>
+            <text x="94" y="185" font-family="Poppins" font-size="8" fill="#64748b">Receipt SW-000482 · 2 h ago</text>
+            <text x="306" y="180" font-family="Poppins" font-size="10" font-weight="700" fill="#0f172a" text-anchor="end">$50</text>
+            <!-- Row 2 -->
+            <rect x="58" y="200" width="264" height="34" rx="10" fill="#f1f5f9"/>
+            <circle cx="76" cy="217" r="10" fill="#eff6ff"/>
+            <path d="M76 213v8M72 217h8" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+            <text x="94" y="214" font-family="Poppins" font-size="9" font-weight="600" fill="#0f172a">Wallet top-up</text>
+            <text x="94" y="227" font-family="Poppins" font-size="8" fill="#64748b">Whish Money · yesterday</text>
+            <text x="306" y="222" font-family="Poppins" font-size="10" font-weight="700" fill="#16a34a" text-anchor="end">+$100</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- Step 1 — Donate -->
+      <section id="donate" class="guide-step">
+        <header class="guide-step-head" style="--g-tone: #2563eb;">
+          <span class="guide-step-num">1</span>
+          <div>
+            <span class="guide-step-eyebrow">The basics</span>
+            <h2>Donate to a campaign</h2>
+          </div>
+          <span class="guide-step-time">~1 min</span>
+        </header>
+        <div class="guide-step-body">
+          <div class="guide-step-copy">
+            <p>Browse verified campaigns by category, location, or urgency. When you donate, Sawa shows the platform support fee <strong>before</strong> you confirm — no hidden cost.</p>
+            <ul class="guide-list">
+              <li>Members pay a <strong>5% support fee</strong>. Guests pay <strong>10%</strong>.</li>
+              <li>You're redirected to your chosen provider (Whish Money or card) for the payment.</li>
+              <li>Your donation lands in <em>Activity &amp; Bills</em> with a downloadable receipt.</li>
+            </ul>
+          </div>
+
+          <!-- Inline UI mockup — mimics the donate modal so users know what to look for -->
+          <div class="guide-step-visual" aria-hidden="true">
+            <div class="guide-mock-window">
+              <span class="guide-mock-dot" style="background:#ef4444"></span>
+              <span class="guide-mock-dot" style="background:#f59e0b"></span>
+              <span class="guide-mock-dot" style="background:#10b981"></span>
+              <span class="guide-mock-title">Confirm donation</span>
+            </div>
+            <div class="guide-mock-body">
+              <div class="guide-mock-row"><span>Donation</span><strong>$50.00</strong></div>
+              <div class="guide-mock-row guide-mock-row--muted"><span>Support fee (5%)</span><strong>$2.50</strong></div>
+              <div class="guide-mock-divider"></div>
+              <div class="guide-mock-row guide-mock-row--total"><span>You'll be charged</span><strong>$52.50</strong></div>
+              <button class="guide-mock-btn" type="button" tabindex="-1">Continue to Whish Money</button>
+              <p class="guide-mock-note">Preview — this is what the real modal looks like.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fee calculator strip — turns "5% / 10%" into something visual -->
+        <div class="guide-fee-strip" aria-label="Support fee examples">
+          <div class="guide-fee-card">
+            <span class="guide-fee-label">You donate</span>
+            <strong>$25</strong>
+            <div class="guide-fee-split"><span>+ 5% fee</span><em>$1.25</em></div>
+            <p>Charged: <strong>$26.25</strong></p>
+          </div>
+          <div class="guide-fee-card is-featured">
+            <span class="guide-fee-label">You donate</span>
+            <strong>$50</strong>
+            <div class="guide-fee-split"><span>+ 5% fee</span><em>$2.50</em></div>
+            <p>Charged: <strong>$52.50</strong></p>
+          </div>
+          <div class="guide-fee-card">
+            <span class="guide-fee-label">You donate</span>
+            <strong>$100</strong>
+            <div class="guide-fee-split"><span>+ 5% fee</span><em>$5.00</em></div>
+            <p>Charged: <strong>$105.00</strong></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2 — Wallet -->
+      <section id="wallet" class="guide-step">
+        <header class="guide-step-head" style="--g-tone: #16a34a;">
+          <span class="guide-step-num">2</span>
+          <div>
+            <span class="guide-step-eyebrow">Save on fees</span>
+            <h2>Use your wallet</h2>
+          </div>
+          <span class="guide-step-time">~2 min</span>
+        </header>
+        <div class="guide-step-body">
+          <div class="guide-step-copy">
+            <p>Top up once, donate many times. The wallet gives you a lower fee and a single transaction history for your records.</p>
+            <ul class="guide-list">
+              <li>Top up from the wallet section using any supported method.</li>
+              <li>Donating from the wallet saves on per-donation provider fees.</li>
+              <li>Every top-up and donation is listed in your transaction history.</li>
+            </ul>
+          </div>
+
+          <div class="guide-step-visual" aria-hidden="true">
+            <div class="guide-mock-window">
+              <span class="guide-mock-dot" style="background:#ef4444"></span>
+              <span class="guide-mock-dot" style="background:#f59e0b"></span>
+              <span class="guide-mock-dot" style="background:#10b981"></span>
+              <span class="guide-mock-title">My wallet</span>
+            </div>
+            <div class="guide-mock-body">
+              <div class="guide-mock-balance">
+                <span class="guide-mock-balance-label">Available balance</span>
+                <strong class="guide-mock-balance-value">$248.00</strong>
+              </div>
+              <div class="guide-mock-actions">
+                <button class="guide-mock-chip" type="button" tabindex="-1">Top up</button>
+                <button class="guide-mock-chip guide-mock-chip--ghost" type="button" tabindex="-1">Cash out</button>
+              </div>
+              <div class="guide-mock-row"><span>Whish top-up · Jul 18</span><strong style="color:#16a34a">+$100</strong></div>
+              <div class="guide-mock-row"><span>Donation · Jul 17</span><strong>-$50</strong></div>
+              <div class="guide-mock-row"><span>Whish top-up · Jul 10</span><strong style="color:#16a34a">+$200</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3 — Campaigns -->
+      <section id="campaigns" class="guide-step">
+        <header class="guide-step-head" style="--g-tone: #7c3aed;">
+          <span class="guide-step-num">3</span>
+          <div>
+            <span class="guide-step-eyebrow">Recipients &amp; NGOs</span>
+            <h2>Create or follow a campaign</h2>
+          </div>
+          <span class="guide-step-time">~3 min</span>
+        </header>
+        <div class="guide-step-body">
+          <div class="guide-step-copy">
+            <p>If you represent an organization or a family in need, you can create a campaign. Every campaign is verified before it's visible to donors.</p>
+            <ul class="guide-list">
+              <li>Pick a clear title, a goal amount, and a category.</li>
+              <li>Add real photos — donors trust campaigns they can see.</li>
+              <li>Post regular updates so donors can follow the progress.</li>
+            </ul>
+          </div>
+
+          <div class="guide-step-visual" aria-hidden="true">
+            <div class="guide-mock-window">
+              <span class="guide-mock-dot" style="background:#ef4444"></span>
+              <span class="guide-mock-dot" style="background:#f59e0b"></span>
+              <span class="guide-mock-dot" style="background:#10b981"></span>
+              <span class="guide-mock-title">Campaign · Help Sara Beat Cancer</span>
+            </div>
+            <div class="guide-mock-body">
+              <div class="guide-mock-camp-thumb"></div>
+              <div class="guide-mock-progress-row">
+                <span>Raised</span>
+                <strong>$3,200 of $10,000</strong>
+              </div>
+              <div class="guide-mock-progress"><span style="width:32%"></span></div>
+              <div class="guide-mock-tags">
+                <span class="guide-mock-tag">Medical</span>
+                <span class="guide-mock-tag guide-mock-tag--verified">✓ Verified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4 — Profile -->
+      <section id="profile" class="guide-step">
+        <header class="guide-step-head" style="--g-tone: #f59e0b;">
+          <span class="guide-step-num">4</span>
+          <div>
+            <span class="guide-step-eyebrow">Trust signals</span>
+            <h2>Set up your profile</h2>
+          </div>
+          <span class="guide-step-time">~1 min</span>
+        </header>
+        <div class="guide-step-body">
+          <div class="guide-step-copy">
+            <p>A complete profile builds trust with campaign creators and other donors. Take 1 minute to fill it in.</p>
+            <ul class="guide-list">
+              <li>Upload a clear photo — even a simple headshot works.</li>
+              <li>Write 1–2 sentences in your bio about why you support Sawa.</li>
+              <li>Your wallet balance and history live in the profile summary cards.</li>
+            </ul>
+          </div>
+
+          <div class="guide-step-visual" aria-hidden="true">
+            <div class="guide-mock-window">
+              <span class="guide-mock-dot" style="background:#ef4444"></span>
+              <span class="guide-mock-dot" style="background:#f59e0b"></span>
+              <span class="guide-mock-dot" style="background:#10b981"></span>
+              <span class="guide-mock-title">My profile</span>
+            </div>
+            <div class="guide-mock-body">
+              <div class="guide-mock-profile">
+                <span class="guide-mock-avatar">CK</span>
+                <div>
+                  <strong>Chadi Khoder</strong>
+                  <p>Supporting Lebanese families since 2025.</p>
+                </div>
+              </div>
+              <div class="guide-mock-stat-row">
+                <div><span>Lifetime</span><strong>$1,240</strong></div>
+                <div><span>Families</span><strong>12</strong></div>
+                <div><span>Receipts</span><strong>18</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5 — Reports -->
+      <section id="reports" class="guide-step">
+        <header class="guide-step-head" style="--g-tone: #ef4444;">
+          <span class="guide-step-num">5</span>
+          <div>
+            <span class="guide-step-eyebrow">Keep Sawa safe</span>
+            <h2>Report suspicious activity</h2>
+          </div>
+          <span class="guide-step-time">~30 sec</span>
+        </header>
+        <div class="guide-step-body">
+          <div class="guide-step-copy">
+            <p>If something looks off, flag it. Use the <strong>Report</strong> button on any campaign card to send it to admin review.</p>
+            <ul class="guide-list">
+              <li><strong>Complaints</strong> — general issues with the platform.</li>
+              <li><strong>Campaign Report</strong> — flag a specific campaign as suspicious, fake, or offensive.</li>
+              <li><strong>Admin review</strong> — the admin team takes the final action.</li>
+            </ul>
+          </div>
+
+          <div class="guide-step-visual" aria-hidden="true">
+            <div class="guide-mock-window">
+              <span class="guide-mock-dot" style="background:#ef4444"></span>
+              <span class="guide-mock-dot" style="background:#f59e0b"></span>
+              <span class="guide-mock-dot" style="background:#10b981"></span>
+              <span class="guide-mock-title">Report a campaign</span>
+            </div>
+            <div class="guide-mock-body">
+              <label class="guide-mock-select">
+                <span>Reason</span>
+                <strong>Fake medical claim ▾</strong>
+              </label>
+              <div class="guide-mock-textarea">
+                <p>The images look reused from another site and the goal keeps changing…</p>
+              </div>
+              <button class="guide-mock-btn guide-mock-btn--danger" type="button" tabindex="-1">Send to admin review</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tips: one featured card + three secondary -->
+      <section id="tips" class="guide-tips">
+        <div class="guide-section-head">
+          <span class="guide-eyebrow">Cheat sheet</span>
+          <h2>Quick tips before you start</h2>
+        </div>
+        <div class="guide-tips-grid">
+          <article class="guide-tip guide-tip--featured">
+            <span class="guide-tip-icon" style="background:#eff6ff; color:#2563eb;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.11.9 2 2 2h4v-4h-4z"/></svg>
+            </span>
+            <strong>Use the wallet</strong>
+            <p>Lower fee, single history, faster checkout for repeat donations. Top up once, then give as often as you like.</p>
+            <span class="guide-tip-tag">Recommended</span>
+          </article>
+          <article class="guide-tip">
+            <span class="guide-tip-icon" style="background:#ecfdf5; color:#059669;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </span>
+            <strong>Verify before you donate</strong>
+            <p>Look for the verified badge and read the latest campaign update.</p>
+          </article>
+          <article class="guide-tip">
+            <span class="guide-tip-icon" style="background:#fff7ed; color:#d97706;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+            </span>
+            <strong>Download receipts</strong>
+            <p>Every donation has a PDF receipt in <em>Activity &amp; Bills</em>.</p>
+          </article>
+          <article class="guide-tip">
+            <span class="guide-tip-icon" style="background:#fef2f2; color:#dc2626;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <strong>Report early</strong>
+            <p>Suspicious campaign? Flagging early helps protect other donors.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Still stuck? — real contact block, not just a CTA -->
+      <section id="help" class="guide-help-block">
+        <div class="guide-help-copy">
+          <span class="guide-eyebrow">Still stuck?</span>
+          <h2>We're a message away.</h2>
+          <p>The guide covers the basics — for anything else, real humans read every message. Response times are usually under 24 hours.</p>
+        </div>
+        <div class="guide-help-actions">
+          <a href="mailto:sawatogether961@gmail.com" class="guide-help-card">
+            <span class="guide-help-icon" style="background:#eff6ff; color:#2563eb;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <div>
+              <strong>Email support</strong>
+              <span>sawatogether961@gmail.com</span>
+            </div>
+          </a>
+          <a href="tel:+96171612269" class="guide-help-card">
+            <span class="guide-help-icon" style="background:#ecfdf5; color:#059669;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13 1.05.37 2.08.72 3.06a2 2 0 0 1-.45 2.11L8.09 10.91a16 16 0 0 0 6 6l2.02-1.29a2 2 0 0 1 2.11-.45c.98.35 2.01.59 3.06.72A2 2 0 0 1 22 16.92z"/></svg>
+            </span>
+            <div>
+              <strong>Call us</strong>
+              <span>+961 71 61 22 69</span>
+            </div>
+          </a>
+          <a href="userhome.php#report" data-back class="guide-help-card">
+            <span class="guide-help-icon" style="background:#fef2f2; color:#dc2626;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </span>
+            <div>
+              <strong>Report a campaign</strong>
+              <span>Send it to admin review</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <div class="guide-cta-row">
+        <a href="userhome.php" data-back class="guide-cta-primary">Back to dashboard</a>
+        <a href="userhome.php#discover" data-back class="guide-cta-secondary">Browse campaigns</a>
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

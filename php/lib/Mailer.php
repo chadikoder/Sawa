@@ -12,7 +12,7 @@ final class Mailer
 
     public static function sendPasswordReset(string $email, string $token): bool
     {
-        $url = APP_URL . '/pages/reset-password.html?token=' . urlencode($token);
+        $url = APP_URL . '/pages/reset-password.php?token=' . urlencode($token);
         $body = "Reset your Sawa password:\n$url\n\nThis link expires in 1 hour. If you did not request this, ignore this email.";
         return send_mail($email, 'Reset your Sawa password', $body);
     }

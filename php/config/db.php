@@ -20,11 +20,29 @@ function db(): PDO
         DB_NAME
     );
 
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
+    try {
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ]);
+    } catch (PDOException $e) {
+        error_log('[Sawa] DB connection failed: ' . $e->getMessage());
+        http_response_code(503);
+        header('Content-Type: text/html; charset=utf-8');
+        $isProd = defined('APP_ENV') && APP_ENV === 'production';
+        $detail = $isProd
+            ? 'Please try again shortly.'
+            : 'DB connection failed: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8')
+              . '<br><br>On shared hosting (e.g. InfinityFree), create <code>php/config/hosting.php</code>'
+              . ' with your real DB host / name / user / password.';
+        echo '<!doctype html><meta charset="utf-8"><title>Service unavailable</title>'
+            . '<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:10vh auto;padding:0 1rem;color:#222}'
+            . 'h1{font-size:1.4rem}code{background:#f2f2f2;padding:.1rem .3rem;border-radius:3px}</style>'
+            . '<h1>We&#39;re temporarily unavailable</h1>'
+            . '<p>' . $detail . '</p>';
+        exit;
+    }
 
     return $pdo;
 }

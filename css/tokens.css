@@ -39,9 +39,17 @@ html {
   --color-text-navy:      #1A3D5D;
 
   --color-surface:        #ffffff;
+  /* Text/icons sitting ON a saturated accent fill (primary button, badge,
+     avatar). Stays white in BOTH themes — unlike --color-surface, which
+     inverts. Do not substitute one for the other. */
+  --color-on-accent:      #ffffff;
   --color-bg:             #f8fafc;
   --color-bg-deep:        #f1f5f9;
   --color-border:         #e5e7eb;
+  /* Border for interactive controls (inputs, selects, checkboxes). Must stay
+     >=3:1 against the field background per WCAG 1.4.11 — this is why it is
+     darker than --color-border, which is decorative only (cards, dividers). */
+  --color-border-control: #75899f;
   --color-dark:           #111827;
   --color-dark-soft:      #1e293b;
 
@@ -132,9 +140,15 @@ html[data-theme="dark"] {
   --color-text-navy:      #e0f2fe;
 
   --color-surface:        #111827;
+  /* Intentionally NOT inverted — accent fills stay saturated in dark mode,
+     so their foreground must stay white. */
+  --color-on-accent:      #ffffff;
   --color-bg:             #0f172a;
   --color-bg-deep:        #1e293b;
   --color-border:         #334155;
+  /* See the light-mode note: #334155 is only ~1.8:1 on a dark field, so
+     controls need their own lighter border to clear 3:1. */
+  --color-border-control: #64748b;
   --color-dark:           #020617;
   --color-dark-soft:      #0f172a;
 }
@@ -242,9 +256,32 @@ html[data-theme="dark"] .modal-sub {
 html[data-theme="dark"] .theme-toggle .theme-moon { display: none; }
 html[data-theme="dark"] .theme-toggle .theme-sun { display: block; }
 
-.theme-toggle--floating {
-  position: fixed;
-  top: 1.6rem;
-  right: 1.6rem;
-  z-index: 120;
+/* .theme-toggle--floating deleted — replaced by .access-control-pill in
+   access.css. The shared [data-theme-toggle] sun/moon swap above still
+   applies wherever the attribute is used (sidebar, settings row, etc). */
+
+/* Skip-to-content link — visually hidden until keyboard-focused, then
+   pops into view at top-left. Included in tokens.css so every page picks
+   it up automatically without a per-page stylesheet edit. */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 9999;
+  padding: 0.9rem 1.4rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0.6rem;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  transition: top 0.15s ease;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 8px;
+  outline: 3px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
 }

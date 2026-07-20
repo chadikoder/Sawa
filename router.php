@@ -33,6 +33,11 @@ if ($uri === '/' || $uri === '') {
     return true;
 }
 
+if ($uri === '/admin' || str_starts_with($uri, '/admin/')) {
+    require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . 'admin.php';
+    return true;
+}
+
 http_response_code(404);
 require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '404.html';
 return true;

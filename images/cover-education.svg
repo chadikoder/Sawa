@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Education campaign">
+  <defs>
+    <linearGradient id="e-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" fill="url(#e-sky)"/>
+  <circle cx="96" cy="92" r="118" fill="#fff" opacity=".08"/>
+  <circle cx="558" cy="360" r="132" fill="#000" opacity=".06"/>
+  <!-- open book -->
+  <path d="M320 200c-36-28-90-36-140-28v152c50-8 104 0 140 28z" fill="#fff" opacity=".95"/>
+  <path d="M320 200c36-28 90-36 140-28v152c-50-8-104 0-140 28z" fill="#fff" opacity=".82"/>
+  <rect x="312" y="196" width="16" height="156" rx="8" fill="#0e7490" opacity=".3"/>
+  <g stroke="#0891b2" stroke-width="6" stroke-linecap="round" opacity=".35">
+    <path d="M212 232h72M212 262h72M212 292h52"/>
+    <path d="M356 232h72M356 262h72M356 292h52"/>
+  </g>
+  <!-- graduation cap -->
+  <path d="M320 76l128 52-128 52-128-52z" fill="#fff"/>
+  <path d="M254 152v40c0 20 30 34 66 34s66-14 66-34v-40" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".7"/>
+  <path d="M448 128v54" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+  <circle cx="448" cy="190" r="10" fill="#fff" opacity=".8"/>
+</svg>

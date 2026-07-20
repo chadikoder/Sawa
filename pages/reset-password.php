@@ -14,11 +14,12 @@ if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
     <link rel="stylesheet" href="../css/tokens.css">
     <link rel="stylesheet" href="../css/login.css">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js" defer></script>
+    <script src="../js/theme.js"></script>
     <title>Sawa — New Password</title>
 </head>
 <body>
-    <div class="login-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="login-page" id="main">
         <div class="login-card" style="margin: 4rem auto;">
             <h1>Choose a new password</h1>
             <p class="auth-sub">At least 6 characters with letters and numbers.</p>

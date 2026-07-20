@@ -37,7 +37,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-body:has(#auth-overlay.show),
 body:has(.sidebar.open),
 body:has(.modal-overlay.show) { overflow: hidden; }
 
@@ -78,99 +77,61 @@ nav > img {
   cursor: pointer;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.6rem;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
+/* Removed: .nav-links, .nav-hamburger, .nav-user, generic `nav a` legacy
+   rules. These belonged to the old guest-nav design that .site-header
+   replaced. No matching HTML anywhere. ~70 lines deleted. */
 
-nav a {
-  text-decoration: none;
-  color: var(--text-muted);
-  font-size: 1.3rem;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-nav a:hover {
-  color: var(--blue);
-}
-nav a:active,
-nav a.pressed {
-  color: var(--blue);
-}
-
-.nav-hamburger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 4.4rem;
-  height: 4.4rem;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  border-radius: var(--radius);
-  margin-right: 0.4rem;
-  transition: background 0.2s;
-}
-.nav-hamburger:hover { background: var(--bg); }
-.nav-hamburger:active,
-.nav-hamburger.pressed { background: var(--blue-light); color: var(--blue); }
-
-.nav-user {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--radius-full);
-  transition: background 0.2s;
-}
-
-.nav-user:hover {
-  background: var(--bg);
-}
-
-.nav-user img {
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border);
-}
-
-.nav-user span {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-
-/* --- Layout --- */
+/* --- Layout ---
+   The sidebar is a fixed drawer, so .layout no longer lays anything out in a
+   row — it is a plain block. (Was `display: flex` here and `display: block`
+   6,500 lines further down; the later rule won.) */
 .layout {
-  display: flex;
+  display: block;
   flex: 1;
 }
 
-/* --- Sidebar --- */
+/* --- Sidebar: fixed slide-in drawer at every width ---
+   The old in-flow `position: relative + min-height: 100dvh` caused the
+   sidebar to shrink/jump on mobile when Chrome's address bar collapsed.
+   Replaced by a single fixed drawer with internal scroll.
+
+   Consolidated from three separate top-level `.sidebar` rules that were
+   scattered ~6,500 and ~8,300 lines apart. Each contributed a few live
+   declarations and a few dead ones, so this is a merge of their computed
+   result, not a deletion. Dark-mode background is overridden further down.
+   Keep this the single definition — add to it rather than appending a new
+   `.sidebar { }` block elsewhere. */
 .sidebar {
-  width: var(--sidebar-width);
-  margin-right: 4rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 28rem;
+  height: 100dvh;
+  /* Sits ABOVE the sticky site-header (z:50) so the duplicate user chip
+     from the top header doesn't show through the drawer. The overlay (z:55)
+     sits between header and sidebar to dim the page. */
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  /* Horizontal padding from the drawer-polish pass; vertical padding keeps
+     the safe-area insets it had previously clobbered with a `padding`
+     shorthand, so the drawer clears notches and home indicators again. */
+  padding-inline: 0.9rem;
+  padding-top: max(1.2rem, env(safe-area-inset-top));
+  padding-bottom: max(1.4rem, env(safe-area-inset-bottom));
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-right: 1px solid rgba(0, 0, 0, 0.07);
-  padding: 1.6rem 0;
-  flex-shrink: 0;
-  min-height: calc(100dvh - var(--nav-height));
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  border-radius: 0 1.6rem 1.6rem 0;
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
+
+.sidebar.open { transform: translateX(0); }
 
 .sidebar-item {
   display: flex;
@@ -219,16 +180,16 @@ nav a.pressed {
 }
 
 .sidebar-item.logout {
-  color: #ef4444;
+  color: var(--color-danger);
 }
 
 .sidebar-item.logout:hover {
-  background: #fef2f2;
+  background: var(--color-danger-light);
 }
 
-.sidebar-theme-toggle .theme-sun { display: none; }
-html[data-theme="dark"] .sidebar-theme-toggle .theme-moon { display: none; }
-html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
+/* Old .sidebar-theme-toggle rules deleted — Theme moved into the Settings
+   sub-page. The sun/moon icon swap now lives on the .settings-row directly
+   via [data-theme-toggle] selector below. */
 
 /* Sidebar auth section — pinned to bottom, separated from primary nav */
 .sidebar-auth-section {
@@ -244,7 +205,7 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #94a3b8;
+  color: var(--color-text-light);
   padding: 0.4rem 2rem 0.6rem;
 }
 
@@ -325,69 +286,9 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   overflow-wrap: anywhere;
 }
 
-/* --- Hero Banner --- */
-.hero-banner {
-  background: linear-gradient(135deg, var(--blue) 0%, #1d4ed8 50%, #4338ca 100%);
-  border-radius: var(--radius);
-  padding: 2.4rem 3.2rem;
-  margin-bottom: 2.4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.6rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-banner::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 40rem;
-  height: 40rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  pointer-events: none;
-}
-
-.hero-banner::before {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: 30%;
-  width: 30rem;
-  height: 30rem;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.03);
-  pointer-events: none;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-content h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 0.4rem;
-}
-
-.hero-content p {
-  font-size: 1.3rem;
-  color: rgba(255,255,255,0.8);
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
+/* Removed: .hero-banner + .hero-content + .hero-actions + .btn-outline-light
+   legacy dashboard hero. Replaced by .guest-hero-v2. .btn-white is still
+   used by the wallet 'Add Funds' button so it stays. */
 
 .btn-white {
   background: white;
@@ -399,25 +300,11 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   background: #f0f0f0;
 }
 
-.btn-outline-light {
-  background: transparent;
-  border: 2px solid rgba(255,255,255,0.5);
-  color: white;
-}
-
-.btn-outline-light:hover {
-  border-color: white;
-  background: rgba(255,255,255,0.1);
-}
-
-/* --- Cards --- */
-.card-row {
-  display: flex;
-  gap: 1.6rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.6rem;
-}
-
+/* Removed (Stage 4 cleanup): .card-row, .flex-1, .flex-2, full .stat-card
+   stack, .activity-list/item/dot/time, .campaign-filters + .filter-row +
+   .filter-group + .time-period + .location + .devider-filter.
+   None of these classes appear in any HTML/PHP — ~190 lines deleted.
+   Still kept: .card (used), .activity-text + .activity-empty (used). */
 .card {
   background: var(--white);
   border-radius: var(--radius);
@@ -426,157 +313,18 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   transition: box-shadow 0.2s;
   min-width: 0;
 }
-
 .card:hover {
   box-shadow: var(--shadow-lg);
 }
-
 .card h3 {
   font-size: 1.6rem;
   font-weight: 600;
   margin-bottom: 1.2rem;
 }
 
-.flex-1 { flex: 1; min-width: 24rem; }
-.flex-2 { flex: 2; min-width: 28rem; }
-
-/* --- Stat Cards --- */
-.stat-card {
-  flex: 1;
-  min-width: 16rem;
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 1.6rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.stat-icon {
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon svg {
-  width: 2.4rem;
-  height: 2.4rem;
-}
-
-.stat-blue .stat-icon { background: var(--blue-light); color: var(--blue); }
-.stat-green .stat-icon { background: var(--green-light); color: var(--green); }
-.stat-purple .stat-icon { background: var(--purple-light); color: var(--purple); }
-
-.stat-info h4 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.stat-info p {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-}
-
-.stat-info .stat-hint {
-  font-size: 1.1rem;
-  color: var(--blue);
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 0.2rem;
-  display: block;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.stat-info .stat-hint:hover { opacity: 0.75; }
-
-/* --- Quick Actions --- */
-.quick-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-}
-
-.action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 1.2rem 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.action-btn:hover {
-  border-color: var(--blue);
-  background: var(--blue-light);
-  color: var(--blue);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.14);
-}
-
-.action-btn svg {
-  width: 2rem;
-  height: 2rem;
-}
-
-/* --- Activity List --- */
-.activity-list {
-  list-style: none;
-}
-
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.2rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 1.3rem;
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-dot {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 0.4rem;
-}
-
-.activity-dot.blue { background: var(--blue); }
-.activity-dot.green { background: var(--green); }
-.activity-dot.purple { background: var(--purple); }
-.activity-dot.red { background: #ef4444; }
-
 .activity-text {
   flex: 1;
   color: var(--text);
-}
-
-.activity-time {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 .activity-empty {
@@ -586,143 +334,14 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   padding: 2rem;
 }
 
-/* --- Campaign Filters (same as guest page) --- */
-.campaign-filters {
-  width: 100%;
-  margin: 0 auto 2rem;
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 1.6rem;
-  box-shadow: var(--shadow-lg);
-}
-
-.filter-row {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.filter-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-}
-
-.time-period {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.filter-group + .location {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.time-period select, .location select {
-  width: 100%;
-  padding: 0.6rem 2.8rem 0.6rem 1.2rem;
-  font-weight: 600;
-  font-size: 1.2rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  appearance: none;
-  background: var(--white) url("../images/chevron-down.svg") no-repeat right 0.8rem center / 1.2rem;
-  color: var(--text);
-  max-width: 100%;
-  cursor: pointer;
-  height: auto;
-}
-
-.devider-filter {
-  height: 1px;
-  background: var(--border);
-  border: none;
-  margin: 0.6rem 0;
-}
-
-.campaign-filters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 1.4rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  background: var(--white);
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.campaign-filters button:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-
-.filter-btn.active, .filter-row .active {
-  background: var(--blue);
-  color: #fff;
-  border-color: var(--blue);
-}
-
-/* --- Campaign Grid --- */
+/* Removed (Stage 4): legacy .campaign-* design system. Replaced by .camp-*
+   in php/partials/campaign-card.php. Kept only the still-used utility classes:
+   .badge, .progress-bar, .progress-fill, .campaign-grid (used in #my-campaigns
+   list and similar). ~120 lines deleted. */
 .campaign-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
   gap: 1.6rem;
-}
-
-.campaign-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: transform 0.25s, box-shadow 0.25s;
-}
-
-.campaign-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-}
-
-.campaign-card-img {
-  width: 100%;
-  height: 16rem;
-  object-fit: cover;
-  display: block;
-}
-
-.campaign-card-body {
-  padding: 1.2rem 1.6rem 1.6rem;
-}
-
-.campaign-card-body h4 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
-
-.campaign-card-body > p {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  margin-bottom: 0.8rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.campaign-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.8rem;
 }
 
 .badge {
@@ -733,14 +352,6 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   border-radius: var(--radius-full);
   background: var(--blue-light);
   color: var(--blue);
-}
-
-.camp-location {
-  font-size: 1rem;
-  color: var(--text-muted);
-  background: var(--bg);
-  padding: 0.2rem 0.8rem;
-  border-radius: var(--radius-full);
 }
 
 .progress-bar {
@@ -759,27 +370,11 @@ html[data-theme="dark"] .sidebar-theme-toggle .theme-sun { display: block; }
   transition: width 0.5s ease;
 }
 
-.campaign-progress {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-}
-
-.campaign-progress .raised {
-  font-weight: 700;
-  color: var(--green);
-}
-
-.campaign-actions {
-  display: flex;
-  gap: 0.6rem;
-}
-
 /* --- Profile --- */
 .profile-card {
-  overflow: hidden;
+  /* overflow:hidden removed — was clipping the avatar's camera badge that
+     sits at right:-0.2rem bottom:-0.2rem on the avatar circle. */
+  overflow: visible;
 }
 
 .profile-header {
@@ -836,12 +431,15 @@ body.role-org   .profile-role-badge::before { content: "Organisation"; }
 /* Hide the badge entirely when there is no authenticated role (e.g. guest mode) */
 body.is-guest .profile-role-badge { display: none; }
 
+/* Avatar — circular image with an always-visible camera badge in the
+   bottom-right corner. Replaces the old hover/focus overlay, which on
+   mobile left "Change Photo" stuck across the avatar after tap. Now the
+   badge is the affordance — clear at every viewport, no sticky focus bug. */
 .avatar-upload {
   position: relative;
   width: 11rem;
   height: 11rem;
   border-radius: 50%;
-  overflow: hidden;
   border: 3px solid var(--white, #fff);
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.18), 0 0 0 3px rgba(37, 99, 235, 0.12);
   cursor: pointer;
@@ -854,33 +452,48 @@ body.is-guest .profile-role-badge { display: none; }
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 50%;
 }
 
+/* The label wraps both the image and an .avatar-overlay span. We now treat
+   that span as a corner camera badge instead of an overlay sheet. */
 .avatar-overlay {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%);
-  display: flex;
-  flex-direction: column;
+  right: -0.2rem;
+  bottom: -0.2rem;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 1.2rem;
-  gap: 0.3rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+  border: 2px solid #fff;
+  transition: transform 0.18s ease, background 0.18s ease;
 }
-
 .avatar-overlay svg {
-  display: block;
+  width: 1.6rem;
+  height: 1.6rem;
 }
-
+/* The "Change Photo" caption inside the overlay is now visually hidden but
+   kept for screen readers and focus context. */
+.avatar-overlay > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+  white-space: nowrap;
+}
 .avatar-upload:hover .avatar-overlay,
 .avatar-upload:focus-visible .avatar-overlay {
-  opacity: 1;
+  background: var(--color-primary-dark);
+  transform: scale(1.05);
 }
 
 .profile-fields {
@@ -1060,35 +673,8 @@ select.error {
   list-style: none;
 }
 
-.transaction-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 1.3rem;
-}
-
-.transaction-item:last-child {
-  border-bottom: none;
-}
-
-.transaction-amount {
-  font-weight: 700;
-}
-
-.transaction-amount.positive {
-  color: var(--green);
-}
-
-.transaction-amount.negative {
-  color: #ef4444;
-}
-
-.transaction-date {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-}
+/* Removed: .transaction-item, .transaction-amount, .transaction-date —
+   not used in HTML. Wallet transactions render via .wallet-tx partial. */
 
 /* --- Campaign Form --- */
 .campaign-form label {
@@ -1593,10 +1179,17 @@ select.error {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
 }
+/* Selected state — strong, unmistakable. Border thickens to primary, soft
+   blue tint inside, primary-tinted glow shadow, gentle scale lift. */
 .payment-method-option:has(input:checked) {
   border-color: var(--color-primary);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(96, 165, 250, 0.06));
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.12);
+  border-width: 2px;
+  background:
+    linear-gradient(180deg, rgba(37, 99, 235, 0.14) 0%, rgba(37, 99, 235, 0.05) 100%);
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.14),
+    0 14px 32px rgba(37, 99, 235, 0.20);
+  transform: translateY(-2px);
 }
 /* Recommended ribbon */
 .payment-method-option.is-recommended::before {
@@ -1629,6 +1222,86 @@ select.error {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+/* Coming-soon ribbon (wallet — backend not wired yet). Dims the card so
+   users see it's not selectable. We DO NOT fake any payment success. */
+.payment-method-option.is-coming-soon {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.payment-method-option.is-coming-soon:hover {
+  transform: none;
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+.payment-method-option.is-coming-soon::before {
+  content: 'Coming soon';
+  position: absolute;
+  top: 0.7rem;
+  right: 1rem;
+  padding: 0.18rem 0.65rem;
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.32);
+}
+.payment-method-option.is-coming-soon .payment-method-icon {
+  background: var(--color-bg-deep);
+  color: var(--color-text-muted);
+}
+.payment-method-fee--soon {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+.payment-method-fee--save {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+  font-weight: 800;
+}
+
+/* Guest-only "Sign up to unlock" Wallet card — fills the 3rd column in the
+   payment grid (since the real Wallet card is auth-only). Hover lifts and
+   highlights to nudge signup. Anchor element, so no radio + no submit. */
+.payment-method-option.is-locked {
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  border-style: dashed;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.payment-method-option.is-locked:hover {
+  transform: translateY(-3px);
+  border-style: solid;
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+}
+.payment-method-option.is-locked::after { display: none; }   /* no check circle */
+.payment-method-option.is-locked .payment-method-lock {
+  position: absolute;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.payment-method-option.is-locked .payment-method-lock svg { width: 1.4rem; height: 1.4rem; }
+html[data-theme="dark"] .payment-method-option.is-locked {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+html[data-theme="dark"] .payment-method-option.is-locked:hover {
+  background: rgba(37, 99, 235, 0.22);
 }
 /* Hide the native radio — we render a custom check on the right */
 .payment-method-option input {
@@ -1803,37 +1476,101 @@ body.is-guest .fee-rate--user  { display: none !important; }
     grid-column: 1 / -1;
   }
 
-  #donate-modal .payment-method-option {
-    grid-template-columns: 1fr;
-    align-content: start;
-    gap: 0.75rem;
-    min-height: 10.6rem;
-    padding: 1rem;
+  /* Vertical payment card layout (world-class checkout feel).
+     Structure top → bottom:
+        Ribbon (top-right, ~3rem zone)
+        Large icon (centered, 5rem)
+        Title (bold, 1-line)
+        Fee chip (subtle pill)
+        Check circle (absolute, bottom-right)
+     All cards share min-height so they line up across the row. */
+  #donate-modal .payment-method-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+  #donate-modal .payment-method-list legend {
+    grid-column: 1 / -1;
   }
 
+  #donate-modal .payment-method-option {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    text-align: center;
+    align-content: start;
+    gap: 3.6rem;            /* generous icon → title breathing room */
+    min-height: 22rem;
+    padding: 5rem 1.6rem 5.2rem;  /* top clears ribbon, bottom clears check */
+    border-radius: 1.4rem;
+  }
+
+  /* Ribbons — top-right corner pill, never crowds the icon. */
   #donate-modal .payment-method-option.is-recommended::before,
-  #donate-modal .payment-method-option.is-best::before {
-    top: 0.8rem;
-    right: 0.8rem;
+  #donate-modal .payment-method-option.is-best::before,
+  #donate-modal .payment-method-option.is-coming-soon::before {
+    top: 1.1rem;
+    right: 1.1rem;
     max-width: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.95rem;
   }
 
+  /* Icon — generous size for visual weight. */
+  #donate-modal .payment-method-icon {
+    width: 5.2rem;
+    height: 5.2rem;
+    border-radius: 1.4rem;
+    font-size: 2rem;
+  }
+  #donate-modal .payment-method-icon svg {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  /* Check circle — clearly visible bottom-right. */
   #donate-modal .payment-method-option::after {
     top: auto;
-    right: 0.8rem;
-    bottom: 0.8rem;
+    right: 1.2rem;
+    bottom: 1.2rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.4rem;
   }
 
+  /* Body stack — title + fee chip. */
   #donate-modal .payment-method-body {
     grid-column: 1;
-    padding-right: 2.8rem;
+    align-items: center;
+    text-align: center;
+    padding-right: 0;
+    gap: 1rem;
+    width: 100%;
   }
 
+  /* Single-line bold title. */
+  #donate-modal .payment-method-option strong {
+    white-space: nowrap;
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  /* Hide subtext in vertical mode — fee chip already says enough. */
   #donate-modal .payment-method-option small {
     display: none;
+  }
+
+  /* Fee chip — subtle, never wraps. */
+  #donate-modal .payment-method-fee {
+    margin-top: 0;
+    white-space: nowrap;
+    padding: 0.32rem 0.9rem;
+    font-size: 1rem;
+    font-weight: 700;
   }
 
   #donate-modal .payment-method-details {
@@ -1985,14 +1722,6 @@ body.is-guest .fee-rate--user  { display: none !important; }
 }
 
 @media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-
-  .nav-hamburger {
-    display: inline-flex;
-  }
-
   .sidebar {
     position: fixed;
     top: 5.8rem;
@@ -2005,10 +1734,7 @@ body.is-guest .fee-rate--user  { display: none !important; }
     border-radius: 0 1.6rem 1.6rem 0;
     width: 28rem;
   }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
+  .sidebar.open { transform: translateX(0); }
 
   .mobile-overlay {
     display: none;
@@ -2017,117 +1743,45 @@ body.is-guest .fee-rate--user  { display: none !important; }
     background: rgba(0,0,0,0.3);
     z-index: 25;
   }
+  .mobile-overlay.show { display: block; }
 
-  .mobile-overlay.show {
-    display: block;
-  }
-
-  .main-content {
-    padding: 1.6rem;
-  }
-
-  .hero-banner {
-    padding: 1.6rem;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero-content h1 {
-    font-size: 1.8rem;
-  }
+  .main-content { padding: 1.6rem; }
 
   .profile-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1.8rem;
   }
-
   .avatar-column {
     align-self: center;
     gap: 1.2rem;
-    padding-bottom: 0.4rem;
     width: 100%;
     border-bottom: 1px solid var(--border);
     padding-bottom: 1.8rem;
   }
-
-  .avatar-upload {
-    width: 12rem;
-    height: 12rem;
-  }
-
-  /* On touch devices, hover never fires — show a subtle hint pill instead */
+  .avatar-upload { width: 12rem; height: 12rem; }
+  /* Touch hint — hover never fires, so always show a subtle gradient pill. */
   .avatar-upload .avatar-overlay {
     opacity: 1;
     background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 55%);
     padding-bottom: 1rem;
     font-size: 1.05rem;
   }
-
-  .profile-display-name {
-    font-size: 2rem;
-  }
-
-  .profile-fields {
-    width: 100%;
-    min-width: 0;
-  }
-
+  .profile-display-name { font-size: 2rem; }
+  .profile-fields { width: 100%; min-width: 0; }
   .profile-save-btn {
     width: 100%;
     margin-top: 0.4rem;
     padding: 1.2rem;
     font-size: 1.5rem;
   }
-
-  .stat-card {
-    min-width: 100%;
-  }
-
-  .wallet-balance {
-    font-size: 2.4rem;
-  }
-
-  .campaign-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-actions {
-    width: 100%;
-  }
-
-  .hero-actions .btn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .card-row {
-    flex-direction: column;
-  }
-
-  .flex-1, .flex-2 {
-    min-width: auto;
-  }
+  .wallet-balance { font-size: 2.4rem; }
+  .campaign-grid { grid-template-columns: 1fr; }
 }
 
-@media (min-width: 769px) {
-  .campaign-filters { padding: 2.5rem 3.5rem; }
-
-  .filter-row {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .time-period { margin-left: auto; width: auto; }
-
-  .filter-group + .location { margin-left: auto; width: auto; }
-
-  .time-period select, .location select { width: auto; min-width: 14rem; }
-
-  .campaign-filters button {
-    padding: 0.8rem 1.6rem;
-  }
-}
+/* Removed: @media (min-width: 769px) block that styled .campaign-filters,
+   .filter-row, .time-period, .location — all dead classes from the
+   legacy filter UI replaced by .discover-toolbar. */
 
 /* --- Sidebar Brand --- */
 .sidebar-brand {
@@ -2240,46 +1894,89 @@ body.role-org   .sidebar-user-role::before { content: "Organisation"; }
   opacity: 0.6;
 }
 
-/* --- Preset Amount Buttons --- */
+/* ── Preset amount selector — segmented control ──
+   Connected pill row with 4 equal segments. Replaces the old loose-button
+   wrap layout that read as "too many cubes" on mobile. The selected segment
+   fills primary blue; others stay quiet. Single source of truth; old styles
+   deleted per the cleanup rule. */
 .preset-amounts {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.3rem;
+  padding: 0.4rem;
   margin-bottom: 1rem;
+  background: var(--color-bg-deep);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--r-full);
 }
 
 .preset-btn {
-  padding: 0.5rem 1.4rem;
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.2rem;
-  font-weight: 600;
+  padding: 0.9rem 0.4rem;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: 'Poppins', Arial, sans-serif;
+  min-height: 4.4rem;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  letter-spacing: -0.01em;
 }
 
-.preset-btn:hover,
+.preset-btn:hover:not(.selected) {
+  color: var(--color-text);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+/* Active/selected state for the segmented amount control — was missing,
+   so users got no feedback when they picked $10/$25/etc. Now a clear
+   primary-color pill marks the selection. Matches the modern segmented
+   control pattern (iOS, GitHub, Stripe). */
 .preset-btn.selected {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: white;
-  color: white;
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.32);
+}
+.preset-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+html[data-theme="dark"] .preset-btn.selected {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(96, 165, 250, 0.35);
 }
 
-/* Preset buttons inside the modal (white background) */
-.modal-presets .preset-btn {
-  border-color: var(--border);
-  background: var(--bg);
-  color: var(--text-muted);
+.preset-btn.selected {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
 }
 
-.modal-presets .preset-btn:hover,
-.modal-presets .preset-btn.selected {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--blue-light);
+/* Wallet top-up sits on a dark navy wallet card — invert the segmented bg
+   so the control still reads against the dark surface. */
+.wallet-card .preset-amounts {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.wallet-card .preset-btn {
+  color: rgba(255, 255, 255, 0.78);
+}
+.wallet-card .preset-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+}
+.wallet-card .preset-btn.selected {
+  background: #fff;
+  color: var(--color-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .preset-amounts {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--color-border);
 }
 
 /* Top-up input row */
@@ -2556,149 +2253,11 @@ html[data-theme="dark"] .cashout-grid input {
   }
 }
 
-/* --- Auth Guard Overlay --- */
-.auth-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  padding: 1.6rem;
-}
-
-.auth-overlay.show {
-  display: flex;
-  overflow-y: auto;
-}
-
-.auth-modal {
-  position: relative;
-  background: white;
-  border-radius: var(--radius);
-  padding: 3.6rem 3.2rem;
-  text-align: center;
-  max-width: 40rem;
-  width: 90%;
-  box-shadow: var(--shadow-xl);
-}
-
-.auth-modal-close {
-  position: absolute;
-  top: 1.2rem;
-  right: 1.2rem;
-  width: 3.6rem;
-  height: 3.6rem;
-  border-radius: 50%;
-  border: none;
-  background: var(--color-bg-deep);
-  color: var(--color-text-muted);
-  font-size: 2.4rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.auth-modal-close:hover { background: var(--color-border); color: var(--color-text); }
-
-.auth-modal-cancel {
-  display: block;
-  margin: 1.6rem auto 0;
-  background: transparent;
-  border: none;
-  color: var(--color-text-muted);
-  font-family: inherit;
-  font-size: 1.25rem;
-  font-weight: 500;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0.6rem 1rem;
-}
-.auth-modal-cancel:hover { color: var(--color-text); }
-
-.auth-logo-wrap {
-  width: 7.2rem;
-  height: 7.2rem;
-  background: linear-gradient(135deg, var(--blue-light) 0%, #fff 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 2rem;
-  border: 1.5px solid rgba(37, 99, 235, 0.14);
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
-}
-
-.auth-logo-wrap img {
-  width: 4.4rem;
-  height: 4.4rem;
-}
-
-.auth-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 0.8rem;
-}
-
-.auth-subtitle {
-  font-size: 1.3rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin-bottom: 2.4rem;
-  font-weight: 400;
-}
-
-.auth-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.2rem;
-  flex-wrap: wrap;
-}
-
-.auth-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2.8rem;
-  border-radius: var(--radius-full);
-  font-size: 1.3rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-}
-
-.auth-btn-primary {
-  background: var(--blue);
-  color: white;
-  border-color: var(--blue);
-}
-
-.auth-btn-primary:hover {
-  background: var(--blue-dark);
-  border-color: var(--blue-dark);
-}
-
-.auth-btn-outline {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--border);
-}
-
-.auth-btn-outline:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-}
+/* Removed: .auth-overlay / .auth-modal stack (~150 lines). The popover was
+   only ever triggered from the auth-only bottom-nav, which guests can't see.
+   Dead UI. If we ever need a guest auth-gate, build a fresh small modal. */
 
 /* .sidebar-close removed — drawer closes via overlay tap or nav-item tap */
-
-/* Bottom nav is opt-in for authenticated dashboards. */
-.bottom-nav,
-body.is-guest .bottom-nav {
-  display: none;
-}
 
 /* ── Sidebar visual polish ── */
 
@@ -2846,34 +2405,13 @@ body.is-guest .bottom-nav {
   background: var(--blue-light);
 }
 
-/* ── Touch targets — min 44 px ── */
-.filter-btn,
-.filter-group button {
-  min-height: 4.4rem;
-}
-.preset-btn { min-height: 4rem; }
-.action-btn { min-height: 6rem; }
+/* ── Touch targets — min 44 px (preset-btn already sets its own 4.4rem) ── */
 .btn        { min-height: 4.4rem; }
 
-/* ── Mobile font & spacing boost ── */
+/* Mobile font tweaks */
 @media (max-width: 768px) {
   .card { padding: 2rem; }
-
-  .campaign-card-body > p { font-size: 1.3rem; }
-  .activity-item          { font-size: 1.4rem; }
-  .section-header p       { font-size: 1.4rem; }
-  .stat-info p            { font-size: 1.3rem; }
-  .transaction-item       { font-size: 1.4rem; }
-}
-
-/* ── Wallet balance prominence ── */
-.stat-blue {
-  border: 1.5px solid rgba(37, 99, 235, 0.18);
-  background: linear-gradient(135deg, #fff 65%, var(--blue-light) 100%);
-}
-.stat-blue .stat-info h4 {
-  font-size: 2.2rem;
-  color: var(--blue);
+  .section-header p { font-size: 1.4rem; }
 }
 
 /* ── 3-column campaign grid on wide screens ── */
@@ -3029,25 +2567,8 @@ body.is-guest .bottom-nav {
 }
 .modal-confirm-note svg { width: 1.4rem; height: 1.4rem; flex-shrink: 0; }
 
-/* ── Read-more on campaign cards ── */
-.campaign-card-body > p.expanded {
-  display: block;
-  -webkit-line-clamp: unset;
-  overflow: visible;
-}
-.read-more-btn {
-  background: none;
-  border: none;
-  color: var(--blue);
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0.2rem 0;
-  font-family: 'Poppins', Arial, sans-serif;
-  display: block;
-  transition: opacity 0.2s;
-}
-.read-more-btn:hover { opacity: 0.7; }
+/* Removed: .campaign-card-body > p.expanded + .read-more-btn — orphans
+   from the legacy campaign card. .camp-card has no read-more affordance. */
 
 /* ── Empty state CTA button ── */
 .empty-state .btn {
@@ -3161,6 +2682,55 @@ body.is-guest .bottom-nav {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+}
+
+/* Mobile: Twitter-style notification feed — anchored under the top header,
+   slides DOWN from the top, fills the viewport down to the bottom-bar.
+   Feels like a dedicated notifications page, not a tiny dropdown. */
+@media (max-width: 768px) {
+  .dash-notif-panel {
+    position: fixed;
+    /* Top-anchored (just under the 6.4rem top header).
+       Bottom clears the 8rem-tall bottom-bar. */
+    top: 6.4rem;
+    bottom: 8rem;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    transform: translateY(-1.2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  }
+  .dash-bell-wrap.open .dash-notif-panel {
+    transform: translateY(0);
+  }
+  .dash-notif-head {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 1;
+  }
+  .dash-notif-foot {
+    position: sticky;
+    bottom: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+  }
+  /* Backdrop dim behind the sheet. */
+  .dash-bell-wrap.open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 99;
+  }
 }
 .dash-notif-head {
   display: flex;
@@ -3340,6 +2910,12 @@ body.is-guest .bottom-nav {
   grid-template-columns: 1fr 1fr;
   gap: 1.8rem;
 }
+/* Guests only see the Urgent Campaigns card here (everything else is auth-only),
+   so the 2-col grid leaves a giant empty right column. Force 1 column for guests
+   so the urgent card spans the full width. Auth view stays 2-col. */
+body.is-guest .dash-lower {
+  grid-template-columns: 1fr;
+}
 .dash-card {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -3471,15 +3047,19 @@ body.is-guest .bottom-nav {
   border-radius: 9999px;
   transition: width 0.4s ease;
 }
+/* Sized to match .featured-camp-donate. This was previously a full-width
+   4.4rem slab, so three stacked urgent items put three large blue blocks down
+   the card and outweighed every other CTA on the dashboard. */
 .urgent-donate {
+  align-self: flex-end;
   margin-top: 0.4rem;
-  height: 4.4rem;
   border: none;
-  border-radius: 1.2rem;
+  border-radius: 9999px;
+  padding: 0.6rem 1.6rem;
   background: var(--color-primary);
   color: #fff;
   font-family: inherit;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, transform 0.12s, box-shadow 0.18s;
@@ -3564,16 +3144,30 @@ body.is-guest .bottom-nav {
   .camp-card-bg-icon { width: 3.6rem; height: 3.6rem; right: 0.8rem; top: 0.8rem; }
 }
 
-/* Per-category gradient */
-.cat-medical { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
-.cat-food    { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.cat-shelter { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
-.cat-edu     { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+/* Per-category gradient + illustrated cover.
+   The SVG carries its own gradient ground, so a card with no uploaded photo
+   still reads as artwork rather than a flat colour block. The gradient stays
+   underneath as the paint-in colour while the SVG loads. A real photo (set
+   inline by js/userhome.js from data-image) overrides background-image and
+   wins over both. */
+.camp-card-media[class*="cat-"] {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+.cat-medical { background: url("../images/cover-medical.svg")   center/cover no-repeat, linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); }
+.cat-food    { background: url("../images/cover-food.svg")      center/cover no-repeat, linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.cat-shelter { background: url("../images/cover-shelter.svg")   center/cover no-repeat, linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+.cat-edu     { background: url("../images/cover-education.svg") center/cover no-repeat, linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+.cat-other   { background: url("../images/cover-other.svg")     center/cover no-repeat, linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
 
-/* IMAGE_PLACEHOLDER:
-   Add data-image="path/to/photo.jpg" on the .camp-card-media element to swap the
-   gradient illustration for a real photo. The decorative SVG icon stays hidden when
-   a real image is set, but the category tag + urgent badge still float over it. */
+/* The decorative corner icon duplicated the illustration's subject — the
+   illustrated cover replaces it. */
+.camp-card-media[class*="cat-"] .camp-card-bg-icon { display: none; }
+
+/* Add data-image="path/to/photo.jpg" on .camp-card-media to swap the gradient
+   illustration for a real photo. The decorative SVG stays hidden when a real
+   image is set, but the category tag + urgent badge still float over it. */
 .camp-card-media[data-image] {
   background-size: cover;
   background-position: center;
@@ -3657,29 +3251,41 @@ body.is-guest .bottom-nav {
 }
 
 /* Progress */
+/* Two-row meta + thin clean progress bar.
+   Row 1: "$X raised" (bold) | "N%" (primary).
+   Bar below is slim, rounded, animated fill on width change. */
 .camp-progress-info {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   font-size: 1.25rem;
-  color: #64748b;
-  margin-top: 0.2rem;
+  color: var(--color-text-muted);
+  margin-top: 0.6rem;
+  margin-bottom: 0.4rem;
+  gap: 0.8rem;
+}
+.camp-raised {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 1.2rem;
 }
 .camp-raised strong {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
-  margin-right: 0.4rem;
+  color: var(--color-text);
 }
 .camp-pct {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
 }
 .camp-card .progress-bar {
   width: 100%;
-  height: 0.7rem;
-  background: #e2e8f0;
+  height: 0.6rem;
+  background: var(--color-bg-deep);
   border-radius: 9999px;
   overflow: hidden;
   margin: 0;
@@ -3874,13 +3480,7 @@ body.is-guest .bottom-nav {
   letter-spacing: 0.05em;
 }
 
-/* Payment form fields (legacy class kept for backwards compat) */
-.card-row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 0.4rem;
-}
+/* Removed: .card-row-2 (legacy class, not used in HTML). */
 
 /* ════════════════════════════════════════════════════════════
    Payment step v2 — fields, brand chips, trust strip
@@ -4420,24 +4020,30 @@ body.is-guest .bottom-nav {
   border: 1px solid var(--color-border);
   border-radius: var(--r);
 }
-.cm-creator-profile-btn {
+/* Clickable creator chip — wraps avatar + name. Hover lifts subtly,
+   tap opens the creator profile (handled by JS).
+   Replaces older .cm-creator-profile-btn. */
+.cm-creator-link {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 1rem;
   border: 0;
-  padding: 0;
+  padding: 0.4rem 0.6rem;
+  margin: -0.4rem -0.6rem;
   background: transparent;
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  border-radius: calc(var(--r) - 0.3rem);
+  border-radius: 0.8rem;
+  transition: background 0.15s ease;
 }
-.cm-creator-profile-btn:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.28);
-  outline-offset: 0.35rem;
+.cm-creator-link:hover,
+.cm-creator-link:focus-visible {
+  background: var(--color-bg-deep);
+  outline: none;
 }
 .cm-creator-avatar {
   width: 4rem;
@@ -4473,8 +4079,16 @@ body.is-guest .bottom-nav {
   color: var(--color-text);
 }
 
-/* Message creator button (auth-only) */
-.cm-message-btn {
+/* X-style creator actions row — sits to the right of the creator chip.
+   Holds Message + Report buttons as small icon-pill pairs.
+   Replaces older .cm-message-btn block. */
+.cm-creator-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.cm-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -4482,22 +4096,43 @@ body.is-guest .bottom-nav {
   border-radius: var(--r-full);
   background: var(--color-primary-light);
   color: var(--color-primary);
+  font-family: inherit;
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: background 0.18s, border-color 0.18s, transform 0.18s;
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
 }
-.cm-message-btn:hover {
+.cm-action-btn:hover,
+.cm-action-btn:focus-visible {
   background: var(--color-primary);
   color: #fff;
   transform: translateY(-1px);
+  outline: none;
 }
-.cm-message-btn svg { width: 1.4rem; height: 1.4rem; }
+.cm-action-btn svg { width: 1.4rem; height: 1.4rem; }
+
+/* Danger flavor (Report) — neutral until hover, then red. */
+.cm-action-btn-danger {
+  background: var(--color-bg-deep);
+  color: var(--color-text-muted);
+}
+.cm-action-btn-danger:hover,
+.cm-action-btn-danger:focus-visible {
+  background: var(--color-danger);
+  color: #fff;
+}
+
 @media (max-width: 520px) {
-  .cm-message-btn span { display: none; }
-  .cm-message-btn { padding: 0.7rem; width: 3.6rem; height: 3.6rem; justify-content: center; }
+  /* Collapse to icon-only pills on phone so the row fits. */
+  .cm-action-btn span { display: none; }
+  .cm-action-btn {
+    padding: 0;
+    width: 3.6rem;
+    height: 3.6rem;
+    justify-content: center;
+  }
 }
 .cm-verified {
   position: relative;
@@ -4850,107 +4485,98 @@ a.sidebar-item {
   text-decoration: none;
 }
 
-/* ── Guest hero banner (only shown for guests) ── */
-.guest-hero {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #1e3a8a 0%, var(--color-primary) 55%, #3b82f6 100%);
-  color: #fff;
-  border-radius: 2rem;
-  padding: 2.8rem 3.2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.22);
-}
-.guest-hero-text {
-  position: relative;
-  z-index: 1;
-  max-width: 68rem;
-}
-.guest-hero-eyebrow {
-  display: inline-block;
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.14);
-  padding: 0.5rem 1.2rem;
-  border-radius: 9999px;
-  margin-bottom: 1.4rem;
-}
-.guest-hero h1 {
-  font-size: 2.8rem;
-  font-weight: 800;
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.9rem;
-  color: #fff;
-}
-.guest-hero p {
-  font-size: 1.35rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.92);
-  margin: 0 0 1.6rem;
-  max-width: 56rem;
-}
-.guest-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.guest-hero-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  height: 5rem;
-  padding: 0 2.2rem;
-  border-radius: 9999px;
-  font-family: inherit;
-  font-size: 1.45rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: none;
-  border: none;
-  transition: transform 0.15s, box-shadow 0.18s, background 0.18s;
-}
-.guest-hero-btn svg { width: 1.6rem; height: 1.6rem; }
-.guest-hero-btn.primary {
-  background: #fff;
-  color: var(--color-primary-dark);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-}
-.guest-hero-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-}
-.guest-hero-btn.secondary {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-  border: 1.5px solid rgba(255, 255, 255, 0.36);
-}
-.guest-hero-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-.guest-hero-glow {
-  position: absolute;
-  top: -10%;
-  right: -8%;
-  width: 38rem;
-  height: 38rem;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.42), rgba(96, 165, 250, 0));
-  pointer-events: none;
-}
-
-@media (max-width: 640px) {
-  .guest-hero { padding: 2.8rem 2rem; }
-  .guest-hero h1 { font-size: 2.4rem; }
-  .guest-hero p { font-size: 1.35rem; }
-  .guest-hero-glow { width: 22rem; height: 22rem; }
-}
+/* Removed: .guest-hero v1 block (~100 lines). Superseded by .guest-hero-v2
+   which is the actual hero rendered on the dashboard. No HTML references
+   the v1 classes anywhere. */
 
 /* ════════════════════════════════════════════════════════════
-   Guest-only featured content (below stats)
+   Guest action band (sits between hero and the dash-lower cards
+   so the area doesn't read as empty white space for non-auth users).
+   3 equal cards, modern, accessible, single source of truth.
    ════════════════════════════════════════════════════════════ */
+.guest-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin: 2.4rem 0;
+}
+.guest-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 2rem 1.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  text-align: left;
+  text-decoration: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.guest-action-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow);
+}
+.guest-action-card:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+.guest-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+}
+.guest-action-icon svg { width: 2.2rem; height: 2.2rem; }
+.guest-action-card strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+.guest-action-card p {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.guest-action-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-color: var(--color-primary-dark);
+}
+.guest-action-primary .guest-action-icon {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.guest-action-primary strong { color: #fff; }
+.guest-action-primary p { color: rgba(255, 255, 255, 0.86); }
+.guest-action-primary:hover {
+  border-color: #fff;
+}
+
+@media (max-width: 900px) {
+  .guest-actions { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .guest-actions { grid-template-columns: 1fr; gap: 1rem; margin: 1.8rem 0; }
+}
+
+html[data-theme="dark"] .guest-action-card {
+  background: rgba(15, 23, 42, 0.62);
+  border-color: rgba(148, 163, 184, 0.18);
+}
+html[data-theme="dark"] .guest-action-card:hover {
+  border-color: var(--color-primary);
+}
+
 .guest-feature-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -4986,13 +4612,20 @@ a.sidebar-item {
   align-items: center;
   justify-content: center;
   color: #fff;
-  /* PLACEHOLDER: replace this with a real photo using background-image when content is ready */
+  /* Set background-image via the .has-cover modifier (see featured-camp.php) to use a real photo. */
 }
 .featured-camp-thumb svg { width: 3.2rem; height: 3.2rem; opacity: 0.92; }
 .featured-camp-thumb.cat-medical { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
 .featured-camp-thumb.cat-food    { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
 .featured-camp-thumb.cat-edu     { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
 .featured-camp-thumb.cat-shelter { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); }
+/* Real cover photo takes over when campaigns.cover_image is set */
+.featured-camp-thumb.has-cover {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+}
 .featured-camp-thumb .camp-urgent-badge {
   position: absolute;
   top: 0.4rem;
@@ -5023,6 +4656,13 @@ a.sidebar-item {
   color: #64748b;
 }
 .featured-camp-meta strong { color: #0f172a; font-weight: 700; font-size: 1.3rem; }
+/* Goal progress is brand blue everywhere it appears (urgent list, camp cards,
+   featured list) — the bare .progress-fill default is green, which made this
+   one list read as a different kind of metric. */
+.featured-camp .progress-fill {
+  background: linear-gradient(90deg, var(--color-primary), #60a5fa);
+}
+
 .featured-camp-donate {
   border: none;
   background: var(--color-primary);
@@ -5153,6 +4793,28 @@ a.sidebar-item {
 .testimonial-card figcaption strong { font-size: 1.3rem; color: #0f172a; }
 .testimonial-card figcaption small { font-size: 1.15rem; color: #64748b; }
 
+/* Icon-avatar variant: used when the card is a trust-pillar (no quote/figcaption pair). */
+.testimonial-avatar--icon {
+  width: 4.2rem;
+  height: 4.2rem;
+  border-radius: 1.1rem;
+}
+.testimonial-avatar--icon svg { width: 2rem; height: 2rem; }
+.testimonial-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+.testimonial-card > p {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #4b5563;
+  line-height: 1.55;
+}
+html[data-theme="dark"] .testimonial-title { color: #f1f5f9; }
+html[data-theme="dark"] .testimonial-card > p { color: #cbd5e1; }
+
 /* ════════════════════════════════════════════════════════════
    Discover toolbar — search + sort + chip filters (redesigned)
    ════════════════════════════════════════════════════════════ */
@@ -5217,23 +4879,45 @@ a.sidebar-item {
 }
 .discover-search-clear:hover { background: #e2e8f0; color: #334155; }
 
+/* Sort wrapper — pill-shaped button group with leading icon, label, select.
+   Matches the visual weight of the .discover-filter-trigger so the toolbar
+   reads as one coherent control row. */
 .discover-sort-wrap {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  background: #fff;
-  border: 1.5px solid var(--border);
+  gap: 0.7rem;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
   border-radius: 9999px;
-  padding: 0 1.4rem 0 1.6rem;
+  padding: 0 0.4rem 0 1.6rem;
   min-height: 4.8rem;
-  transition: border-color 0.15s;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
 }
-.discover-sort-wrap:focus-within { border-color: var(--color-primary); }
+.discover-sort-wrap::before {
+  content: '';
+  display: inline-block;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  background: currentColor;
+  color: var(--color-text-muted);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M6 12h12M10 18h4'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18M6 12h12M10 18h4'/></svg>") center / contain no-repeat;
+}
+.discover-sort-wrap:hover {
+  border-color: var(--color-primary);
+}
+.discover-sort-wrap:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
 .discover-sort-label {
   font-size: 1.2rem;
-  font-weight: 600;
-  color: #64748b;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 #discover-sort {
   border: none;
@@ -5241,15 +4925,17 @@ a.sidebar-item {
   background: transparent;
   font-family: inherit;
   font-size: 1.35rem;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--color-text);
   cursor: pointer;
-  padding-right: 1.6rem;
+  padding: 0 3rem 0 0;
+  min-height: 4.4rem;
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
-  background-position: right center;
+  background-position: right 0.6rem center;
 }
+#discover-sort:focus { color: var(--color-primary); }
 
 /* Category chip row */
 .discover-filters { margin-bottom: 1.6rem; }
@@ -5501,33 +5187,185 @@ a.sidebar-item {
 .discover-empty h3 { font-size: 1.6rem; color: #0f172a; margin: 0 0 0.4rem; }
 .discover-empty p  { font-size: 1.3rem; color: #64748b; margin: 0 0 1.6rem; }
 
-/* Mobile toolbar — stack search above sort, scrollable category chips */
-@media (max-width: 768px) {
-  .discover-toolbar { flex-direction: column; gap: 0.8rem; padding: 0.8rem; }
-  .discover-sort-wrap { align-self: stretch; justify-content: space-between; }
-  .discover-cat-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding-bottom: 0.4rem;
-    margin: 0 -1rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  .discover-cat-row::-webkit-scrollbar { display: none; }
-  .cat-chip-more { margin-left: 0; }
-  .discover-advanced { padding: 1.4rem; }
-  .adv-group { min-width: 100%; }
-  .adv-reset { margin-left: 0; width: 100%; }
+/* ────────────────────────────────────────────────────────────────────────
+   Filter UI — Bottom-sheet pattern on mobile, inline panel on desktop.
+   Replaces the old horizontal-scrolling chip row (which clipped on mobile).
+   Single source of truth — old @media (max-width: 768px) block deleted.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Mobile-only trigger button (shown < 768px). Hidden on desktop. */
+.discover-filter-trigger {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.4rem;
+  min-height: 4.8rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
+.discover-filter-trigger:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.discover-filter-trigger svg { width: 1.6rem; height: 1.6rem; }
+.discover-filter-trigger-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 9999px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+/* Sheet head — mobile-only inside the sheet. Hidden on desktop. */
+.discover-filters-sheet-head { display: none; }
+
+/* Backdrop — only when sheet is open on mobile. */
+.discover-filters-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 250;
+}
+.discover-filters-backdrop.is-open { display: block; }
+
+@media (max-width: 768px) {
+  /* Toolbar stacks: search full-width on top, then Sort + Filters trigger paired. */
+  .discover-toolbar {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 0.8rem;
+  }
+  .discover-search-bar { width: 100%; }
+  /* Sort + Filters share one row, each takes half. */
+  .discover-sort-wrap,
+  .discover-filter-trigger {
+    flex: 1;
+  }
+  .discover-sort-wrap { display: flex; }
+  .discover-filter-trigger { display: inline-flex; justify-content: center; }
+  /* Visually pair Sort and Filters by floating them on the same row. */
+  .discover-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "search search"
+      "sort   filters";
+  }
+  .discover-search-bar  { grid-area: search; }
+  .discover-sort-wrap   { grid-area: sort; }
+  .discover-filter-trigger { grid-area: filters; }
+
+  /* The chip + advanced container becomes a bottom-sheet. Hidden by default,
+     slides up when .is-open is set by JS. Inside the sheet, chips and the
+     advanced panel stack vertically — no horizontal scroll anywhere. */
+  .discover-filters {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 260;
+    max-height: 82vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    border-radius: 1.6rem 1.6rem 0 0;
+    background: var(--color-surface);
+    box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.18);
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-sizing: border-box;
+  }
+  .discover-filters.is-open { transform: translateY(0); }
+
+  .discover-filters-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.4rem 1.6rem 0.8rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.2rem;
+  }
+  .discover-filters-sheet-head h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+  .discover-filters-sheet-close {
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-bg-deep);
+    color: var(--color-text-muted);
+    font-size: 2.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .discover-filters-sheet-close:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+  }
+
+  /* Chip row inside sheet: vertical wrap, full-width chips, tap-friendly. */
+  .discover-cat-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0 1.6rem 1.2rem;
+  }
+  .cat-chip {
+    flex: 1 1 calc(50% - 0.4rem);
+    justify-content: flex-start;
+  }
+  /* "More filters" inline pill is redundant inside the sheet — hide it. */
+  .cat-chip-more { display: none; }
+
+  /* Advanced panel always visible inside the sheet (no toggle needed). */
+  .discover-advanced {
+    margin: 0;
+    padding: 1.4rem 1.6rem 1.8rem;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--color-border);
+    box-shadow: none;
+    background: transparent;
+  }
+  .discover-advanced[hidden] { display: flex; }
+  .adv-group { min-width: 100%; }
+  .adv-reset {
+    margin-left: 0;
+    width: 100%;
+    min-height: 4.8rem;
+    border-radius: var(--r-full);
+  }
+
+  /* Body lock when sheet is open. */
+  body.filters-open { overflow: hidden; }
+}
+
+/* Hide the "0" count on chips and on the trigger to avoid the ambiguous
+   "More filters 0" pattern. JS sets [hidden] when count is 0. */
+.cat-chip-count[hidden],
+.filter-active-count[hidden],
+.discover-filter-trigger-count[hidden] { display: none; }
 
 /* ════════════════════════════════════════════════════════════
    Redesign v2 — dark navy hero, horizontal stats
    ════════════════════════════════════════════════════════════ */
-
-/* Hide the old guest hero just in case any markup remains */
-.guest-hero.guest-only { display: none !important; }
 
 /* Hero v2 — dark navy slab with horizontal stats below the CTA */
 .guest-hero-v2 {
@@ -5573,12 +5411,16 @@ a.sidebar-item {
 }
 
 .guest-hero-v2 h1 {
-  font-size: 3.2rem;
+  /* Fluid sizing: scales smoothly between 2.2rem (small phones) and 3.6rem
+     (desktop). Replaces the fixed 3.2rem that overflowed on ~360px screens.
+     text-wrap: balance produces cleaner line breaks across widths. */
+  font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.6rem);
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.02em;
   margin: 0 0 1rem;
   color: #fff;
+  text-wrap: balance;
 }
 .hero-accent {
   color: #93c5fd;
@@ -5588,11 +5430,12 @@ a.sidebar-item {
   -webkit-text-fill-color: transparent;
 }
 .guest-hero-v2 p {
-  font-size: 1.4rem;
+  font-size: clamp(1.3rem, 1.15rem + 0.4vw, 1.5rem);
   line-height: 1.55;
   color: rgba(241, 245, 249, 0.85);
   margin: 0 0 2rem;
   max-width: 56rem;
+  text-wrap: pretty;
 }
 
 .guest-hero-v2-cta-row {
@@ -5622,6 +5465,10 @@ a.sidebar-item {
 .hero-primary-btn svg { width: 1.6rem; height: 1.6rem; }
 .hero-primary-btn:hover { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: 0 14px 32px rgba(37, 99, 235, 0.42); }
 .hero-primary-btn:active { transform: translateY(0); }
+.hero-primary-btn:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
+}
 
 .hero-text-link {
   color: rgba(219, 234, 254, 0.9);
@@ -5642,11 +5489,18 @@ a.sidebar-item {
 }
 .hero-text-link:hover { color: #fff; }
 .hero-text-link:hover svg { transform: translateX(3px); }
+.hero-text-link:focus-visible {
+  color: #fff;
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
+  border-radius: 0.4rem;
+}
 
-/* Horizontal stats grid inside hero */
+/* Horizontal stats — self-healing grid. Reflows 4 → 2 → 1 on its own based
+   on available width, no per-breakpoint overrides needed. */
 .hero-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1.6rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -5687,11 +5541,12 @@ a.sidebar-item {
   line-height: 1.4;
 }
 
+/* Mobile hero adjustments. Typography now sizes itself via clamp() above,
+   so this block only tightens padding + stats spacing. The hero-stats grid
+   reflows on its own via auto-fit — no manual columns needed. */
 @media (max-width: 768px) {
   .guest-hero-v2 { padding: 2.6rem 2rem 2.2rem; border-radius: 1.4rem; }
-  .guest-hero-v2 h1 { font-size: 2.4rem; }
-  .guest-hero-v2 p { font-size: 1.3rem; }
-  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; padding-top: 1.6rem; }
+  .hero-stats { gap: 1.2rem; padding-top: 1.6rem; }
   .hero-stat strong { font-size: 2rem; }
 }
 
@@ -6264,25 +6119,8 @@ body.is-guest #discover .discover-filters {
   color: var(--color-danger);
 }
 
-/* Percentage chip floating on the progress bar */
-.camp-card .progress-bar { position: relative; height: 1rem !important; }
-.progress-pct-chip {
-  position: absolute;
-  top: 50%;
-  right: 0.6rem;
-  transform: translateY(-50%);
-  background: var(--color-surface);
-  color: var(--color-primary-dark);
-  border: 1px solid var(--color-primary-light);
-  font-size: 1.05rem;
-  font-weight: 700;
-  padding: 0.15rem 0.6rem;
-  border-radius: 9999px;
-  line-height: 1.4;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-}
-/* Hide the inline % since it's now on the chip */
-.camp-card .camp-pct { display: none; }
+/* Floating progress chip removed — the inline % in .camp-progress-info is
+   the single source now (cleaner, properly aligned with "$X raised"). */
 
 /* Layout: make card footer wrap on small space, keep button right */
 .camp-card-footer {
@@ -6487,7 +6325,7 @@ body.is-guest #discover .discover-filters {
 }
 .site-footer-col a:hover,
 .site-footer-col button:hover { color: var(--color-primary-light); }
-.site-footer-col .site-footer-meta { cursor: default; color: rgba(148, 163, 184, 0.7); }
+.site-footer-col .site-footer-meta { cursor: default; color: rgba(148, 163, 184, 0.85); }
 
 .site-footer-bottom {
   max-width: 128rem;
@@ -6500,7 +6338,7 @@ body.is-guest #discover .discover-filters {
   justify-content: space-between;
   gap: 1rem;
   font-size: 1.15rem;
-  color: rgba(148, 163, 184, 0.7);
+  color: rgba(148, 163, 184, 0.85);
 }
 .site-footer-bottom p { margin: 0; }
 .site-footer-trust {
@@ -6512,6 +6350,73 @@ body.is-guest #discover .discover-filters {
 
 @media (max-width: 900px) {
   .site-footer-inner { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Mobile accordion footer (≤600px) ──
+   Each .site-footer-col becomes a tap-to-expand card. Brand col stays
+   always-visible at the top. JS toggles .is-closed; CSS does the rest. */
+@media (max-width: 600px) {
+  .site-footer { padding: 3rem 1.6rem 1.6rem; margin-top: 3rem; }
+  .site-footer-inner {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .site-footer-brand {
+    padding-bottom: 1.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 0.4rem;
+  }
+  .site-footer-mission { max-width: none; }
+
+  /* Each non-brand column = collapsible row */
+  .site-footer-col {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .site-footer-col h4 {
+    margin: 0;
+    padding: 1.4rem 0;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-footer-col h4::after {
+    content: '';
+    width: 1rem;
+    height: 1rem;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    margin-right: 0.4rem;
+  }
+  .site-footer-col.is-closed h4::after {
+    transform: rotate(-45deg);
+  }
+  /* Hide all children except the title when closed */
+  .site-footer-col.is-closed > :not(h4) {
+    display: none;
+  }
+  /* Open state: indent links + a bit of breathing room */
+  .site-footer-col:not(.is-closed) {
+    padding-bottom: 1rem;
+  }
+  .site-footer-col a,
+  .site-footer-col button,
+  .site-footer-col .site-footer-meta {
+    padding: 0.6rem 0;
+    font-size: 1.3rem;
+  }
+
+  .site-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 1.6rem;
+    text-align: left;
+  }
 }
 @media (max-width: 600px) {
   .site-footer { padding: 3rem 1.6rem 1.6rem; }
@@ -6712,10 +6617,13 @@ body.is-guest #discover .discover-filters {
     flex-wrap: wrap;
     align-items: stretch;
   }
-  .featured-camp-donate {
+  .featured-camp-donate,
+  .urgent-donate {
     width: 100%;
     justify-content: center;
   }
+  /* Full-width on mobile, so the right-alignment from desktop must be undone. */
+  .urgent-donate { align-self: stretch; }
   /* Guest feature grid stacks */
   .guest-feature-grid { grid-template-columns: 1fr; gap: 1.4rem; }
   /* Prevent main-content from overflowing the viewport */
@@ -6745,248 +6653,221 @@ body.is-guest #discover .discover-filters {
 .sidebar.collapsed .sidebar-user-info,
 .sidebar.collapsed .sidebar-user-chevron { display: initial; }
 
-/* Sidebar = fixed slide-in drawer at every width (no longer occupies layout flow) */
-.layout { display: block; }
-
-.sidebar {
-  position: fixed;
-  top: 5.8rem;
-  left: 0;
-  bottom: 0;
-  z-index: 30;
-  width: 28rem;
-  margin-right: 0;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  box-shadow: var(--shadow-lg);
-  border-radius: 0 1.6rem 1.6rem 0;
-}
-.sidebar.open { transform: translateX(0); }
+/* Sidebar drawer definition consolidated to the top of this file — see the
+   `.sidebar` rule under "--- Layout ---". It fixes two bugs reported here:
+   - sidebar height shrinking on scroll (was caused by top:5.8rem + Chrome
+     address bar collapse changing the effective viewport)
+   - drawer content was unreachable past the fold (no overflow-y) */
 
 .mobile-overlay {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
-  z-index: 25;
+  /* Above sticky site-header (z:50), below sidebar drawer (z:60). */
+  z-index: 55;
 }
 .mobile-overlay.show { display: block; }
 
-/* Auth bottom taskbar: mobile-only acrylic dock. Desktop uses the top nav/sidebar. */
-body.is-auth .bottom-nav {
+/* ════════════════════════════════════════════════════════════════════════
+   Bottom nav — single Fluent-style block (replaces all legacy bottom-nav CSS).
+   Mobile-only. 5 equal items. No FAB protrusion. Labels always visible.
+   ════════════════════════════════════════════════════════════════════════ */
+.bottom-nav {
   display: none;
   position: fixed;
-  left: 50%;
-  right: auto;
-  bottom: 1.4rem;
-  transform: translateX(-50%);
-  width: min(58rem, calc(100% - 3.2rem));
-  height: 6.4rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.55rem 0.9rem max(0.55rem, env(safe-area-inset-bottom));
-  border: 1px solid rgba(148, 163, 184, 0.30);
-  border-radius: 1.6rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(241, 245, 249, 0.54));
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  box-shadow:
-    0 18px 42px rgba(15, 23, 42, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.08);
   isolation: isolate;
 }
 
-body.is-auth .bottom-nav::after {
-  display: none;
-}
-
-body.is-auth .bottom-nav-glass-indicator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--bottom-glass-w, 0);
-  height: var(--bottom-glass-h, 3px);
-  transform: translate3d(var(--bottom-glass-x, 0), var(--bottom-glass-y, 0), 0);
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(96, 165, 250, 0.35), #60a5fa, rgba(37, 99, 235, 0.44));
-  box-shadow:
-    0 0 18px rgba(96, 165, 250, 0.62),
-    0 2px 8px rgba(37, 99, 235, 0.28);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0;
-  transition:
-    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.18s ease;
-}
-
-body.is-auth .bottom-nav.has-glass-indicator .bottom-nav-glass-indicator,
-body.is-auth .bottom-nav.is-fab-active .bottom-nav-glass-indicator {
-  opacity: 1;
-}
-
-body.is-auth .bottom-nav-item {
+.bottom-nav-item {
   display: flex;
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 5rem;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  padding: 0.55rem 0.65rem;
-  border: 0;
-  border-radius: 1.2rem;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 5.4rem;
+  padding: 0.55rem 0.4rem;
+  border: none;
   background: transparent;
-  color: #475569;
-  cursor: pointer;
-  font-family: 'Poppins', Arial, sans-serif;
-  font-size: 1rem;
+  border-radius: 1.1rem;
+  color: var(--color-text-muted, #64748b);
+  font-family: inherit;
+  font-size: 1.05rem;
   font-weight: 600;
-  position: relative;
-  z-index: 1;
-  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
-body.is-auth .bottom-nav-item svg {
-  width: 2.1rem;
-  height: 2.1rem;
+.bottom-nav-item svg {
+  width: 2.2rem;
+  height: 2.2rem;
   flex-shrink: 0;
+  pointer-events: none;
 }
 
-body.is-auth .bottom-nav-item span {
-  font-size: 0.95rem;
+.bottom-nav-item span {
+  font-size: 1.05rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
-body.is-auth .bottom-nav-item.active::before {
+.bottom-nav-item:hover {
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--color-primary, #2563eb);
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item:active {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--color-primary, #2563eb);
+}
+
+.bottom-nav-item.active span {
+  font-weight: 700;
+}
+
+/* Center FAB (Create Campaign). Lifted blue circle, white plus, no label.
+   "Notch" effect: a thick page-bg colored ring around the FAB makes the
+   bar appear cut around it. Soft pulsing glow underneath draws attention. */
+.bottom-nav-fab {
+  position: relative;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  width: 5.6rem;
+  height: 5.6rem;
+  min-height: 0;
+  justify-self: center;
+  align-self: center;
+  transform: translateY(-1.6rem);
+  /* The first shadow = solid ring in page-bg color → fakes the notch cutout.
+     Second shadow = soft drop shadow under the FAB for depth. */
+  box-shadow:
+    0 0 0 0.6rem var(--color-bg),
+    0 10px 24px rgba(37, 99, 235, 0.38);
+  padding: 0;
+  overflow: visible;
+}
+.bottom-nav-fab svg {
+  width: 2.4rem;
+  height: 2.4rem;
+  position: relative;
+  z-index: 1;
+}
+/* Pulsing ring: a pseudo-element that scales out + fades. Loops every 2s.
+   Pauses on hover so the user feels in control. */
+.bottom-nav-fab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-primary);
+  opacity: 0.55;
+  z-index: 0;
+  animation: fabPulse 2s ease-out infinite;
+  pointer-events: none;
+}
+.bottom-nav-fab:hover::before,
+.bottom-nav-fab:active::before {
+  animation-play-state: paused;
+}
+@keyframes fabPulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  70%  { transform: scale(1.55); opacity: 0;    }
+  100% { transform: scale(1.55); opacity: 0;    }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav-fab::before { animation: none; }
+}
+.bottom-nav-fab:hover,
+.bottom-nav-fab.active,
+.bottom-nav-fab:active {
+  background: var(--color-primary-dark);
+  color: #fff;
+  transform: translateY(-1.4rem) scale(1.04);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+/* Dark FAB styles consolidated into the bottom-nav dark mode block below. */
+
+/* Hide the legacy JS-driven glass indicator — the pill replaces it. */
+.bottom-nav-glass-indicator {
   display: none;
 }
 
-body.is-auth .bottom-nav-item:hover,
-body.is-auth .bottom-nav-item.active,
-body.is-auth .bottom-nav-item.pressed,
-body.is-auth .bottom-nav-item:active {
-  background: rgba(96, 165, 250, 0.11);
-  color: #2563eb;
-  transform: none;
+/* Activation: visible for auth users at every viewport.
+   Mobile (≤768px): edge-to-edge bar at the bottom + top header hidden so the
+   bottom bar is the single primary nav surface.
+   Desktop (>768px): floating pill dock centered above the bottom edge — sits
+   alongside the desktop top header as a quick-access dock (modern UI/UX). */
+body.is-auth .bottom-nav {
+  display: grid;
 }
-
-body.is-auth .bottom-nav-fab,
-body.is-auth .bottom-nav-fab.active {
-  width: auto;
-  height: auto;
-  min-width: 0;
-  margin-top: 0;
-  flex: 1 1 0;
-  border: 1px solid rgba(96, 165, 250, 0.28);
-  border-radius: 1.2rem;
-  background: rgba(37, 99, 235, 0.15);
-  color: #2563eb !important;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-body.is-auth .bottom-nav-fab svg {
-  width: 2.4rem;
-  height: 2.4rem;
+body.is-auth .main-content {
+  padding-bottom: 12rem;
 }
 
 @media (max-width: 768px) {
+  /* Mobile auth top bar: SAME visual style as desktop (chip + nav). Nav
+     links hidden because the bottom bar covers Home / Campaigns / Help.
+     No mobile-only brand or bell added — keeps the look consistent. */
+  body.is-auth .site-header.auth-only .site-header-nav {
+    display: none;
+  }
+  body.is-auth .site-header.auth-only .site-header-user {
+    margin-right: auto;
+  }
+  body.is-auth .main-content {
+    padding-bottom: 8.5rem;
+  }
+}
+
+/* Desktop floating dock styling */
+@media (min-width: 769px) {
   body.is-auth .bottom-nav {
-    display: flex;
     left: 50%;
     right: auto;
-    bottom: max(0.85rem, env(safe-area-inset-bottom));
+    bottom: 2rem;
     transform: translateX(-50%);
-    width: min(43rem, calc(100% - 2rem));
-    height: 6.6rem;
-    gap: 0.2rem;
-    padding: 0.55rem;
-    border-radius: 2.2rem;
-    background:
-      linear-gradient(180deg, rgba(30, 44, 60, 0.84), rgba(18, 31, 44, 0.78));
-    border-color: rgba(148, 163, 184, 0.18);
+    width: min(56rem, calc(100% - 4rem));
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
     box-shadow:
-      0 20px 46px rgba(0, 0, 0, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      0 12px 36px rgba(15, 23, 42, 0.14),
+      0 2px 8px rgba(15, 23, 42, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
-
-  body.is-auth .bottom-nav-glass-indicator {
-    top: auto;
-    bottom: 0.9rem;
-    height: 0.3rem;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(96, 165, 250, 0.18), #60a5fa, rgba(45, 212, 191, 0.32));
-    box-shadow: 0 0 16px rgba(96, 165, 250, 0.52);
+  body.is-auth .bottom-nav .bottom-nav-item {
+    min-height: 5rem;
+    border-radius: 9999px;
+    padding: 0.4rem 0.4rem;
   }
-
-  body.is-auth .bottom-nav-item {
-    flex: 0 0 4.85rem;
-    min-height: 5.45rem;
-    padding: 0.45rem 0.25rem;
-    gap: 0.18rem;
-    border-radius: 1.7rem;
-    color: #cbd5e1;
-    transition:
-      flex-basis 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      background 0.18s ease,
-      color 0.18s ease,
-      box-shadow 0.18s ease;
+  body.is-auth .bottom-nav .bottom-nav-item svg {
+    width: 2rem;
+    height: 2rem;
   }
-
-  body.is-auth .bottom-nav-item svg {
-    width: 2.15rem;
-    height: 2.15rem;
+  body.is-auth .bottom-nav .bottom-nav-item span {
+    font-size: 1rem;
   }
-
-  body.is-auth .bottom-nav-item span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    font-size: 0.98rem;
-    font-weight: 800;
-  }
-
-  body.is-auth .bottom-nav-item:hover,
-  body.is-auth .bottom-nav-item.active,
-  body.is-auth .bottom-nav-item.pressed,
-  body.is-auth .bottom-nav-item:active {
-    background: rgba(96, 165, 250, 0.13);
-    color: #f8fafc;
-  }
-
-  body.is-auth .bottom-nav-item.active {
-    flex-basis: 8.7rem;
-    background:
-      linear-gradient(180deg, rgba(96, 165, 250, 0.28), rgba(37, 99, 235, 0.24));
-    border: 1px solid rgba(96, 165, 250, 0.24);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 10px 24px rgba(37, 99, 235, 0.16);
-  }
-
-  body.is-auth .bottom-nav-item.active span {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip: auto;
-    line-height: 1;
-  }
-
-  body.is-auth .bottom-nav-fab,
-  body.is-auth .bottom-nav-fab.active {
-    background:
-      linear-gradient(180deg, rgba(96, 165, 250, 0.30), rgba(37, 99, 235, 0.22));
-    color: #dbeafe !important;
-  }
+  /* Bottom-nav dark mode lives in the consolidated block below. */
 }
 
 /* Centered main content with breathing room on the sides */
@@ -7015,33 +6896,6 @@ body.is-auth .main-content {
   body.is-auth .section-header p {
     max-width: calc(100vw - 3.2rem);
   }
-
-  body.is-auth .bottom-nav {
-    bottom: max(0.7rem, env(safe-area-inset-bottom));
-    width: min(37.6rem, calc(100% - 1.4rem));
-    height: 6.1rem;
-    padding: 0.5rem;
-    border-radius: 2rem;
-  }
-
-  body.is-auth .bottom-nav-item {
-    flex-basis: 4.45rem;
-    min-height: 5.1rem;
-    padding: 0.35rem 0.15rem;
-  }
-
-  body.is-auth .bottom-nav-item.active {
-    flex-basis: 7.8rem;
-  }
-
-  body.is-auth .bottom-nav-item svg {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  body.is-auth .bottom-nav-item span {
-    font-size: 0.88rem;
-  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -7054,10 +6908,8 @@ html[data-theme="dark"] body {
 
 html[data-theme="dark"] .site-header,
 html[data-theme="dark"] .sidebar,
-html[data-theme="dark"] .bottom-nav,
 html[data-theme="dark"] .guest-drawer,
-html[data-theme="dark"] .modal,
-html[data-theme="dark"] .auth-modal {
+html[data-theme="dark"] .modal {
   background: rgba(15, 23, 42, 0.94);
   border-color: rgba(148, 163, 184, 0.22);
   box-shadow: 0 20px 56px rgba(0, 0, 0, 0.34);
@@ -7115,8 +6967,7 @@ html[data-theme="dark"] .wallet-card,
 html[data-theme="dark"] .card,
 html[data-theme="dark"] .discover-toolbar,
 html[data-theme="dark"] .filter-advanced,
-html[data-theme="dark"] .donors-summary,
-html[data-theme="dark"] .auth-modal {
+html[data-theme="dark"] .donors-summary {
   background: rgba(17, 24, 39, 0.88);
   border-color: rgba(148, 163, 184, 0.20);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
@@ -7185,7 +7036,30 @@ html[data-theme="dark"] .dash-search:focus-within {
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
 }
 
-html[data-theme="dark"] .payment-method-option.is-recommended,
+/* Keep the dash search input dark on focus — the light-mode rule above
+   forces white, which flashes against the dark dashboard.
+   Also drop the wide focus ring so the pill input doesn't read as a square box. */
+html[data-theme="dark"] .dash-search input,
+html[data-theme="dark"] .dash-search input:focus,
+html[data-theme="dark"] .dash-search input:hover {
+  background: #0f172a;
+  color: #f8fafc;
+}
+html[data-theme="dark"] .dash-search input::placeholder {
+  color: #64748b;
+}
+.dash-search input:focus,
+html[data-theme="dark"] .dash-search input:focus {
+  box-shadow: none;
+}
+html[data-theme="dark"] .dash-search:focus-within {
+  box-shadow: none;
+}
+
+/* Removed: .payment-method-option.is-recommended used to be unconditionally
+   painted blue here, which made Whish stay blue forever — even after picking
+   Visa. The "Recommended" ribbon (::before) is enough to signal recommendation;
+   the blue selected look should ONLY come from :has(input:checked). */
 html[data-theme="dark"] .cat-chip.active,
 html[data-theme="dark"] .adv-pill.active,
 html[data-theme="dark"] .active-filter-pill,
@@ -7261,6 +7135,24 @@ html[data-theme="dark"] body.is-guest #discover .discover-toolbar,
 html[data-theme="dark"] body.is-guest #discover .discover-filters {
   background: rgba(15, 23, 42, 0.94);
   border-color: rgba(148, 163, 184, 0.18);
+}
+
+/* Dark mode for the mobile filter trigger button + sheet head + bottom-sheet
+   backdrop. The base styles use light colors; these tokens flip them dark. */
+html[data-theme="dark"] .discover-filter-trigger {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+html[data-theme="dark"] .discover-filter-trigger:hover {
+  border-color: var(--color-primary);
+}
+html[data-theme="dark"] .discover-filters-sheet-head {
+  border-bottom-color: var(--color-border);
+}
+html[data-theme="dark"] .discover-filters-sheet-close {
+  background: rgba(96, 165, 250, 0.12);
+  color: #bfdbfe;
 }
 
 html[data-theme="dark"] .discover-filters,
@@ -7420,42 +7312,45 @@ html[data-theme="dark"] .payment-method-icon--card {
   background: linear-gradient(135deg, #1A1F71, #2563eb);
 }
 
-html[data-theme="dark"] body.is-auth .bottom-nav {
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.72));
-  border-color: rgba(96, 165, 250, 0.20);
+/* ── Bottom-nav dark mode — single consolidated block (deep glass).
+   Deep navy surface, soft blue active pill, FAB ring uses dark page-bg so
+   the notch effect still reads against a dark background. */
+html[data-theme="dark"] .bottom-nav {
+  background: rgba(15, 23, 42, 0.88);
+  border-top: 1px solid rgba(148, 163, 184, 0.20);
   box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 -8px 28px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
-
-html[data-theme="dark"] body.is-auth .bottom-nav::after {
-  display: none;
+html[data-theme="dark"] .bottom-nav-item {
+  color: #cbd5e1;
 }
-
-html[data-theme="dark"] body.is-auth .bottom-nav-glass-indicator {
-  background: linear-gradient(90deg, rgba(147, 197, 253, 0.25), #60a5fa, rgba(37, 99, 235, 0.44));
-  box-shadow: 0 0 18px rgba(96, 165, 250, 0.48);
+html[data-theme="dark"] .bottom-nav-item:hover {
+  background: rgba(96, 165, 250, 0.10);
+  color: #93c5fd;
 }
-
-html[data-theme="dark"] body.is-auth .bottom-nav.is-fab-active .bottom-nav-glass-indicator {
-  opacity: 1;
-}
-
-html[data-theme="dark"] body.is-auth .bottom-nav-item:hover,
-html[data-theme="dark"] body.is-auth .bottom-nav-item.active,
-html[data-theme="dark"] body.is-auth .bottom-nav-item.pressed,
-html[data-theme="dark"] body.is-auth .bottom-nav-item:active {
-  background: rgba(96, 165, 250, 0.12);
+html[data-theme="dark"] .bottom-nav-item.active {
+  background: rgba(96, 165, 250, 0.18);
   color: #bfdbfe;
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.22);
 }
-
-html[data-theme="dark"] body.is-auth .bottom-nav-fab,
-html[data-theme="dark"] body.is-auth .bottom-nav-fab.active {
-  background: rgba(37, 99, 235, 0.20);
-  color: #bfdbfe !important;
-  border-color: rgba(96, 165, 250, 0.24);
-  box-shadow: none;
+html[data-theme="dark"] .bottom-nav-fab {
+  background: #60a5fa;
+  color: #051022;
+  /* Notch ring uses the dark page bg so the cutout reads on dark mode too. */
+  box-shadow:
+    0 0 0 0.6rem var(--color-bg),
+    0 12px 28px rgba(96, 165, 250, 0.42);
+}
+html[data-theme="dark"] .bottom-nav-fab:hover,
+html[data-theme="dark"] .bottom-nav-fab.active {
+  background: #93c5fd;
+  color: #020617;
+}
+html[data-theme="dark"] .bottom-nav-fab::before {
+  background: #60a5fa;
 }
 
 /* Compact donation checkout */
@@ -7473,57 +7368,10 @@ html[data-theme="dark"] body.is-auth .bottom-nav-fab.active {
   margin-top: 1rem;
 }
 
-#donate-modal .payment-method-option {
-  grid-template-columns: 4.2rem minmax(0, 1fr);
-  gap: 1.35rem;
-  padding: 1rem 3.9rem 1rem 1.15rem;
-  border-radius: 1.1rem;
-}
-
-#donate-modal .payment-method-option:hover {
-  transform: none;
-}
-
-#donate-modal .payment-method-icon {
-  width: 4.2rem;
-  height: 4.2rem;
-  border-radius: 1rem;
-  font-size: 1.55rem;
-}
-
-#donate-modal .payment-method-option strong {
-  font-size: 1.28rem;
-}
-
-#donate-modal .payment-method-option small {
-  font-size: 1.06rem;
-  line-height: 1.35;
-}
-
-#donate-modal .payment-method-fee {
-  margin-top: 0.35rem;
-  padding: 0.22rem 0.62rem;
-  font-size: 0.98rem;
-}
-
-#donate-modal .payment-method-option::after {
-  right: 0.9rem;
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%);
-  width: 2rem;
-  height: 2rem;
-}
-
-#donate-modal .payment-method-option.is-recommended::before,
-#donate-modal .payment-method-option.is-best::before {
-  top: 0.55rem;
-  right: 0.75rem;
-  max-width: none;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: nowrap;
-}
+/* Older horizontal `#donate-modal .payment-method-option` overrides removed.
+   They were silently clobbering the vertical-layout block (lines ~1810)
+   on every viewport >=720px — that's why icon→title spacing wouldn't budge.
+   Single source of truth now lives in the vertical-layout @media block. */
 
 #donate-modal .payment-method-details {
   margin-top: 0.8rem;
@@ -7582,33 +7430,8 @@ html[data-theme="dark"] body.is-auth .bottom-nav-fab.active {
   margin-bottom: 1rem;
 }
 
-@media (min-width: 720px) {
-  #donate-modal .payment-method-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  #donate-modal .payment-method-option {
-    grid-template-columns: 1fr;
-    min-height: 9.5rem;
-    padding: 0.9rem;
-  }
-
-  #donate-modal .payment-method-option::after {
-    top: auto;
-    right: 0.8rem;
-    bottom: 0.8rem;
-    transform: none;
-  }
-
-  #donate-modal .payment-method-body {
-    grid-column: 1;
-    padding-right: 2.4rem;
-  }
-
-  #donate-modal .payment-method-option small {
-    display: none;
-  }
-}
+/* Duplicate @media (min-width: 720px) block removed — was overriding the
+   single source of truth at line ~1797. */
 
 @media (max-width: 520px) {
   #donate-modal .modal {
@@ -7800,11 +7623,17 @@ html[data-theme="dark"] body.is-auth .bottom-nav-fab.active {
   cursor: pointer;
 }
 
-.activity-filter-tabs button.active,
-.activity-filter-tabs button:hover {
+/* Active tab: bold blue pill. Hover: subtle background only so it never
+   looks selected. Previously hover === active, which made any hovered tab
+   look like a second active item (the bug in the screenshot). */
+.activity-filter-tabs button.active {
   background: #fff;
   color: var(--color-primary);
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+.activity-filter-tabs button:hover:not(.active) {
+  color: var(--color-text);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .activity-ledger-list {
@@ -8530,51 +8359,9 @@ html[data-theme="dark"] .bill-foot-note {
   border-top: 1px dashed #cbd5e1;
 }
 
-/* Registered dashboard polish: compact command strip + aligned sidebar drawer */
-body.is-auth .quick-actions {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin: -0.4rem 0 1.6rem;
-  padding: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 1.6rem;
-  background: rgba(255, 255, 255, 0.62);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58);
-}
-
-body.is-auth .action-btn {
-  min-height: 4.7rem;
-  flex-direction: row;
-  gap: 0.7rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 1.15rem;
-  border-color: rgba(148, 163, 184, 0.26);
-  background: rgba(248, 250, 252, 0.78);
-  color: #475569;
-  font-size: 1.15rem;
-  font-weight: 800;
-  box-shadow: none;
-}
-
-body.is-auth .action-btn svg {
-  width: 1.8rem;
-  height: 1.8rem;
-}
-
-body.is-auth .action-btn:hover,
-body.is-auth .action-btn.pressed,
-body.is-auth .action-btn:active {
-  background: rgba(96, 165, 250, 0.13);
-  border-color: rgba(96, 165, 250, 0.34);
-  color: #2563eb;
-  transform: none;
-  box-shadow: none;
-}
-
-.sidebar {
-  padding: 1.2rem 0.9rem 1.4rem;
-}
+/* `.sidebar { padding: 1.2rem 0.9rem 1.4rem }` lived here and silently
+   overrode the drawer's safe-area padding via the shorthand. Folded into the
+   consolidated `.sidebar` rule at the top of this file. */
 
 .sidebar-brand {
   padding: 0.2rem 0.2rem 1rem;
@@ -8591,8 +8378,8 @@ body.is-auth .action-btn:active {
   min-height: 4.6rem;
   width: 100%;
   border-radius: 1.15rem;
-  padding: 1rem 1.1rem;
-  gap: 1rem;
+  padding: 1rem 1.4rem;
+  gap: 1.2rem;
 }
 
 .sidebar-item.active::before {
@@ -8600,8 +8387,26 @@ body.is-auth .action-btn:active {
 }
 
 .sidebar-item svg {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Pin every sidebar item to the same left edge so icons + labels line up
+   vertically across Dashboard / Campaigns / Profile / etc.
+   Higher specificity than the bare .sidebar-item rules so it wins without
+   needing !important. */
+.sidebar .sidebar-item,
+.sidebar .sidebar-user {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Align the avatar circle with where icons sit below it so the user card
+   reads as part of the same column. */
+.sidebar .sidebar-user {
+  padding-left: 1.4rem;
+  padding-right: 1.4rem;
+  gap: 1rem;
 }
 
 .sidebar-auth-section {
@@ -8609,25 +8414,6 @@ body.is-auth .action-btn:active {
   gap: 0.35rem;
 }
 
-html[data-theme="dark"] body.is-auth .quick-actions {
-  background: rgba(15, 23, 42, 0.68);
-  border-color: rgba(148, 163, 184, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-html[data-theme="dark"] body.is-auth .action-btn {
-  background: rgba(15, 23, 42, 0.62);
-  border-color: rgba(148, 163, 184, 0.20);
-  color: #cbd5e1;
-}
-
-html[data-theme="dark"] body.is-auth .action-btn:hover,
-html[data-theme="dark"] body.is-auth .action-btn.pressed,
-html[data-theme="dark"] body.is-auth .action-btn:active {
-  background: rgba(96, 165, 250, 0.13);
-  border-color: rgba(96, 165, 250, 0.30);
-  color: #bfdbfe;
-}
 
 /* People directory + profile quick view */
 .people-panel {
@@ -8979,21 +8765,6 @@ html[data-theme="dark"] .person-linked-row:focus-visible {
 }
 
 @media (max-width: 760px) {
-  body.is-auth .quick-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.6rem;
-    padding: 0.65rem;
-    margin-bottom: 1.2rem;
-  }
-
-  body.is-auth .action-btn {
-    min-height: 4.8rem;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.65rem 0.45rem;
-    font-size: 1.02rem;
-  }
-
   .people-toolbar {
     grid-template-columns: 1fr;
   }
@@ -9038,8 +8809,6 @@ html[data-theme="dark"] .person-linked-row:focus-visible {
 /* Final alignment pass for buttons */
 button,
 .btn,
-.action-btn,
-.auth-btn,
 .site-auth-btn,
 .hero-primary-btn,
 .guest-unlock-cta,
@@ -9194,11 +8963,6 @@ html[data-theme="dark"] .bill-verification {
 @media (max-width: 480px) {
 }
 
-/* Final mobile dock guard: keeps the old bar styles from resurfacing. */
-body.is-auth .bottom-nav {
-  display: none;
-}
-
 @media (max-width: 768px) {
   html,
   body {
@@ -9237,63 +9001,1093 @@ body.is-auth .bottom-nav {
     width: 100%;
   }
 
-  body.is-auth .card-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-  body.is-auth .flex-1,
-  body.is-auth .flex-2 {
-    min-width: 0;
-    width: 100%;
-  }
-
-  body.is-auth .quick-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  body.is-auth .action-btn {
-    min-width: 0;
-    width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  body.is-auth .action-btn span {
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
-
+  /* Removed: body.is-auth .card-row + .flex-1 + .flex-2 — those classes
+     no longer exist in any HTML. */
   .people-search input {
     min-width: 0;
     font-size: 1.08rem;
   }
 
-  body.is-auth .bottom-nav {
-    display: flex;
-    overflow: hidden;
-  }
+}
 
-  body.is-auth .bottom-nav::before,
-  body.is-auth .bottom-nav::after,
-  body.is-auth .bottom-nav-item::before,
-  body.is-auth .bottom-nav-item::after {
-    display: none !important;
-  }
+/* ════════════════════════════════════════════════════════════════════════
+   Stage 2 — Dashboard "How Sawa works" guide + Profile summary cards
+   Scoped to new classes so they don't fight any older selectors.
+   ════════════════════════════════════════════════════════════════════════ */
 
-  body.is-auth .bottom-nav-glass-indicator {
-    display: block !important;
-    height: 0.3rem !important;
-    border-radius: 999px !important;
-  }
+/* How Sawa works styles moved to css/guide.css (their dedicated page). */
 
-  body.is-auth .bottom-nav-fab,
-  body.is-auth .bottom-nav-fab.active {
-    border-radius: 1.7rem;
-    transform: none;
+/* ── Profile summary + extras ── */
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+.profile-summary-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.profile-summary-label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.profile-summary-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.profile-summary-card small {
+  font-size: 1.15rem;
+  color: var(--color-text-light);
+}
+.profile-summary-status {
+  font-size: 1.6rem;
+}
+.profile-status-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 25%, transparent);
+}
+
+.profile-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+  margin-top: 2rem;
+}
+@media (max-width: 720px) {
+  .profile-extra-grid {
+    grid-template-columns: 1fr;
   }
 }
+.profile-extra-card h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1.2rem;
+  color: var(--color-text);
+}
+.profile-extra-card-wide {
+  grid-column: 1 / -1;
+}
+.profile-extra-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.profile-extra-actions .btn {
+  flex: 1 1 auto;
+  min-width: 14rem;
+}
+.profile-security-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.profile-security-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.3rem;
+  color: var(--color-text);
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+.profile-security-list li:last-child {
+  border-bottom: none;
+}
+.profile-pill {
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 0.3rem 0.9rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+.profile-pill-ok {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+.profile-pill-soon {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+.profile-extra-note {
+  font-size: 1.15rem;
+  color: var(--color-text-light);
+  margin: 1rem 0 0;
+}
+.profile-empty {
+  font-size: 1.3rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.profile-activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.profile-activity-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px dashed var(--color-border);
+  font-size: 1.3rem;
+  color: var(--color-text);
+}
+.profile-activity-list li:last-child {
+  border-bottom: none;
+}
+.profile-activity-list li span {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Stage 3a — Report Campaign button + modal (frontend only)
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Report flag button injected onto every .camp-card by JS.
+   Bottom-right of the card image — keeps clear of the Urgent badge (top-right)
+   and the category tag (top-left). */
+.camp-card-media { position: relative; }
+.camp-report-btn {
+  position: absolute;
+  bottom: 0.8rem;
+  right: 0.8rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: background 0.18s ease, color 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+  z-index: 2;
+}
+.camp-report-btn svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.camp-report-btn:hover,
+.camp-report-btn:focus-visible {
+  background: var(--color-danger);
+  color: #fff;
+  opacity: 1;
+  transform: scale(1.06);
+  outline: none;
+}
+
+/* Modal */
+.report-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.6rem;
+}
+/* Critical: HTML's [hidden] would normally set display:none, but the
+   display:flex above overrides it. Re-assert display:none for [hidden]
+   so the overlay doesn't sit invisibly on top of the page blocking clicks. */
+.report-overlay[hidden] {
+  display: none;
+}
+.report-modal {
+  position: relative;
+  width: min(46rem, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  padding: 2.4rem 2.4rem 2rem;
+  box-shadow: var(--shadow-xl);
+}
+.report-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.report-close:hover {
+  background: var(--color-bg-deep);
+  color: var(--color-text);
+}
+.report-modal h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+  color: var(--color-text);
+}
+.report-sub {
+  font-size: 1.3rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1.6rem;
+  line-height: 1.5;
+}
+.report-sub strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* Segmented control: Campaign / User toggle inside the report modal */
+.report-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  background: var(--color-bg-deep);
+  border-radius: var(--r);
+  margin-bottom: 1.6rem;
+}
+.report-seg-btn {
+  border: none;
+  background: transparent;
+  padding: 0.8rem 1rem;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: calc(var(--r) - 0.4rem);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.report-seg-btn:hover {
+  color: var(--color-text);
+}
+.report-seg-btn.is-active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+.report-form label {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.5rem;
+  color: var(--color-text);
+}
+.report-form label small {
+  color: var(--color-text-light);
+  font-weight: 500;
+}
+.report-form select,
+.report-form textarea {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--r);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1.4rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.report-form select:focus,
+.report-form textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+.report-form textarea {
+  resize: vertical;
+  min-height: 9rem;
+}
+.report-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+.report-success {
+  margin-top: 1.6rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--r);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+@media (max-width: 520px) {
+  .report-modal {
+    padding: 2rem 1.6rem 1.6rem;
+  }
+  .report-actions {
+    flex-direction: column-reverse;
+  }
+  .report-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   X / Twitter-style Profile  (banner + view mode + in-place edit toggle)
+   Lives at the end so it cleanly overrides legacy .profile-card layout
+   without needing !important. Deletes that the old .profile-header
+   flex-wrap and .profile-display-name placeholder italic — both replaced
+   by the view-mode identity stack below.
+   ════════════════════════════════════════════════════════════════════════ */
+
+#profile.section { padding-top: 0; }
+
+/* X-style profile hero — rebuilt with natural flow + negative-margin avatar
+   instead of absolute positioning. The old absolute approach pushed the
+   avatar off-screen on narrow viewports because the containing block math
+   broke when the section width changed. Now everything is in normal flow:
+     banner image → identity column → avatar lifted up with margin-top: -6rem
+   so it overlaps the banner cleanly at every width. */
+.profile-hero {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+.profile-banner-image {
+  height: 16rem;
+  background: linear-gradient(135deg, #1e3a8a 0%, var(--color-primary) 55%, #60a5fa 100%);
+  /* TODO(backend): once users.banner_path exists, PHP can inject the URL
+     as an inline background-image. Until then this gradient is the default. */
+}
+.profile-edit-toggle {
+  position: absolute;
+  top: 1.4rem;
+  right: 1.4rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.65);
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.4);
+  color: #fff;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.18s, transform 0.15s;
+}
+.profile-edit-toggle:hover { background: rgba(15, 23, 42, 0.6); transform: translateY(-1px); }
+.profile-edit-toggle svg   { width: 1.5rem; height: 1.5rem; }
+
+.profile-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 2.4rem 2rem;
+}
+.profile-avatar-frame {
+  width: 11rem;
+  height: 11rem;
+  margin-top: -5.5rem;   /* lift half the avatar over the banner */
+  border-radius: 50%;
+  background: var(--color-surface);
+  padding: 0.4rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  align-self: flex-start;
+  box-sizing: border-box;
+}
+.profile-avatar-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.profile-view-name {
+  margin: 0.6rem 0 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+.profile-identity .profile-role-badge {
+  align-self: flex-start;
+  margin: 0;
+}
+.profile-view-bio {
+  font-size: 1.4rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+}
+.profile-view-bio-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Edit form lives in its own #profile-edit section now (X-style sub-page).
+   The old in-place .is-editing toggle CSS was deleted. */
+.profile-edit-card {
+  padding: 2.4rem;
+}
+.profile-edit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: 2.4rem;
+}
+.profile-edit-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+.profile-edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.profile-edit-fields label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.profile-edit-fields input,
+.profile-edit-fields textarea {
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 1.2rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+.profile-edit-fields textarea { min-height: 12rem; resize: vertical; }
+.profile-edit-fields input:focus,
+.profile-edit-fields textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+.profile-edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+.profile-edit-actions .btn { flex: 1; }
+@media (max-width: 720px) {
+  .profile-edit-form { grid-template-columns: 1fr; gap: 1.6rem; }
+  .profile-edit-actions { flex-direction: column-reverse; }
+}
+
+.profile-banner-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 9999px;
+  background: var(--color-bg-deep);
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.profile-banner-edit-btn svg { width: 1.4rem; height: 1.4rem; }
+
+@media (max-width: 600px) {
+  .profile-banner-image { height: 13rem; }
+  .profile-avatar-frame {
+    width: 9rem;
+    height: 9rem;
+    margin-top: -4.5rem;
+  }
+  .profile-view-name { font-size: 1.8rem; }
+  .profile-identity { padding: 0 1.6rem 1.6rem; }
+  .profile-edit-toggle { top: 1rem; right: 1rem; padding: 0.55rem 1.1rem; font-size: 1.15rem; }
+  .profile-edit-actions { flex-direction: column-reverse; }
+}
+
+html[data-theme="dark"] .profile-avatar-frame { background: var(--color-surface); }
+html[data-theme="dark"] .profile-edit-toggle { background: rgba(2, 6, 23, 0.55); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Full-screen sub-page mode (Twitter / X / Instagram pattern)
+   When `body.in-subpage` is set (by switchSection on any data-back section)
+   the dashboard chrome — top header + bottom bar — hides. The active
+   section fills the viewport, scrolls internally, and the sticky back bar
+   below is the only top control.
+   ════════════════════════════════════════════════════════════════════════ */
+body.in-subpage .site-header.auth-only,
+body.in-subpage .bottom-nav {
+  display: none !important;          /* Required: these have higher-specificity
+                                        @media display rules elsewhere. Single
+                                        case where !important is genuinely
+                                        unavoidable without restructuring all
+                                        the show/hide media queries. */
+}
+body.in-subpage .main-content {
+  padding-top: 0;
+  padding-bottom: 0;                  /* no bottom-bar to clear */
+}
+body.in-subpage .section.active {
+  min-height: 100dvh;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Sub-section back bar (Twitter/X pattern)
+   Injected by JS into every <section data-back="…"> on load. Sticky at the
+   top of the section so it follows the user as they scroll inside it.
+   ════════════════════════════════════════════════════════════════════════ */
+.section-back-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1rem 1.6rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+  margin: 0 0 1.6rem;
+}
+.section-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.section-back-btn:hover { background: var(--color-bg-deep); }
+.section-back-btn svg   { width: 1.8rem; height: 1.8rem; }
+.section-back-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+html[data-theme="dark"] .section-back-bar {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: rgba(148, 163, 184, 0.18);
+}
+html[data-theme="dark"] .section-back-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Settings sub-page (Phase 6.0.a)
+   Single source of truth. Row list with icon + body + state/chevron.
+   ════════════════════════════════════════════════════════════════════════ */
+.settings-list {
+  max-width: 64rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.6rem 1.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.4rem;
+  text-align: left;
+  font-family: inherit;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  width: 100%;
+}
+.settings-row:hover:not(.is-disabled) {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+.settings-row.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.settings-row-icon {
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+.settings-row-icon svg { width: 2rem; height: 2rem; }
+.settings-row-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.settings-row-body strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+.settings-row-body small {
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+.settings-row-state {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.settings-row-soon {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+}
+.settings-row-chevron {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Sun/moon icon swap (replaces deleted .sidebar-theme-toggle rules). */
+[data-theme-toggle] .theme-sun { display: none; }
+html[data-theme="dark"] [data-theme-toggle] .theme-moon { display: none; }
+html[data-theme="dark"] [data-theme-toggle] .theme-sun { display: block; }
+
+html[data-theme="dark"] .settings-row {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+html[data-theme="dark"] .settings-row-icon {
+  background: rgba(96, 165, 250, 0.14);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Sidebar account switcher (Phase 6.0.a extension)
+   Tiny caret on the user card opens a panel listing the current account
+   plus an "Add an account" link. Multi-account list rows are rendered by
+   PHP once /php/auth/sessions.php exists — no fake rows in the meantime.
+   ════════════════════════════════════════════════════════════════════════ */
+.sidebar-user-wrap {
+  position: relative;
+}
+.sidebar-account-toggle {
+  position: absolute;
+  top: 1.4rem;
+  right: 1rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.18s;
+  padding: 0;
+}
+.sidebar-account-toggle:hover {
+  background: var(--color-bg-deep);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.sidebar-account-toggle svg { width: 1.4rem; height: 1.4rem; transition: transform 0.2s ease; }
+.sidebar-account-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+.sidebar-account-panel {
+  margin: 0.6rem 0.8rem 0.8rem;
+  padding: 0.6rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.sidebar-account-panel[hidden] { display: none; }
+
+.sidebar-account-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 0.9rem;
+}
+.sidebar-account-row.is-current {
+  background: var(--color-primary-light);
+}
+/* Switch-account rows are submit buttons styled to match the account rows. */
+.sidebar-account-switch-form { margin: 0; }
+button.sidebar-account-row {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+button.sidebar-account-row:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+html[data-theme="dark"] button.sidebar-account-row:hover {
+  background: rgba(96, 165, 250, 0.12);
+}
+.sidebar-account-avatar {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.sidebar-account-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sidebar-account-info strong {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-account-info small {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+.sidebar-account-check {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.sidebar-account-add {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.9rem;
+  text-decoration: none;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  transition: background 0.15s, border-color 0.15s;
+}
+.sidebar-account-add:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+.sidebar-account-add-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-account-add-icon svg { width: 1.2rem; height: 1.2rem; }
+
+html[data-theme="dark"] .sidebar-account-row.is-current {
+  background: rgba(96, 165, 250, 0.14);
+}
+html[data-theme="dark"] .sidebar-account-add:hover {
+  background: rgba(96, 165, 250, 0.12);
+}
+
+/* Final dark-mode sweep.
+   This stays at the end because newer profile, activity, people, messages, and
+   settings blocks define light backgrounds after the first dark-mode section. */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .layout,
+html[data-theme="dark"] .main-content,
+html[data-theme="dark"] .section,
+html[data-theme="dark"] .dashboard-section {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .dash-card,
+html[data-theme="dark"] .profile-card,
+html[data-theme="dark"] .profile-summary-card,
+html[data-theme="dark"] .profile-extra-card,
+html[data-theme="dark"] .wallet-card,
+html[data-theme="dark"] .campaign-form,
+html[data-theme="dark"] .people-panel,
+html[data-theme="dark"] .person-modal,
+html[data-theme="dark"] .messages-shell,
+html[data-theme="dark"] .chat-panel,
+html[data-theme="dark"] .activity-total-card,
+html[data-theme="dark"] .activity-ledger,
+html[data-theme="dark"] .bill-preview,
+html[data-theme="dark"] .bill-paper,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .settings-row,
+html[data-theme="dark"] .sidebar-account-panel,
+html[data-theme="dark"] .dash-notif-panel,
+html[data-theme="dark"] .guest-action-card,
+html[data-theme="dark"] .discover-toolbar,
+html[data-theme="dark"] .discover-filters,
+html[data-theme="dark"] .discover-advanced,
+html[data-theme="dark"] .discover-empty,
+html[data-theme="dark"] .modal {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: var(--color-text);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .activity-ledger-row,
+html[data-theme="dark"] .activity-filter-tabs,
+html[data-theme="dark"] .activity-filter-tabs button.active,
+html[data-theme="dark"] .recent-donation,
+html[data-theme="dark"] .urgent-item,
+html[data-theme="dark"] .featured-camp,
+html[data-theme="dark"] .camp-card,
+html[data-theme="dark"] .people-card,
+html[data-theme="dark"] .people-search,
+html[data-theme="dark"] .people-filter-tabs,
+html[data-theme="dark"] .person-profile-facts span,
+html[data-theme="dark"] .message-thread,
+html[data-theme="dark"] .messages-list,
+html[data-theme="dark"] .messages-search,
+html[data-theme="dark"] .chat-compose input,
+html[data-theme="dark"] .payment-method-details,
+html[data-theme="dark"] .payment-method-fee,
+html[data-theme="dark"] .modal-confirm-breakdown,
+html[data-theme="dark"] .modal-confirm-note,
+html[data-theme="dark"] .sidebar-account-row.is-current {
+  background: rgba(2, 6, 23, 0.52);
+  border-color: rgba(148, 163, 184, 0.18);
+  color: var(--color-text);
+}
+
+html[data-theme="dark"] .activity-ledger-row:hover,
+html[data-theme="dark"] .activity-ledger-row.active,
+html[data-theme="dark"] .recent-donation:hover,
+html[data-theme="dark"] .featured-camp:hover,
+html[data-theme="dark"] .people-card:hover,
+html[data-theme="dark"] .message-thread:hover,
+html[data-theme="dark"] .message-thread.active,
+html[data-theme="dark"] .settings-row:hover,
+html[data-theme="dark"] .sidebar-account-add:hover,
+html[data-theme="dark"] button.sidebar-account-row:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.34);
+}
+
+html[data-theme="dark"] .activity-ledger-head h3,
+html[data-theme="dark"] .activity-total-card strong,
+html[data-theme="dark"] .activity-ledger-main strong,
+html[data-theme="dark"] .activity-ledger-side strong,
+html[data-theme="dark"] .bill-brand-row strong,
+html[data-theme="dark"] .bill-meta-grid strong,
+html[data-theme="dark"] .bill-lines strong,
+html[data-theme="dark"] .camp-card-title,
+html[data-theme="dark"] .urgent-meta strong,
+html[data-theme="dark"] .urgent-progress-row strong,
+html[data-theme="dark"] .featured-camp-body strong,
+html[data-theme="dark"] .featured-camp-meta strong,
+html[data-theme="dark"] .how-steps li strong,
+html[data-theme="dark"] .trust-strip-head h3,
+html[data-theme="dark"] .trust-item strong,
+html[data-theme="dark"] .guest-unlock-list strong,
+html[data-theme="dark"] .rd-meta strong,
+html[data-theme="dark"] .rd-amount,
+html[data-theme="dark"] .donor-meta strong,
+html[data-theme="dark"] .profile-summary-value,
+html[data-theme="dark"] .profile-extra-card h4,
+html[data-theme="dark"] .profile-security-list li,
+html[data-theme="dark"] .profile-activity-list li,
+html[data-theme="dark"] .settings-row-title,
+html[data-theme="dark"] .settings-row-body strong,
+html[data-theme="dark"] .people-card-text strong,
+html[data-theme="dark"] .person-profile-title h3,
+html[data-theme="dark"] .message-thread-body strong,
+html[data-theme="dark"] .chat-head strong {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .activity-total-card span,
+html[data-theme="dark"] .activity-total-card small,
+html[data-theme="dark"] .activity-ledger-main small,
+html[data-theme="dark"] .activity-ledger-side small,
+html[data-theme="dark"] .bill-brand-row small,
+html[data-theme="dark"] .bill-meta-grid small,
+html[data-theme="dark"] .bill-lines div,
+html[data-theme="dark"] .bill-foot-note,
+html[data-theme="dark"] .camp-card-desc,
+html[data-theme="dark"] .camp-creator-name,
+html[data-theme="dark"] .urgent-meta small,
+html[data-theme="dark"] .urgent-progress-row span,
+html[data-theme="dark"] .featured-camp-body small,
+html[data-theme="dark"] .featured-camp-meta,
+html[data-theme="dark"] .trust-item p,
+html[data-theme="dark"] .guest-unlock-list small,
+html[data-theme="dark"] .rd-meta small,
+html[data-theme="dark"] .profile-summary-label,
+html[data-theme="dark"] .profile-summary-card small,
+html[data-theme="dark"] .profile-extra-note,
+html[data-theme="dark"] .profile-empty,
+html[data-theme="dark"] .settings-row-body span,
+html[data-theme="dark"] .people-card-text small,
+html[data-theme="dark"] .person-profile-title span,
+html[data-theme="dark"] .person-profile-bio,
+html[data-theme="dark"] .message-thread-body small,
+html[data-theme="dark"] .message-time,
+html[data-theme="dark"] .chat-head small {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .bill-brand-row,
+html[data-theme="dark"] .bill-meta-grid,
+html[data-theme="dark"] .bill-total-line,
+html[data-theme="dark"] .profile-security-list li,
+html[data-theme="dark"] .profile-activity-list li,
+html[data-theme="dark"] .chat-head,
+html[data-theme="dark"] .chat-compose {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+/* --- Batch 4 additions (a11y + mobile clearance + tap targets) --- */
+
+/* Bottom nav sits fixed on mobile — every donor section needs bottom padding
+   so the FAB doesn't overlap the last card while scrolling. */
+@media (max-width: 768px) {
+  body.is-auth .section.active {
+    padding-bottom: calc(9.6rem + env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* --- Batch 3 additions --- */
+
+/* Recent-donations empty state: replaces the single grey sentence with a
+   real onboarding block (3-step how-it-works + primary CTA). */
+.recent-donation-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 2rem 1.6rem;
+  text-align: left;
+  list-style: none;
+}
+.recent-donation-empty > strong {
+  font-size: 1.6rem;
+  color: var(--color-text-navy, #0f172a);
+}
+.recent-donation-empty > p {
+  color: var(--color-text-muted, #64748b);
+  font-size: 1.35rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.how-mini {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.how-mini li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 0.9rem;
+  background: rgba(37, 99, 235, 0.05);
+  color: var(--color-text-navy, #0f172a);
+  font-size: 1.3rem;
+}
+.how-mini li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  flex: 0 0 auto;
+}
+.recent-donation-empty .btn { align-self: flex-start; margin-top: 0.4rem; }
+
+html[data-theme="dark"] .how-mini li {
+  background: rgba(96, 165, 250, 0.12);
+  color: #e2e8f0;
+}
+html[data-theme="dark"] .recent-donation-empty > strong { color: #f1f5f9; }
+html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }

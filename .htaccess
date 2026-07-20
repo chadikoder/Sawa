@@ -1,0 +1,22 @@
+DirectoryIndex index.html index.php
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^admin/?(.*)$ pages/admin.php [L,QSA]
+    RewriteRule ^storage/uploads/(.*)$ storage/uploads/$1 [L]
+</IfModule>
+
+<FilesMatch "^(\.env|database_complete\.sql)$">
+    Require all denied
+</FilesMatch>
+
+<Files "hosting.php">
+    Require all denied
+</Files>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

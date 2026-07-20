@@ -73,7 +73,10 @@ final class MessageService
         return (bool) $stmt->fetch();
     }
 
-    public static function send(int $threadId, int $senderId, string $body): void
+    /**
+     * @return array{id:int, thread_id:int, sender_id:int, body:string, created_at:string}
+     */
+    public static function send(int $threadId, int $senderId, string $body): array
     {
         if (!self::isMember($threadId, $senderId)) {
             throw new RuntimeException('forbidden');
@@ -82,12 +85,46 @@ final class MessageService
         if ($body === '') {
             throw new RuntimeException('empty_message');
         }
-        db()->prepare(
+        $pdo = db();
+        $pdo->prepare(
             'INSERT INTO messages (thread_id, sender_id, body) VALUES (?, ?, ?)'
         )->execute([$threadId, $senderId, $body]);
-        db()->prepare(
+        $id = (int) $pdo->lastInsertId();
+        $pdo->prepare(
             'UPDATE message_threads SET last_message_at = NOW() WHERE id = ?'
         )->execute([$threadId]);
+
+        $stmt = $pdo->prepare('SELECT created_at FROM messages WHERE id = ?');
+        $stmt->execute([$id]);
+        $createdAt = (string) ($stmt->fetchColumn() ?: date('Y-m-d H:i:s'));
+
+        return [
+            'id'         => $id,
+            'thread_id'  => $threadId,
+            'sender_id'  => $senderId,
+            'body'       => $body,
+            'created_at' => $createdAt,
+        ];
+    }
+
+    /**
+     * Messages in a thread with id greater than $afterId (for live polling).
+     * @return list<array<string, mixed>>
+     */
+    public static function messagesSince(int $threadId, int $userId, int $afterId): array
+    {
+        if (!self::isMember($threadId, $userId)) {
+            throw new RuntimeException('forbidden');
+        }
+        $stmt = db()->prepare(
+            'SELECT m.id, m.sender_id, m.body, m.created_at, u.full_name AS sender_name
+             FROM messages m
+             INNER JOIN users u ON u.id = m.sender_id
+             WHERE m.thread_id = ? AND m.id > ?
+             ORDER BY m.id ASC'
+        );
+        $stmt->execute([$threadId, $afterId]);
+        return $stmt->fetchAll();
     }
 
     public static function resolveUserId(string $with): ?int

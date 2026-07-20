@@ -21,7 +21,7 @@ $stmt = db()->prepare(
 $stmt->execute([$orgId]);
 $org = $stmt->fetch();
 if (!$org) {
-    Response::redirectStatus('pages/admin.php', 'error');
+    Response::redirectStatus('pages/admin.php', 'error', ['view' => 'organisations']);
 }
 
 if ($action === 'approve') {
@@ -43,4 +43,4 @@ if ($action === 'approve') {
     AuditLog::write(Auth::id(), 'reject_organisation', 'organisation', $orgId, ['reason' => $reason]);
 }
 
-Response::redirectStatus('pages/admin.php', 'success');
+Response::redirectStatus('pages/admin.php', 'success', ['view' => 'organisations']);

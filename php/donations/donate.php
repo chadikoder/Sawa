@@ -26,6 +26,7 @@ $camp = CampaignService::find($campaignId);
 if (!$camp || $camp['status'] !== 'active' || $amount < 1) {
     Response::redirectStatus('pages/userhome.php', 'error');
 }
+$returnExtra = ['section' => 'discover', 'campaign' => $campaignId];
 
 $breakdown = DonationService::breakdown($amount, $isGuest, $method);
 $guestName = Validator::sanitizeString((string) ($_POST['donor_name'] ?? ''), 120);
@@ -63,7 +64,7 @@ try {
         if ($donorId) {
             NotificationService::send($donorId, 'donation_complete', 'Donation confirmed', 'Thank you for your support.');
         }
-        Response::redirectStatus('pages/userhome.php', 'payment_confirmed');
+        Response::redirectStatus('pages/userhome.php', 'payment_confirmed', $returnExtra);
     }
 
     $session = PaymentService::createSession(
@@ -75,7 +76,7 @@ try {
         $donationId
     );
 } catch (Throwable) {
-    Response::redirectStatus('pages/userhome.php', 'payment_failed');
+    Response::redirectStatus('pages/userhome.php', 'payment_failed', $returnExtra ?? []);
 }
 
 Response::redirect('php/payments/checkout.php', ['token' => $session['token']]);

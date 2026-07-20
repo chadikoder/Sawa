@@ -1,7 +1,16 @@
 CLAUDE.md
 .claude/
 .env
-storage/
+php/config/hosting.php
+storage/*
+!storage/.htaccess
+!storage/uploads/
+storage/uploads/*
+!storage/uploads/.htaccess
 uploads/
 artifacts/
 test-results/
+.runtime/
+tmp-ui-audit/
+tests/
+docs/dev/

@@ -18,27 +18,37 @@ $birthdate = (string) ($_POST['user_birthdate'] ?? '');
 $gender = (string) ($_POST['user_gender'] ?? '');
 $role = (string) ($_POST['user_role'] ?? '');
 
-if ($fullName === '' || !Validator::password($password) || $password !== $passwordConfirm) {
-    Response::redirectStatus('pages/signup.php', 'error');
+// Specific error codes so the signup page can surface a real message instead
+// of a mystery redirect. See pages/signup.php for the ?error=<code> mapping.
+$fail = static fn (string $code): never => Response::redirect('pages/signup.php', ['error' => $code]);
+
+if ($fullName === '') {
+    $fail('missing_name');
+}
+if (!Validator::password($password)) {
+    $fail('weak_password');
+}
+if ($password !== $passwordConfirm) {
+    $fail('password_mismatch');
 }
 
 $hasEmail = $email !== '' && Validator::email($email);
 $hasPhone = $phone !== '' && Validator::phone($phone);
 if (!$hasEmail) {
-    Response::redirectStatus('pages/signup.php', 'error');
+    $fail('invalid_email');
 }
 
 if (!in_array($role, ['user', 'beneficiary', 'organisation'], true)) {
-    Response::redirectStatus('pages/signup.php', 'error');
+    $fail('invalid_role');
 }
 
 $age = Validator::ageFromBirthdate($birthdate);
 if ($age === null || $age < 10) {
-    Response::redirectStatus('pages/signup.php', 'error');
+    $fail('invalid_age');
 }
 
-if (!in_array($gender, ['Male', 'Female'], true)) {
-    Response::redirectStatus('pages/signup.php', 'error');
+if (!in_array($gender, ['Male', 'Female', 'Other', 'Prefer not to say'], true)) {
+    $fail('invalid_gender');
 }
 
 $pdo = db();
@@ -47,7 +57,7 @@ if ($hasEmail) {
     $chk = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
     $chk->execute([strtolower($email)]);
     if ($chk->fetch()) {
-        Response::redirectStatus('pages/signup.php', 'error');
+        $fail('email_taken');
     }
 }
 
@@ -55,7 +65,7 @@ if ($hasPhone) {
     $chk = $pdo->prepare('SELECT id FROM users WHERE phone = ? LIMIT 1');
     $chk->execute([$phone]);
     if ($chk->fetch()) {
-        Response::redirectStatus('pages/signup.php', 'error');
+        $fail('phone_taken');
     }
 }
 
@@ -131,10 +141,10 @@ try {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    if (APP_ENV === 'development') {
-        error_log($e->getMessage());
-    }
-    Response::redirectStatus('pages/signup.php', 'error');
+    // Always log the raw exception (regardless of env) so ops can trace real
+    // failures. The user gets a generic error code — never leak DB details.
+    error_log('[Sawa signup] ' . $e->getMessage());
+    Response::redirect('pages/signup.php', ['error' => 'server']);
 }
 
 if ($hasEmail) {
@@ -147,4 +157,4 @@ if ($role === 'organisation') {
     Response::redirect('pages/org-pending.html');
 }
 
-Response::redirect('pages/loading.html', ['next' => 'pages/userhome.php']);
+Response::redirect('pages/loading.html', ['next' => 'userhome.php']);

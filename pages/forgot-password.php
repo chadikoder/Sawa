@@ -10,14 +10,15 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
     <link rel="stylesheet" href="../css/tokens.css">
     <link rel="stylesheet" href="../css/login.css">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js" defer></script>
+    <script src="../js/theme.js"></script>
     <title>Sawa — Forgot Password</title>
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <a href="login.php" class="back-home" aria-label="Go back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
-    <div class="login-page">
+    <div class="login-page" id="main">
         <div class="login-card" style="margin: 4rem auto;">
             <h1>Reset password</h1>
             <p class="auth-sub">Enter your email and we will send reset instructions if the account exists.</p>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Shelter campaign">
+  <defs>
+    <linearGradient id="s-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" fill="url(#s-sky)"/>
+  <circle cx="540" cy="76" r="112" fill="#fff" opacity=".08"/>
+  <!-- distant rooftops -->
+  <path d="M0 330l90-56 90 56v56H0zM460 330l90-56 90 56v56H460z" fill="#000" opacity=".08"/>
+  <!-- main house -->
+  <path d="M320 118L166 232v152h308V232z" fill="#fff" opacity=".95"/>
+  <path d="M320 100L146 230l16 22 158-118 158 118 16-22z" fill="#fff"/>
+  <rect x="286" y="290" width="68" height="94" rx="10" fill="#6d28d9" opacity=".28"/>
+  <rect x="196" y="258" width="58" height="48" rx="10" fill="#8b5cf6" opacity=".3"/>
+  <rect x="386" y="258" width="58" height="48" rx="10" fill="#8b5cf6" opacity=".3"/>
+  <!-- heart in the gable -->
+  <path d="M320 214c-16-18-42-8-42 14 0 18 24 32 42 46 18-14 42-28 42-46 0-22-26-32-42-14z"
+        fill="#a78bfa" opacity=".85"/>
+</svg>

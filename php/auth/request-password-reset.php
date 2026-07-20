@@ -11,6 +11,15 @@ Csrf::validate();
 
 $email = strtolower(trim((string) ($_POST['email'] ?? '')));
 
+// IP rate limit — prevent enumeration & mail-flooding. 5 hits / 15 min / IP.
+// We record the attempt whether or not the email is valid so probing costs
+// the attacker even for malformed inputs.
+if (BruteForce::isIpRateLimited('pw_reset', 5, 15)) {
+    // Same response as success so we don't leak the throttle state either.
+    Response::redirectStatus('pages/forgot-password.php', 'reset_sent');
+}
+BruteForce::recordIpHit('pw_reset');
+
 // Always same response — prevent enumeration
 if (Validator::email($email)) {
     $stmt = db()->prepare('SELECT id FROM users WHERE email = ? AND active = 1 LIMIT 1');

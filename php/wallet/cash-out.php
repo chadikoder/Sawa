@@ -22,8 +22,8 @@ if ($amount < 1 || $destination === '' || !in_array($method, ['whish', 'bank_car
 $fee = round($amount * CASHOUT_FEE_RATE, 2);
 $totalDebit = $amount + $fee;
 
+$pdo = db();
 try {
-    $pdo = db();
     $pdo->beginTransaction();
     WalletService::debit(Auth::id(), $totalDebit, 'cashout', 'Cash-out request');
     $pdo->prepare(
@@ -31,7 +31,10 @@ try {
          VALUES (?, ?, ?, ?, ?, ?)'
     )->execute([Auth::id(), $amount, $fee, $amount - $fee, $method, $destination]);
     $pdo->commit();
-} catch (RuntimeException) {
+} catch (Throwable) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     Response::redirectStatus('pages/userhome.php', 'error', ['section' => 'wallet']);
 }
 

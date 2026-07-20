@@ -5,22 +5,111 @@ final class Auth
 {
     private const SESSION_USER_ID = 'user_id';
     private const SESSION_ROLE = 'user_role';
+    private const SESSION_ACCOUNTS = 'accounts';
 
     /** @var ?array<string, mixed> */
     private static ?array $cachedUser = null;
 
-    public static function login(int $userId, string $role): void
+    /**
+     * Log a user in. When $add is true the current session is preserved and the
+     * new account is added alongside it (multi-account); the new account becomes
+     * active. When false (normal login) any other signed-in accounts are dropped.
+     */
+    public static function login(int $userId, string $role, bool $add = false): void
     {
+        $accounts = $add ? self::accountsRaw() : [];
         Session::regenerate();
+        $accounts[$userId] = ['id' => $userId, 'role' => $role];
+        Session::set(self::SESSION_ACCOUNTS, $accounts);
         Session::set(self::SESSION_USER_ID, $userId);
         Session::set(self::SESSION_ROLE, $role);
         self::$cachedUser = null;
+        self::hydrateActiveMeta();
     }
 
-    public static function logout(): void
+    /**
+     * Switch the active account to another already-signed-in account on this
+     * device. Returns false if that account is not in the session.
+     */
+    public static function switchTo(int $userId): bool
+    {
+        $accounts = self::accountsRaw();
+        if (!isset($accounts[$userId])) {
+            return false;
+        }
+        Session::regenerate();
+        Session::set(self::SESSION_USER_ID, $userId);
+        Session::set(self::SESSION_ROLE, (string) $accounts[$userId]['role']);
+        self::$cachedUser = null;
+        self::hydrateActiveMeta();
+        return true;
+    }
+
+    /**
+     * Sign out the active account. If other accounts remain on this device the
+     * session is kept and one of them becomes active (returns true). Otherwise
+     * the whole session is destroyed (returns false).
+     */
+    public static function logout(): bool
     {
         self::$cachedUser = null;
+        $accounts = self::accountsRaw();
+        $current = self::id();
+        if ($current !== null) {
+            unset($accounts[$current]);
+        }
+        if ($accounts !== []) {
+            $next = $accounts[array_key_first($accounts)];
+            Session::regenerate();
+            Session::set(self::SESSION_ACCOUNTS, $accounts);
+            Session::set(self::SESSION_USER_ID, (int) $next['id']);
+            Session::set(self::SESSION_ROLE, (string) $next['role']);
+            return true;
+        }
         Session::destroy();
+        return false;
+    }
+
+    /** @return array<int, array{id:int, role:string, name:string, avatar:?string}> */
+    private static function accountsRaw(): array
+    {
+        $a = Session::get(self::SESSION_ACCOUNTS);
+        return is_array($a) ? $a : [];
+    }
+
+    /** Other signed-in accounts on this device (excludes the active one). */
+    /** @return list<array{id:int, role:string, name:string, avatar:?string}> */
+    public static function otherAccounts(): array
+    {
+        $current = self::id();
+        $out = [];
+        foreach (self::accountsRaw() as $acc) {
+            if ((int) $acc['id'] !== $current) {
+                $out[] = [
+                    'id'     => (int) $acc['id'],
+                    'role'   => (string) ($acc['role'] ?? 'user'),
+                    'name'   => (string) ($acc['name'] ?? 'Account'),
+                    'avatar' => $acc['avatar'] ?? null,
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /** Cache the active user's name/avatar onto its session account entry. */
+    private static function hydrateActiveMeta(): void
+    {
+        $id = self::id();
+        if ($id === null) {
+            return;
+        }
+        $u = self::user();
+        $accounts = self::accountsRaw();
+        if (isset($accounts[$id])) {
+            $accounts[$id]['name'] = (string) ($u['full_name'] ?? 'Account');
+            $accounts[$id]['avatar'] = $u['avatar_path'] ?? null;
+            Session::set(self::SESSION_ACCOUNTS, $accounts);
+        }
     }
 
     public static function id(): ?int
@@ -31,6 +120,9 @@ final class Auth
 
     public static function role(): ?string
     {
+        if (self::$cachedUser !== null && isset(self::$cachedUser['role'])) {
+            return (string) self::$cachedUser['role'];
+        }
         $role = Session::get(self::SESSION_ROLE);
         return is_string($role) ? $role : null;
     }
@@ -65,15 +157,20 @@ final class Auth
 
     public static function requireAuth(): void
     {
-        if (!self::check()) {
-            Response::redirectStatus('pages/login.html', 'expired');
+        if (!self::check() || self::user() === []) {
+            self::logout();
+            Response::redirectStatus('pages/login.php', 'expired');
         }
     }
 
     public static function requireRole(string ...$roles): void
     {
         self::requireAuth();
-        $role = self::role();
+        $user = self::user();
+        $role = isset($user['role']) ? (string) $user['role'] : self::role();
+        if ($role !== null) {
+            Session::set(self::SESSION_ROLE, $role);
+        }
         if ($role === null || !in_array($role, $roles, true)) {
             Response::abort(403);
         }

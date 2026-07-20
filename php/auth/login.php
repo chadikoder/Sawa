@@ -40,13 +40,15 @@ if ((int) $user['email_verified'] !== 1 && $user['role'] !== 'admin') {
     Response::redirectStatus('pages/login.php', 'error');
 }
 
-Auth::login((int) $user['id'], $user['role']);
+$addMode = !empty($_POST['add']) && Auth::check();
+Auth::login((int) $user['id'], $user['role'], $addMode);
 
 if (!empty($_POST['remember_me'])) {
     ini_set('session.cookie_lifetime', (string) (60 * 60 * 24 * 30));
 }
 
 $dest = match ($user['role']) {
+    'admin' => 'admin',
     'organisation' => Auth::isOrganisationVerified()
         ? 'pages/userhome.php'
         : 'pages/org-pending.html',

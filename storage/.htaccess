@@ -1,0 +1,5 @@
+DirectoryIndex disabled
+
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>

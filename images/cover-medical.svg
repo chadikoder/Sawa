@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Medical aid campaign">
+  <defs>
+    <linearGradient id="m-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f43f5e"/><stop offset="1" stop-color="#e11d48"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" fill="url(#m-sky)"/>
+  <circle cx="524" cy="86" r="130" fill="#fff" opacity=".07"/>
+  <circle cx="88" cy="368" r="150" fill="#000" opacity=".06"/>
+  <!-- cupped hands -->
+  <path d="M150 300c0-34 26-58 58-58h224c32 0 58 24 58 58v14H150z" fill="#fff" opacity=".16"/>
+  <path d="M186 314c0-46 40-82 92-82h84c52 0 92 36 92 82z" fill="#fff" opacity=".12"/>
+  <!-- cross in a rounded shield -->
+  <rect x="266" y="118" width="108" height="108" rx="30" fill="#fff" opacity=".95"/>
+  <rect x="308" y="140" width="24" height="64" rx="10" fill="#e11d48"/>
+  <rect x="288" y="160" width="64" height="24" rx="10" fill="#e11d48"/>
+  <!-- pulse line -->
+  <path d="M120 254h72l22-40 30 78 26-52 20 26h230" fill="none" stroke="#fff" stroke-width="7"
+        stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+</svg>

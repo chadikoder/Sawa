@@ -34,4 +34,4 @@ AuditLog::write(Auth::id(), 'moderate_' . $status, $report['target_type'], (int)
 if (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
     json_response(['ok' => true]);
 }
-Response::redirectStatus('pages/admin.php', 'success');
+Response::redirectStatus('pages/admin.php', 'success', ['view' => 'reports']);

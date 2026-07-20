@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Community campaign">
+  <defs>
+    <linearGradient id="o-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" fill="url(#o-sky)"/>
+  <circle cx="528" cy="92" r="126" fill="#fff" opacity=".08"/>
+  <circle cx="92" cy="356" r="140" fill="#000" opacity=".06"/>
+  <!-- two hands meeting around a heart: "sawa" = together -->
+  <path d="M120 296c46-6 84-30 108-58" fill="none" stroke="#fff" stroke-width="26"
+        stroke-linecap="round" opacity=".22"/>
+  <path d="M520 296c-46-6-84-30-108-58" fill="none" stroke="#fff" stroke-width="26"
+        stroke-linecap="round" opacity=".22"/>
+  <path d="M320 300c-52-40-98-70-98-116 0-34 28-56 58-56 20 0 34 10 40 22 6-12 20-22 40-22 30 0 58 22 58 56 0 46-46 76-98 116z"
+        fill="#fff" opacity=".95"/>
+  <!-- small community dots -->
+  <g fill="#fff" opacity=".45">
+    <circle cx="150" cy="180" r="15"/><circle cx="206" cy="140" r="11"/>
+    <circle cx="490" cy="180" r="15"/><circle cx="434" cy="140" r="11"/>
+  </g>
+</svg>

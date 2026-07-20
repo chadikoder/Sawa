@@ -59,7 +59,7 @@ final class DonationService
                     (int) $camp['organisation_id'],
                     (float) $don['amount'],
                     $donationId,
-                    $creatorId ?? 0,
+                    $creatorId,
                     'Donation #' . $donationId
                 );
             }
@@ -159,5 +159,132 @@ final class DonationService
         );
         $stmt->execute([$ownerUserId]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Platform-wide recent donations for the guest "Live activity" feed.
+     *
+     * Anonymous donations and guests are deliberately not attributed: the feed
+     * is public, so it must never leak a donor's name or email. Callers get a
+     * pre-resolved display label instead of the raw donor row.
+     *
+     * @return list<array{label: string, amount: float, campaign: string, created_at: string, anonymous: bool}>
+     */
+    public static function recentPlatformActivity(int $limit = 5): array
+    {
+        $limit = max(1, min(20, $limit));
+        $rows = db()->query(
+            'SELECT d.amount, d.anonymous, d.donor_id, d.created_at,
+                    u.full_name AS donor_name, c.title AS campaign_title
+             FROM donations d
+             INNER JOIN campaigns c ON c.id = d.campaign_id
+             LEFT  JOIN users u ON u.id = d.donor_id
+             WHERE d.status IN (\'verified\', \'completed\')
+             ORDER BY d.created_at DESC
+             LIMIT ' . $limit
+        )->fetchAll();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $anon = (int) $r['anonymous'] === 1;
+            if ($anon || $r['donor_id'] === null) {
+                $label = $anon ? 'Anonymous' : 'Guest donor';
+            } else {
+                // First name only — enough to feel human without publishing
+                // a full identity on a page anyone can load.
+                $label = explode(' ', trim((string) $r['donor_name']))[0] ?: 'Sawa donor';
+            }
+            $out[] = [
+                'label' => $label,
+                'amount' => (float) $r['amount'],
+                'campaign' => (string) $r['campaign_title'],
+                'created_at' => (string) $r['created_at'],
+                'anonymous' => $anon,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Real donor totals used on the donor dashboard tiles. Returns lifetime
+     * numbers plus this/last-month buckets so the UI can show a truthful delta
+     * (or omit it when there's nothing to compare against).
+     *
+     * @return array{
+     *   total: float,
+     *   families: int,
+     *   this_month: float,
+     *   last_month: float,
+     *   delta_pct: ?int,
+     *   families_delta: int
+     * }
+     */
+    public static function donorTotals(int $userId): array
+    {
+        $pdo = db();
+        $totals = ['total' => 0.0, 'families' => 0, 'this_month' => 0.0, 'last_month' => 0.0];
+
+        $sumStmt = $pdo->prepare(
+            "SELECT COALESCE(SUM(amount), 0) AS total,
+                    COUNT(DISTINCT c.owner_user_id) AS families
+             FROM donations d
+             INNER JOIN campaigns c ON c.id = d.campaign_id
+             WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
+        );
+        $sumStmt->execute([$userId]);
+        if ($row = $sumStmt->fetch()) {
+            $totals['total'] = (float) $row['total'];
+            $totals['families'] = (int) $row['families'];
+        }
+
+        try {
+            // SQLite path — prepare() itself throws on MySQL, so it must stay
+            // inside the try alongside execute().
+            $monthStmt = $pdo->prepare(
+                "SELECT
+                    COALESCE(SUM(CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now') THEN d.amount ELSE 0 END), 0) AS this_month,
+                    COALESCE(SUM(CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now', '-1 month') THEN d.amount ELSE 0 END), 0) AS last_month,
+                    COUNT(DISTINCT CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now') THEN c.owner_user_id END) AS families_this,
+                    COUNT(DISTINCT CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now', '-1 month') THEN c.owner_user_id END) AS families_last
+                 FROM donations d
+                 INNER JOIN campaigns c ON c.id = d.campaign_id
+                 WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
+            );
+            $monthStmt->execute([$userId]);
+            $row = $monthStmt->fetch();
+        } catch (Throwable) {
+            // MySQL fallback: DATE_FORMAT syntax if strftime isn't available.
+            $monthStmt = $pdo->prepare(
+                "SELECT
+                    COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS this_month,
+                    COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS last_month,
+                    COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN c.owner_user_id END) AS families_this,
+                    COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN c.owner_user_id END) AS families_last
+                 FROM donations d
+                 INNER JOIN campaigns c ON c.id = d.campaign_id
+                 WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
+            );
+            $monthStmt->execute([$userId]);
+            $row = $monthStmt->fetch();
+        }
+
+        $thisMonth = (float) ($row['this_month'] ?? 0);
+        $lastMonth = (float) ($row['last_month'] ?? 0);
+        $familiesThis = (int) ($row['families_this'] ?? 0);
+        $familiesLast = (int) ($row['families_last'] ?? 0);
+
+        $deltaPct = null;
+        if ($lastMonth > 0) {
+            $deltaPct = (int) round((($thisMonth - $lastMonth) / $lastMonth) * 100);
+        }
+
+        return [
+            'total' => $totals['total'],
+            'families' => $totals['families'],
+            'this_month' => $thisMonth,
+            'last_month' => $lastMonth,
+            'delta_pct' => $deltaPct,
+            'families_delta' => $familiesThis - $familiesLast,
+        ];
     }
 }

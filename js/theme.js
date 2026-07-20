@@ -15,6 +15,10 @@
       btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
       btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
     });
+    // Settings sub-page Theme row shows the current mode as a chip.
+    document.querySelectorAll('[data-theme-label]').forEach(el => {
+      el.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    });
   }
 
   function setTheme(theme) {

@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/php/bootstrap.php';
+// "Add an account" flow: when ?add=1 and someone is already signed in, the new
+// login is added alongside the current session instead of replacing it.
+$addMode = isset($_GET['add']) && Auth::check();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,34 +16,66 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
     <link rel="stylesheet" href="../css/tokens.css">
     <link rel="stylesheet" href="../css/login.css">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js" defer></script>
+    <script src="../js/theme.js"></script>
     <title>Sawa — Log In</title>
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-    <button class="theme-toggle theme-toggle--floating" type="button" data-theme-toggle aria-label="Switch to dark mode">
-        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-    </button>
-
-    <a href="../index.html" class="back-home" aria-label="Go back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    <a href="../index.html" class="back-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back to home</span>
     </a>
-    <div class="login-page">
+    <div class="login-page" id="main">
 
         <div class="login-brand">
             <img src="../images/sawa_v2.svg" alt="Sawa" class="brand-logo">
             <p class="brand-name">SAWA</p>
             <p class="brand-tagline">Connecting Lebanese donors<br>with families in need</p>
+
+            <ul class="brand-trust-list" aria-label="Why Sawa">
+                <li class="brand-trust-item">
+                    <span class="brand-trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    </span>
+                    <div>
+                        <strong>Verified NGOs only</strong>
+                        <span>Every organisation is reviewed by our team before joining.</span>
+                    </div>
+                </li>
+                <li class="brand-trust-item">
+                    <span class="brand-trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </span>
+                    <div>
+                        <strong>Transparent fees</strong>
+                        <span>5% for members, 10% for guests — shown before you pay.</span>
+                    </div>
+                </li>
+                <li class="brand-trust-item">
+                    <span class="brand-trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </span>
+                    <div>
+                        <strong>Track every donation</strong>
+                        <span>Real-time updates, receipts, and a full activity trail.</span>
+                    </div>
+                </li>
+            </ul>
+
+            <p class="brand-quote">
+                <span aria-hidden="true">“</span>Built in response to the Lebanese crisis — for families, by neighbours.<span aria-hidden="true">”</span>
+            </p>
         </div>
 
         <div class="login-card">
             <img src="../images/sawa_v2.svg" alt="Sawa" class="card-logo">
-            <h1>Welcome Back</h1>
-            <p class="auth-sub">We're glad to see you again</p>
+            <h1><?= $addMode ? 'Add an account' : 'Welcome Back' ?></h1>
+            <p class="auth-sub"><?= $addMode ? 'Your current account stays signed in — switch anytime.' : "We're glad to see you again" ?></p>
 
             <form class="login_form" action="../php/auth/login.php" method="POST">
                 <?= Csrf::field() ?>
+                <?php if ($addMode): ?><input type="hidden" name="add" value="1"><?php endif; ?>
 
                 <div class="field-group">
                     <label for="email">Email</label>

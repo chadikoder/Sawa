@@ -1,6 +1,23 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/php/bootstrap.php';
+
+// Signup handler redirects here with ?error=<code> when something fails.
+// Map codes to plain-language messages so the user isn't left guessing.
+$signupErrors = [
+    'missing_name'      => 'Please enter your full name.',
+    'weak_password'     => 'Password must be at least 6 characters with letters and numbers.',
+    'password_mismatch' => 'The two passwords don\'t match.',
+    'invalid_email'     => 'Please enter a valid email address.',
+    'invalid_role'      => 'Please pick an account type on step 2.',
+    'invalid_age'       => 'You must be at least 10 years old to use Sawa.',
+    'invalid_gender'    => 'Please select a gender option.',
+    'email_taken'       => 'An account with that email already exists. Try logging in instead.',
+    'phone_taken'       => 'An account with that phone number already exists.',
+    'server'            => 'Something went wrong on our end. Please try again in a moment.',
+];
+$signupErrorCode = (string) ($_GET['error'] ?? '');
+$signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,26 +32,28 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
     <link rel="stylesheet" href="../css/tokens.css">
     <link rel="stylesheet" href="../css/signup.css" type="text/css">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js" defer></script>
-
-
+    <script src="../js/theme.js"></script>
 
     <title>Sign Up — Sawa</title>
 
 </head>
 <body>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-    <button class="theme-toggle theme-toggle--floating" type="button" data-theme-toggle aria-label="Switch to dark mode">
-        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-    </button>
-
-    <a href="../index.html" class="back-home" aria-label="Go back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    <a href="../index.html" class="back-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back to home</span>
     </a>
     <p class="auth-switch">Already have an account? <a href="login.php">Log in</a></p>
 
-     <div class="role_cards">
+    <?php if ($signupErrorMessage !== null): ?>
+      <div class="signup-error-banner" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><?= htmlspecialchars($signupErrorMessage, ENT_QUOTES, 'UTF-8') ?></span>
+      </div>
+    <?php endif; ?>
+
+     <div class="role_cards" id="main">
 
         <div class="step-progress-bar" data-step="2">
             <span class="sp-dot sp-done"></span>
@@ -79,7 +98,7 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f59e0b">
                         <path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5h16.5a.75.75 0 0 0 0-1.5h-.75V3.75a.75.75 0 0 0 0-1.5h-15ZM9 6a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm-.75 3.75A.75.75 0 0 1 9 9h1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM9 12a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm3.75-5.25A.75.75 0 0 1 13.5 6H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM13.5 9a.75.75 0 0 0 0 1.5H15A.75.75 0 0 0 15 9h-1.5Zm-.75 3.75a.75.75 0 0 1 .75-.75H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM9 19.5v-2.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 9 19.5Z" clip-rule="evenodd"/>
                     </svg>
-                    <span>Organisation</span>
+                    <span>Organization</span>
                     <small>Register your NGO or charity to manage campaigns and reach donors transparently.</small>
                 </div>
             </div>
@@ -174,6 +193,16 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
                     <span class="gender-radio-circle"></span>
                     <span class="gender-pill">Female</span>
                 </label>
+                <label class="gender-option">
+                    <input type="radio" name="user_gender" value="Other">
+                    <span class="gender-radio-circle"></span>
+                    <span class="gender-pill">Other</span>
+                </label>
+                <label class="gender-option">
+                    <input type="radio" name="user_gender" value="Prefer not to say">
+                    <span class="gender-radio-circle"></span>
+                    <span class="gender-pill">Prefer not to say</span>
+                </label>
             </div>
         </div>
 
@@ -186,7 +215,7 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
             <option value="">None</option>
             <option value="user">Donor</option>
             <option value="beneficiary">Recipient</option>
-            <option value="organisation">Organisation</option>
+            <option value="organisation">Organization</option>
         </select>
 
         <div class="basicinfo" style="display: none;">
@@ -249,8 +278,8 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
 
             <div class="input-group">
 
-            <label for="organisation_name">Organisation Name</label>
-            <input type="text" name="organisation_name" id="organisation_name" maxlength="120" placeholder="Registered organisation name">
+            <label for="organisation_name">Organization Name</label>
+            <input type="text" name="organisation_name" id="organisation_name" maxlength="120" placeholder="Registered organization name">
 
             </div>
 

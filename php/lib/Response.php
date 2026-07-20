@@ -6,13 +6,12 @@ final class Response
     public static function redirect(string $path, array $query = []): never
     {
         if (!str_starts_with($path, 'http')) {
-            $base = APP_URL;
             if (str_starts_with($path, '/')) {
-                $url = $base . $path;
+                $url = $path;
             } elseif (str_starts_with($path, 'pages/') || str_starts_with($path, '../')) {
-                $url = $base . '/' . ltrim(str_replace('../', '', $path), '/');
+                $url = '/' . ltrim(str_replace('../', '', $path), '/');
             } else {
-                $url = $base . '/' . ltrim($path, '/');
+                $url = '/' . ltrim($path, '/');
             }
         } else {
             $url = $path;

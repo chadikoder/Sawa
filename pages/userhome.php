@@ -3,23 +3,39 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/php/bootstrap.php';
 
 $auth = Auth::check();
-$bodyClass = $auth ? 'is-auth ' . Auth::bodyRoleClass() : 'is-guest';
 $user = $auth ? Auth::user() : [];
+if ($auth && $user === []) {
+    Auth::logout();
+    $auth = false;
+}
+
+$bodyClass = $auth ? 'is-auth ' . Auth::bodyRoleClass() : 'is-guest';
 $displayName = htmlspecialchars((string) ($user['full_name'] ?? 'User'), ENT_QUOTES, 'UTF-8');
 $avatarUrl = !empty($user['avatar_path'])
     ? htmlspecialchars(Upload::publicUrl((string) $user['avatar_path']), ENT_QUOTES, 'UTF-8')
     : '../images/user-profile.svg';
 $bioValue = htmlspecialchars((string) ($user['bio'] ?? ''), ENT_QUOTES, 'UTF-8');
-
 $walletBalance = '0.00';
 $userId = $auth ? Auth::id() : null;
-$userRole = $auth ? (Auth::role() ?? 'user') : null;
+$userRole = $auth ? ((string) ($user['role'] ?? Auth::role() ?? 'user')) : null;
 
 if ($auth && $userId !== null) {
     $walletBalance = number_format(WalletService::balance($userId), 2);
 }
 
 $platformStats = CampaignService::stats();
+
+// Hero "total raised" — real figure from CampaignService::stats(). Compact form
+// ($17.4k) once past 10k so the tile does not overflow on narrow viewports.
+$heroRaised = (float)$platformStats['raised'];
+$heroRaisedLabel = $heroRaised >= 10000
+    ? '$' . rtrim(rtrim(number_format($heroRaised / 1000, 1, '.', ''), '0'), '.') . 'k'
+    : '$' . number_format($heroRaised);
+
+// Guest-only "Live activity" feed. Public page, so donor identities are
+// anonymised inside the service, not here.
+$liveActivity = DonationService::recentPlatformActivity(6);
+
 $discoverCampaigns = CampaignService::listActive();
 $myCampaigns = ($auth && $userId !== null && $userRole !== null)
     ? CampaignService::listForUser($userId, $userRole) : [];
@@ -34,6 +50,16 @@ $urgentCampaigns = CampaignService::listUrgent(5);
 $featuredCampaigns = CampaignService::listFeatured(3);
 $recentDonations = ($auth && $userId !== null && $userRole === 'user')
     ? DonationService::recentForDonor($userId) : [];
+$donorTotals = ($auth && $userId !== null && $userRole === 'user')
+    ? DonationService::donorTotals($userId)
+    : ['total' => 0.0, 'families' => 0, 'this_month' => 0.0, 'last_month' => 0.0, 'delta_pct' => null, 'families_delta' => 0];
+$memberSince = 'recently';
+if ($auth && !empty($user['created_at'])) {
+    $ts = strtotime((string) $user['created_at']);
+    if ($ts) {
+        $memberSince = date('M Y', $ts);
+    }
+}
 $recentOrgDonations = ($auth && $userId !== null && $userRole === 'organisation')
     ? DonationService::recentForOrganisation($userId) : [];
 $topOrgCampaigns = ($auth && $userId !== null && $userRole === 'organisation')
@@ -75,6 +101,8 @@ if ($auth && $userId !== null) {
     $receiptCount = (int) $rc->fetchColumn();
 }
 
+$otherAccounts = Auth::check() ? Auth::otherAccounts() : [];
+
 $partial = dirname(__DIR__) . '/php/partials/';
 ?>
 <!DOCTYPE html>
@@ -88,10 +116,11 @@ $partial = dirname(__DIR__) . '/php/partials/';
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/tokens.css">
   <link rel="stylesheet" href="../css/userhome.css">
-  <script src="../js/theme.js" defer></script>
+  <script src="../js/theme.js"></script>
   <title>Dashboard — Sawa</title>
 </head>
 <body class="<?= $bodyClass ?>">
+  <a class="skip-link" href="#main">Skip to content</a>
   <!--
     Body classes drive what's visible. PHP sets them server-side:
 
@@ -119,9 +148,9 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <span class="site-brand-name">Sawa</span>
       </a>
       <nav class="site-header-nav" aria-label="Primary navigation">
-        <button class="site-nav-link is-active" type="button" data-jump="dashboard">Home</button>
+        <button class="site-nav-link is-active" type="button" data-jump="dashboard" aria-current="page">Home</button>
         <button class="site-nav-link" type="button" data-jump="discover">Browse</button>
-        <a class="site-nav-link" href="about-us.html">About</a>
+        <a class="site-nav-link" href="about-us.php">About</a>
       </nav>
       <div class="site-header-auth">
         <a href="login.php" class="site-auth-link">Log In</a>
@@ -148,7 +177,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <button class="guest-drawer-close" id="guest-drawer-close" type="button" aria-label="Close menu">&times;</button>
     </div>
     <nav class="guest-drawer-nav" aria-label="Mobile primary navigation">
-      <button class="guest-drawer-link is-active" type="button" data-jump="dashboard">
+      <button class="guest-drawer-link is-active" type="button" data-jump="dashboard" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Home
       </button>
@@ -156,7 +185,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Browse Campaigns
       </button>
-      <a class="guest-drawer-link" href="about-us.html">
+      <a class="guest-drawer-link" href="about-us.php">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         About Sawa
       </a>
@@ -169,10 +198,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
     </div>
   </aside>
 
-  <!-- ─── Auth-only top header (logo replaced with user profile chip on userhome) ─── -->
+  <!-- Auth-only top header. Same visual structure on desktop AND mobile:
+       chip on the left, nav links on the right. Mobile just hides the nav
+       links via CSS because the bottom bar covers them. No mobile-only
+       elements introduced — keeps the visual style consistent. -->
   <header class="site-header auth-only site-header--user-lead" role="banner">
     <div class="site-header-inner">
-      <!-- Profile chip pinned to the left; nav links sit on the right. -->
       <button class="site-header-user" id="nav-user-btn" type="button" aria-label="Open account menu">
         <img src="<?= $avatarUrl ?>" alt="" id="nav-avatar">
         <span class="site-header-user-text">
@@ -181,9 +212,9 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </span>
       </button>
       <nav class="site-header-nav" aria-label="Primary navigation">
-        <button class="site-nav-link is-active" type="button" data-jump="dashboard">Home</button>
+        <button class="site-nav-link is-active" type="button" data-jump="dashboard" aria-current="page">Home</button>
         <button class="site-nav-link" type="button" data-jump="discover">Campaigns</button>
-        <a class="site-nav-link" href="about-us.html">About</a>
+        <a class="site-nav-link" href="guide.html">Help</a>
       </nav>
     </div>
   </header>
@@ -192,7 +223,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
   <div class="layout">
 
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Account sidebar">
       <div class="sidebar-brand">
         <div class="sidebar-logo-circle">
           <img src="../images/sawa_v2.svg" alt="Sawa">
@@ -203,22 +234,74 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </button>
       </div>
 
-      <!-- User profile card (auth only) — sits at top of sidebar, common dashboard pattern -->
-      <button type="button" class="sidebar-user auth-only" data-section="profile" aria-label="Go to my profile">
-        <img class="sidebar-user-avatar" src="../images/user-profile.svg" alt="" id="sidebar-user-avatar">
-        <span class="sidebar-user-info">
-          <strong class="sidebar-user-name" id="sidebar-user-name">User</strong>
-          <small class="sidebar-user-role"></small>
-        </span>
-        <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button class="sidebar-item active" data-section="dashboard">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <!-- User profile card (auth only). Tapping the card opens the Profile
+           sub-page. Tapping the small caret on the right opens an account
+           switcher panel below (showing the current account + "Add an
+           account" link). Multi-account switching needs backend support;
+           additional accounts will be listed inside the panel once a
+           /php/auth/sessions.php endpoint exists. -->
+      <div class="sidebar-user-wrap auth-only">
+        <button type="button" class="sidebar-user" data-section="profile" aria-label="Go to my profile">
+          <img class="sidebar-user-avatar" src="../images/user-profile.svg" alt="" id="sidebar-user-avatar">
+          <span class="sidebar-user-info">
+            <strong class="sidebar-user-name" id="sidebar-user-name">User</strong>
+            <small class="sidebar-user-role"></small>
+          </span>
+        </button>
+        <button type="button" class="sidebar-account-toggle" id="sidebar-account-toggle" aria-expanded="false" aria-controls="sidebar-account-panel" aria-label="Switch account">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="sidebar-account-panel" id="sidebar-account-panel" hidden>
+          <!-- Current (active) account. -->
+          <div class="sidebar-account-row is-current" aria-current="true">
+            <img class="sidebar-account-avatar" src="<?= $avatarUrl ?>" alt="">
+            <span class="sidebar-account-info">
+              <strong><?= $displayName ?></strong>
+              <small>Active now</small>
+            </span>
+            <svg class="sidebar-account-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <!-- Other accounts signed in on this device — POST switches the active one. -->
+          <?php foreach ($otherAccounts as $acc):
+            $accName = htmlspecialchars((string) $acc['name'], ENT_QUOTES, 'UTF-8');
+            $accAvatar = !empty($acc['avatar'])
+                ? htmlspecialchars(Upload::publicUrl((string) $acc['avatar']), ENT_QUOTES, 'UTF-8')
+                : '../images/user-profile.svg';
+            $accRoleLabel = match ($acc['role']) {
+                'organisation' => 'Organization',
+                'beneficiary'  => 'Recipient',
+                'admin'        => 'Admin',
+                default        => 'Donor',
+            };
+          ?>
+          <form action="../php/auth/switch-account.php" method="POST" class="sidebar-account-switch-form">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="account_id" value="<?= (int) $acc['id'] ?>">
+            <button type="submit" class="sidebar-account-row" aria-label="Switch to <?= $accName ?>">
+              <img class="sidebar-account-avatar" src="<?= $accAvatar ?>" alt="">
+              <span class="sidebar-account-info">
+                <strong><?= $accName ?></strong>
+                <small><?= $accRoleLabel ?> · Switch</small>
+              </span>
+            </button>
+          </form>
+          <?php endforeach; ?>
+          <a class="sidebar-account-add" href="login.php?add=1">
+            <span class="sidebar-account-add-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+            Add an account
+          </a>
+        </div>
+      </div>
+      <button class="sidebar-item active" data-section="dashboard" aria-current="page">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         <span>Dashboard</span>
       </button>
       <button class="sidebar-item" data-section="discover">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <span>Discover</span>
+        <span>Campaigns</span>
       </button>
       <button class="sidebar-item auth-only" data-section="profile">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -236,6 +319,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 13h5"/></svg>
         <span>Messages</span>
       </button>
+      <!-- Single "Help" item shared with the desktop top nav (also labeled
+           "Help" there). Routes to guide.html — no separate Guide entry. -->
+      <a class="sidebar-item" href="guide.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+        <span>Help</span>
+      </a>
       <button class="sidebar-item auth-only" data-section="campaign-new">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span>Create Campaign</span>
@@ -250,16 +339,20 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         <span>My Campaigns</span>
       </button>
+      <!-- Help → user-flow tips page (replaces the old "About" link on the auth nav). -->
+      <a class="sidebar-item" href="guide.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093V15m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Help</span>
+      </a>
 
       <!-- Auth section — pinned to bottom, visually separated from primary nav -->
       <div class="sidebar-auth-section">
         <span class="sidebar-section-label guest-only">Join Sawa</span>
 
-        <!-- Logged-in only: logout -->
-        <button class="sidebar-item sidebar-theme-toggle auth-only" type="button" data-theme-toggle aria-label="Switch to dark mode">
-          <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          <span>Theme</span>
+        <!-- Logged-in only: Settings (theme + language live inside it now). -->
+        <button class="sidebar-item auth-only" type="button" data-section="settings">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
         </button>
         <button class="sidebar-item logout auth-only" onclick="window.location.href='../php/auth/logout.php'">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -278,7 +371,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
       </div>
     </aside>
 
-    <main class="main-content">
+    <main class="main-content" id="main">
 
       <section id="dashboard" class="section active">
         <!-- Guest hero (only shown when body.is-guest) — dark navy + horizontal stats -->
@@ -306,22 +399,22 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <span class="hero-stat-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 </span>
-                <strong class="stat-tile-value" id="hero-raised">$250k+</strong>
+                <strong class="stat-tile-value" id="hero-raised"><?= $heroRaisedLabel ?></strong>
                 <span class="hero-stat-label">Total raised on Sawa</span>
               </div>
               <div class="hero-stat">
                 <span class="hero-stat-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </span>
-                <strong class="stat-tile-value" id="hero-helped">1,200+</strong>
-                <span class="hero-stat-label">Families helped since launch</span>
+                <strong class="stat-tile-value" id="hero-helped"><?= number_format((int)$platformStats['donors']) ?></strong>
+                <span class="hero-stat-label"><?= (int)$platformStats['donors'] === 1 ? 'Verified donor' : 'Verified donors' ?></span>
               </div>
               <div class="hero-stat">
                 <span class="hero-stat-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </span>
                 <strong class="stat-tile-value" id="hero-active"><?= (int)$platformStats['active'] ?></strong>
-                <span class="hero-stat-label">Active campaigns now</span>
+                <span class="hero-stat-label"><?= (int)$platformStats['active'] === 1 ? 'Active campaign now' : 'Active campaigns now' ?></span>
               </div>
               <div class="hero-stat">
                 <span class="hero-stat-icon hero-stat-icon-accent" aria-hidden="true">
@@ -342,8 +435,8 @@ $partial = dirname(__DIR__) . '/php/partials/';
           </div>
           <div class="dash-header-actions">
             <label class="dash-search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="search" id="dash-search-input" placeholder="Search campaigns…" autocomplete="off">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="dash-search-input" aria-label="Search campaigns" placeholder="Search campaigns…" autocomplete="off">
             </label>
             <div class="dash-bell-wrap">
               <button class="dash-bell" id="dash-bell-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
@@ -363,7 +456,10 @@ $partial = dirname(__DIR__) . '/php/partials/';
                   <li class="dash-notif-row"><div class="dash-notif-text"><strong>No notifications</strong><small>You are all caught up.</small></div></li>
                   <?php else: foreach ($notifications as $n): include $partial . 'notification-row.php'; endforeach; endif; ?>
                 </ul>
-                <a href="#" class="dash-notif-foot">View all notifications</a>
+                <!-- Jumps to Activity & Bills section (which lists the full
+                     notification + donation history). Uses data-section so the
+                     existing catch-all click handler handles section switching. -->
+                <a href="#" class="dash-notif-foot" data-section="activity">View all notifications</a>
               </div>
             </div>
             <button class="dash-cta donor-only" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
@@ -381,30 +477,41 @@ $partial = dirname(__DIR__) . '/php/partials/';
           </div>
         </div>
 
-        <div class="quick-actions auth-only">
-          <button type="button" class="action-btn donor-only" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.35-7-10a4 4 0 017-2.65A4 4 0 0119 11c0 5.65-7 10-7 10z"/></svg>
-            <span>Donate</span>
+        <!-- Quick actions grid removed for AUTH users — duplicated the bottom bar and sidebar.
+             Restored a guest-only action band below: 3 cards driving sign-up / browse / learn-more,
+             so the area below the guest hero doesn't read as empty space. -->
+        <div class="guest-actions guest-only" aria-label="Guest quick actions">
+          <a href="signup.php" class="guest-action-card guest-action-primary">
+            <span class="guest-action-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
+            </span>
+            <strong>Sign up free</strong>
+            <p>Join in under a minute &mdash; unlock lower fees and wallet support.</p>
+          </a>
+          <button type="button" class="guest-action-card" data-jump="discover">
+            <span class="guest-action-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <strong>Browse campaigns</strong>
+            <p>Verified Lebanese families and organizations across all categories.</p>
           </button>
-          <button type="button" class="action-btn" onclick="document.querySelector('[data-section=&quot;campaign-new&quot;]').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            <span>New Campaign</span>
-          </button>
-          <button type="button" class="action-btn" onclick="document.querySelector('[data-section=&quot;activity&quot;]').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6l1 2h3a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h3l1-2z"/><path d="M8 11h8M8 15h5"/></svg>
-            <span>Bills</span>
-          </button>
-          <button type="button" class="action-btn" onclick="document.querySelector('[data-section=&quot;messages&quot;]').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path d="M8 9h8M8 13h5"/></svg>
-            <span>Chat</span>
-          </button>
-          <button type="button" class="action-btn" onclick="document.querySelector('[data-section=&quot;wallet&quot;]').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-            <span>Wallet</span>
-          </button>
+          <a href="about-us.php" class="guest-action-card">
+            <span class="guest-action-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <strong>How Sawa works</strong>
+            <p>Transparent platform fee, real-time tracking, and verified organizations.</p>
+          </a>
         </div>
 
-        <!-- 3 stat tiles — DONOR variant -->
+        <!-- 3 stat tiles — DONOR variant (real numbers from donations table) -->
+        <?php
+          $donorHasHistory = $donorTotals['total'] > 0;
+          $deltaPct = $donorTotals['delta_pct'];
+          $famDelta = (int) $donorTotals['families_delta'];
+          $monthDeltaClass = $deltaPct === null ? '' : ($deltaPct >= 0 ? 'delta-up' : 'delta-down');
+          $famDeltaClass = $famDelta === 0 ? '' : ($famDelta > 0 ? 'delta-up' : 'delta-down');
+        ?>
         <div class="dash-stats donor-only">
           <div class="stat-tile">
             <div class="stat-tile-head">
@@ -413,8 +520,8 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
               </span>
             </div>
-            <strong class="stat-tile-value" id="dash-donated">$0</strong>
-            <span class="stat-tile-delta delta-up">+12% from last month</span>
+            <strong class="stat-tile-value" id="dash-donated">$<?= number_format((float) $donorTotals['total'], 2) ?></strong>
+            <span class="stat-tile-delta"><?= $donorHasHistory ? 'Lifetime contribution' : 'Make your first donation to get started' ?></span>
           </div>
 
           <div class="stat-tile">
@@ -424,8 +531,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </span>
             </div>
-            <strong class="stat-tile-value" id="dash-helped">0</strong>
-            <span class="stat-tile-delta delta-up">+3 from last month</span>
+            <strong class="stat-tile-value" id="dash-helped"><?= (int) $donorTotals['families'] ?></strong>
+            <?php if ($famDelta !== 0): ?>
+              <span class="stat-tile-delta <?= $famDeltaClass ?>"><?= ($famDelta > 0 ? '+' : '') . $famDelta ?> vs last month</span>
+            <?php else: ?>
+              <span class="stat-tile-delta"><?= $donorTotals['families'] > 0 ? 'Unique families supported' : 'No families supported yet' ?></span>
+            <?php endif; ?>
           </div>
 
           <div class="stat-tile">
@@ -435,8 +546,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </span>
             </div>
-            <strong class="stat-tile-value" id="dash-month">$0</strong>
-            <span class="stat-tile-delta delta-up">+8% from last month</span>
+            <strong class="stat-tile-value" id="dash-month">$<?= number_format((float) $donorTotals['this_month'], 2) ?></strong>
+            <?php if ($deltaPct !== null): ?>
+              <span class="stat-tile-delta <?= $monthDeltaClass ?>"><?= ($deltaPct >= 0 ? '+' : '') . $deltaPct ?>% vs last month</span>
+            <?php else: ?>
+              <span class="stat-tile-delta"><?= $donorTotals['this_month'] > 0 ? 'Your first month here' : 'No donations this month' ?></span>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -525,22 +640,33 @@ $partial = dirname(__DIR__) . '/php/partials/';
             </div>
             <ul class="recent-donations" id="recent-donations-list">
               <?php if (!$recentDonations): ?>
-              <li class="recent-donation"><div class="rd-meta"><strong>No donations yet</strong><small>Your giving history will appear here.</small></div></li>
+              <li class="recent-donation-empty">
+                <strong>No donations yet</strong>
+                <p>Once you support a family or NGO, your history &amp; receipts will land here.</p>
+                <ol class="how-mini">
+                  <li><span>1</span> Browse verified campaigns</li>
+                  <li><span>2</span> Donate securely — see the fee upfront</li>
+                  <li><span>3</span> Track impact and download your receipt</li>
+                </ol>
+                <button type="button" class="btn btn-primary" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">Browse campaigns</button>
+              </li>
               <?php else: foreach ($recentDonations as $don): include $partial . 'recent-donation.php'; endforeach; endif; ?>
             </ul>
           </div>
 
-          <!-- Urgent Campaigns: shown for donors + guests -->
+          <!-- Ending Soon: shown for donors + guests. Header matches the data
+               (campaigns ending within 7 days), instead of the older "Urgent"
+               label which contradicted the mostly-Medium priority tags. -->
           <div class="dash-card donor-only guest-show">
             <div class="dash-card-head">
-              <h3>Urgent Campaigns</h3>
+              <h3>Ending Soon</h3>
               <a class="dash-card-link" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click(); return false;" href="#">View All
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </a>
             </div>
             <div class="urgent-list" id="urgent-list">
               <?php if (!$urgentCampaigns): ?>
-              <p class="empty-inline">No urgent campaigns right now.</p>
+              <p class="empty-inline">No campaigns are wrapping up in the next week.</p>
               <?php else: foreach ($urgentCampaigns as $camp): include $partial . 'urgent-item.php'; endforeach; endif; ?>
             </div>
           </div>
@@ -676,35 +802,36 @@ $partial = dirname(__DIR__) . '/php/partials/';
           </div>
         </div>
 
-        <!-- Trust strip — placeholder testimonials, swap with real quotes later -->
+        <!-- Why Sawa — three real trust pillars instead of fake testimonials.
+             Swap this block for a testimonials carousel once real quotes are
+             collected (and consent signed). -->
         <div class="trust-strip guest-only">
           <div class="trust-strip-head">
-            <h3>Voices from the Sawa community</h3>
-            <p>Real stories from donors and families we've helped. <em>(Placeholder content — replace with real testimonials.)</em></p>
+            <h3>Why donors choose Sawa</h3>
+            <p>Three commitments we made from day one — the way we work isn't marketing copy, it's the code.</p>
           </div>
           <div class="testimonials-grid">
-            <!-- TESTIMONIAL_PLACEHOLDER: replace quote, author name, role with real content -->
-            <figure class="testimonial-card">
-              <blockquote>"Campaign updates and receipts will appear here once real testimonial content is collected."</blockquote>
-              <figcaption>
-                <span class="testimonial-avatar" aria-hidden="true">D</span>
-                <span><strong>Donor testimonial</strong><small>Placeholder content</small></span>
-              </figcaption>
-            </figure>
-            <figure class="testimonial-card">
-              <blockquote>"Organisation proof, campaign updates, and donor feedback should be rendered here from real records."</blockquote>
-              <figcaption>
-                <span class="testimonial-avatar" aria-hidden="true">O</span>
-                <span><strong>Organisation testimonial</strong><small>Placeholder content</small></span>
-              </figcaption>
-            </figure>
-            <figure class="testimonial-card">
-              <blockquote>"Use this card for a real quote after consent, including the transparent Sawa fee policy."</blockquote>
-              <figcaption>
-                <span class="testimonial-avatar" aria-hidden="true">T</span>
-                <span><strong>Trust testimonial</strong><small>Placeholder content</small></span>
-              </figcaption>
-            </figure>
+            <article class="testimonial-card">
+              <span class="testimonial-avatar testimonial-avatar--icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              </span>
+              <strong class="testimonial-title">Every NGO reviewed manually</strong>
+              <p>Organizations submit registration documents. Nothing goes live until an admin approves it.</p>
+            </article>
+            <article class="testimonial-card">
+              <span class="testimonial-avatar testimonial-avatar--icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </span>
+              <strong class="testimonial-title">Fees shown before you pay</strong>
+              <p>5% for members, 10% for guests. The exact amount appears on the confirm screen — no surprises after checkout.</p>
+            </article>
+            <article class="testimonial-card">
+              <span class="testimonial-avatar testimonial-avatar--icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </span>
+              <strong class="testimonial-title">Direct — no middlemen</strong>
+              <p>Donations move from your wallet to the campaign owner. Every step is recorded in a downloadable receipt.</p>
+            </article>
           </div>
         </div>
 
@@ -752,54 +879,33 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </a>
             </div>
-            <!-- ACTIVITY_PLACEHOLDER: PHP can replace these rows with the live donation stream. -->
+            <?php /* Real donations, newest first. Names are resolved in
+                     DonationService::recentPlatformActivity() so anonymous and
+                     guest donors are never attributed on this public page. */ ?>
             <ul class="activity-feed" id="activity-feed">
+              <?php if (!$liveActivity): ?>
               <li class="activity-row">
-                <span class="activity-avatar">L</span>
                 <div class="activity-text">
-                  <strong>Verified donor</strong> donated <strong class="activity-amount">$50</strong>
-                  <span class="activity-meta">to Help Sara Beat Cancer &middot; <time>2 min ago</time></span>
+                  <span class="activity-meta">No donations yet — be the first to give.</span>
                 </div>
               </li>
+              <?php else: foreach ($liveActivity as $act):
+                $isAnon = $act['anonymous'] || $act['label'] === 'Guest donor';
+                $initial = mb_strtoupper(mb_substr($act['label'], 0, 1));
+              ?>
               <li class="activity-row">
-                <span class="activity-avatar activity-avatar-anon">?</span>
+                <span class="activity-avatar<?= $isAnon ? ' activity-avatar-anon' : '' ?>"><?= $isAnon ? '?' : htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></span>
                 <div class="activity-text">
-                  <strong>Anonymous</strong> donated <strong class="activity-amount">$200</strong>
-                  <span class="activity-meta">to Winter Food Packages &middot; <time>14 min ago</time></span>
+                  <strong><?= htmlspecialchars($act['label'], ENT_QUOTES, 'UTF-8') ?></strong> donated <strong class="activity-amount">$<?= number_format($act['amount']) ?></strong>
+                  <span class="activity-meta">to <?= htmlspecialchars($act['campaign'], ENT_QUOTES, 'UTF-8') ?> &middot; <time datetime="<?= htmlspecialchars($act['created_at'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(Format::timeAgo($act['created_at']), ENT_QUOTES, 'UTF-8') ?></time></span>
                 </div>
               </li>
-              <li class="activity-row">
-                <span class="activity-avatar">A</span>
-                <div class="activity-text">
-                  <strong>Community donor</strong> donated <strong class="activity-amount">$25</strong>
-                  <span class="activity-meta">to School Supplies for Akkar &middot; <time>32 min ago</time></span>
-                </div>
-              </li>
-              <li class="activity-row">
-                <span class="activity-avatar">Y</span>
-                <div class="activity-text">
-                  <strong>Sawa donor</strong> donated <strong class="activity-amount">$100</strong>
-                  <span class="activity-meta">to Heart Surgery for Ali &middot; <time>1 hr ago</time></span>
-                </div>
-              </li>
-              <li class="activity-row">
-                <span class="activity-avatar">M</span>
-                <div class="activity-text">
-                  <strong>Verified donor</strong> donated <strong class="activity-amount">$15</strong>
-                  <span class="activity-meta">to Blankets for Bekaa &middot; <time>2 hrs ago</time></span>
-                </div>
-              </li>
-              <li class="activity-row">
-                <span class="activity-avatar">H</span>
-                <div class="activity-text">
-                  <strong>Community donor</strong> donated <strong class="activity-amount">$75</strong>
-                  <span class="activity-meta">to Emergency Roof Repair &middot; <time>3 hrs ago</time></span>
-                </div>
-              </li>
-            </ul>
+              <?php endforeach; endif; ?>
           </div>
 
-          <div class="dash-card trust-card">
+          <!-- Guest-only marketing/trust card. The auth dashboard uses the
+               "How Sawa works" guide further below instead of this About-style copy. -->
+          <div class="dash-card trust-card guest-only">
             <div class="dash-card-head">
               <h3>Why families trust Sawa</h3>
             </div>
@@ -848,6 +954,10 @@ $partial = dirname(__DIR__) . '/php/partials/';
             </div>
           </div>
         </div>
+
+        <!-- "How Sawa works" cards live on the dedicated /pages/guide.html page now.
+             Removed from the dashboard so the home view stays focused on the user's
+             actual activity (stats + recent donations + urgent campaigns). -->
       </section>
 
       <section id="discover" class="section">
@@ -856,11 +966,13 @@ $partial = dirname(__DIR__) . '/php/partials/';
           <p>Browse active campaigns and make a donation.</p>
         </div>
 
-        <!-- Redesigned filter toolbar: search + sort + chip row + advanced -->
+        <!-- Filter toolbar: search + sort + (mobile-only) filter trigger.
+             On mobile, .discover-filters below becomes a bottom-sheet — no
+             horizontal-scrolling chip row. Desktop keeps the inline toolbar. -->
         <div class="discover-toolbar">
           <label class="discover-search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="search" id="discover-search" placeholder="Search by name, keyword, or category…" autocomplete="off">
+            <input type="search" id="discover-search" aria-label="Search campaigns by name, keyword, or category" placeholder="Search by name, keyword, or category…" autocomplete="off">
             <button type="button" class="discover-search-clear" id="discover-search-clear" aria-label="Clear search" hidden>&times;</button>
           </label>
           <div class="discover-sort-wrap">
@@ -872,9 +984,23 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <option value="urgent">Most urgent</option>
             </select>
           </div>
+          <!-- Mobile-only trigger that opens the filter bottom-sheet. -->
+          <button type="button" class="discover-filter-trigger" id="discover-filter-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="discover-filters-sheet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            <span>Filters</span>
+            <span class="discover-filter-trigger-count" id="discover-filter-trigger-count" hidden>0</span>
+          </button>
         </div>
 
-        <div class="discover-filters">
+        <!-- Backdrop is shown only when the bottom-sheet is open on mobile.
+             Tap to close. Desktop never reaches this state. -->
+        <div class="discover-filters-backdrop" id="discover-filters-backdrop" hidden></div>
+        <div class="discover-filters" id="discover-filters-sheet">
+          <!-- Sheet header is mobile-only; desktop hides via CSS. -->
+          <div class="discover-filters-sheet-head">
+            <h3>Filter campaigns</h3>
+            <button type="button" class="discover-filters-sheet-close" id="discover-filter-close" aria-label="Close filters">&times;</button>
+          </div>
           <div class="discover-cat-row">
             <button class="cat-chip active" data-category="All" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -943,50 +1069,166 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
         <div id="discover-grid" class="campaign-grid">
           <?php if (!$discoverCampaigns): ?>
-            <p class="activity-empty" style="grid-column:1/-1;">No active campaigns yet. Check back soon.</p>
+            <p class="empty-state">No active campaigns yet. Check back soon.</p>
           <?php else: foreach ($discoverCampaigns as $camp): include $partial . 'campaign-card.php'; endforeach; endif; ?>
         </div>
       </section>
 
-      <section id="profile" class="section">
-        <div class="section-header">
-          <h2>My Profile</h2>
-          <p>Update your personal information and photo.</p>
+      <section id="profile" class="section" data-back="dashboard">
+        <!-- X / Twitter-style profile header: banner + avatar + identity + Edit
+             button. Click Edit → the section toggles `.is-editing` and the form
+             inside .profile-card becomes interactive. Save submits to the
+             existing PHP endpoint; Cancel reverts. -->
+        <div class="profile-banner card profile-hero">
+          <?php /* Banner defaults to a gradient. When users.banner_path lands, echo it as background-image here. */ ?>
+          <div class="profile-banner-image" aria-hidden="true"></div>
+
+          <button type="button" class="profile-edit-toggle" id="profile-edit-toggle" data-section="profile-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Edit profile</span>
+          </button>
+
+          <div class="profile-identity">
+            <div class="profile-avatar-frame">
+              <img src="../images/user-profile.svg" alt="" id="profile-view-avatar">
+            </div>
+            <h2 class="profile-view-name" id="profile-view-name"><?= $displayName ?></h2>
+            <span class="profile-role-badge" aria-label="Account role"></span>
+            <p class="profile-view-bio" id="profile-view-bio">
+              <?= $bioValue !== '' ? $bioValue : '<em class="profile-view-bio-empty">No bio yet — tap Edit profile to add one.</em>' ?>
+            </p>
+          </div>
         </div>
-        <div class="card profile-card">
-          <form action="../php/users/update-profile.php" method="POST" enctype="multipart/form-data" class="profile-header">
+
+        <!-- Profile dashboard summary cards. All numbers come from PHP variables
+             (will populate once real data exists). -->
+        <div class="profile-summary-grid">
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Account status</span>
+            <strong class="profile-summary-value profile-summary-status">
+              <span class="profile-status-dot" aria-hidden="true"></span> Active
+            </strong>
+            <small>Member since <?= htmlspecialchars($memberSince, ENT_QUOTES, 'UTF-8') ?></small>
+          </div>
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Wallet balance</span>
+            <strong class="profile-summary-value">$<?= $walletBalance ?></strong>
+            <small>Available for donations</small>
+          </div>
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Total donated</span>
+            <strong class="profile-summary-value">$<?= number_format($activityTotalPaid, 2) ?></strong>
+            <small>Across all campaigns</small>
+          </div>
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Campaigns created</span>
+            <strong class="profile-summary-value"><?= count($myCampaigns) ?></strong>
+            <small>Including drafts</small>
+          </div>
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Receipts on file</span>
+            <strong class="profile-summary-value"><?= $receiptCount ?></strong>
+            <small>Tax-ready PDFs</small>
+          </div>
+          <div class="profile-summary-card">
+            <span class="profile-summary-label">Unread notifications</span>
+            <strong class="profile-summary-value"><?= count($notifications) ?></strong>
+            <small>From campaigns &amp; admin</small>
+          </div>
+        </div>
+
+        <!-- Edit-mode panel removed from #profile. The form moved to its own
+             #profile-edit sub-page (defined below) so editing feels like a
+             distinct screen per the X / Twitter pattern. -->
+
+
+        <!-- Quick actions + security placeholder — frontend-only for now. -->
+        <div class="profile-extra-grid">
+          <div class="card profile-extra-card">
+            <h4>Quick actions</h4>
+            <div class="profile-extra-actions">
+              <button type="button" class="btn btn-primary" data-section="discover">Browse campaigns</button>
+              <button type="button" class="btn btn-outline" data-section="wallet">Top up wallet</button>
+              <button type="button" class="btn btn-outline" data-section="activity">View receipts</button>
+              <button type="button" class="btn btn-outline" data-section="campaign-new">Create campaign</button>
+            </div>
+          </div>
+
+          <div class="card profile-extra-card">
+            <h4>Account &amp; security</h4>
+            <ul class="profile-security-list">
+              <li><span>Email verified</span><span class="profile-pill profile-pill-ok">Verified</span></li>
+              <li><span>Two-factor auth</span><span class="profile-pill profile-pill-soon">Coming soon</span></li>
+              <li><span>Password</span><span class="profile-pill profile-pill-soon">Change soon</span></li>
+              <li><span>Connected devices</span><span class="profile-pill profile-pill-soon">Coming soon</span></li>
+            </ul>
+            <?php /* Wire to /php/users/security.php once sessions + 2FA tables land; keep this layout. */ ?>
+            <p class="profile-extra-note">
+              Account security upgrades &mdash; including two-factor authentication and device management &mdash; are rolling out soon.
+            </p>
+          </div>
+
+          <div class="card profile-extra-card profile-extra-card-wide">
+            <h4>Recent activity</h4>
+            <?php if (!$activityRows): ?>
+              <p class="profile-empty">No activity yet — your latest donations and wallet top-ups will appear here.</p>
+            <?php else: ?>
+              <ul class="profile-activity-list">
+                <?php foreach (array_slice($activityRows, 0, 4) as $row): ?>
+                  <li>
+                    <strong><?= htmlspecialchars((string) ($row['campaign_title'] ?? 'Donation'), ENT_QUOTES, 'UTF-8') ?></strong>
+                    <span>$<?= number_format((float) ($row['total_charged'] ?? 0), 2) ?></span>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile EDIT sub-page. Standalone section; the back arrow returns to
+           the Profile view. Save submits to the existing PHP endpoint, which
+           already redirects with ?section=profile so the user lands back on
+           the Profile view. No fake submission — pure PHP POST. -->
+      <section id="profile-edit" class="section" data-back="profile" data-title="Edit profile">
+        <div class="card profile-edit-card">
+          <form action="../php/users/update-profile.php" method="POST" enctype="multipart/form-data" class="profile-edit-form" id="profile-edit-form">
             <?= Csrf::field() ?>
-            <div class="avatar-column">
+
+            <div class="profile-edit-avatar">
               <label class="avatar-upload" for="avatar-input">
-                <img src="../images/user-profile.svg" alt="avatar" id="avatar-preview">
-                <span class="avatar-overlay">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  <span>Change Photo</span>
+                <img src="../images/user-profile.svg" alt="" id="avatar-preview">
+                <span class="avatar-overlay" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <span>Change photo</span>
                 </span>
                 <input type="file" name="profile_image" id="avatar-input" accept="image/*" hidden>
               </label>
-              <h3 class="profile-display-name is-placeholder" id="profile-display-name">Your Name</h3>
-              <!--
-                Role badge under the avatar. Label text is driven by the body class
-                (role-donor | role-taker | role-org) set by PHP — see userhome.css.
-                No JS or inline PHP echo needed; PHP already sets <body class="role-…">.
-              -->
               <span class="profile-role-badge" aria-label="Account role"></span>
+              <!-- Banner upload disabled until backend adds users.banner_path. -->
+              <button type="button" class="profile-banner-edit-btn" disabled title="Coming soon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                Change banner · Coming soon
+              </button>
             </div>
-            <div class="profile-fields">
+
+            <div class="profile-edit-fields">
               <label for="profile-name">Full Name</label>
               <input type="text" name="full_name" id="profile-name" placeholder="Your name" maxlength="50" value="<?= $displayName ?>">
 
               <label for="profile-bio">Bio</label>
               <textarea name="bio" id="profile-bio" placeholder="Tell us about yourself..." maxlength="250"><?= $bioValue ?></textarea>
 
-              <button type="submit" class="btn btn-primary profile-save-btn">Save Changes</button>
+              <div class="profile-edit-actions">
+                <button type="button" class="btn btn-outline" data-back-to="profile">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+              </div>
             </div>
           </form>
         </div>
       </section>
 
-      <section id="wallet" class="section">
+      <section id="wallet" class="section" data-back="dashboard" data-title="My Wallet">
         <div class="section-header">
           <h2>My Wallet</h2>
           <p>Manage your donation balance and view transaction history.</p>
@@ -1005,7 +1247,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <button type="button" class="preset-btn" data-amount="100">$100</button>
             </div>
             <div class="top-up-input-row">
-              <input type="number" name="amount" id="top-up-amount" placeholder="Or enter amount ($)" min="1" step="1" required>
+              <input type="number" name="amount" id="top-up-amount" aria-label="Top-up amount in dollars" placeholder="Or enter amount ($)" min="1" step="1" required>
               <button type="submit" class="btn btn-white">Add Funds</button>
             </div>
           </form>
@@ -1054,7 +1296,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
             </div>
 
             <div class="cashout-note">
-              <strong>Processing time:</strong> cash-out and transfer requests usually take <strong>2-3 business days</strong>. PHP will confirm balance, calculate the 5% fee, and track payout status.
+              <strong>Processing time:</strong> cash-out and transfer requests usually take <strong>2&ndash;3 business days</strong>. Your balance is verified, the 5% Sawa fee is calculated upfront, and you&rsquo;ll get a status update as soon as your payout is processed.
             </div>
 
             <button type="submit" class="btn btn-primary">Request Cash Out</button>
@@ -1070,7 +1312,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
       </section>
 
-      <section id="activity" class="section">
+      <section id="activity" class="section" data-back="dashboard" data-title="Activity &amp; Bills">
         <div class="section-header">
           <h2>Activity &amp; Bills</h2>
           <p>Track payments, support fees, wallet movement, and receipt records.</p>
@@ -1098,10 +1340,17 @@ $partial = dirname(__DIR__) . '/php/partials/';
           <div class="activity-ledger card">
             <div class="activity-ledger-head">
               <h3>Recent Activity</h3>
+              <!-- Each tab declares the row predicate via data-filter:
+                     all      → show every row
+                     paid     → bill_id !== 'PENDING'
+                     pending  → bill_id === 'PENDING'
+                   Fees tab is intentionally omitted: it would need a
+                   data-bill-fee attribute on the row to be meaningful,
+                   and that lives in php/partials/activity-row.php (backend zone). -->
               <div class="activity-filter-tabs" role="tablist" aria-label="Activity filters">
-                <button type="button" class="active">All</button>
-                <button type="button">Paid</button>
-                <button type="button">Fees</button>
+                <button type="button" class="active" data-filter="all">All</button>
+                <button type="button" data-filter="paid">Paid</button>
+                <button type="button" data-filter="pending">Pending</button>
               </div>
             </div>
 
@@ -1196,7 +1445,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </div>
 
               <div class="bill-foot-note">
-                <span>Final payment reference and provider fee are confirmed by PHP after checkout returns.</span>
+                <span>The final payment reference and provider fee are confirmed once your payment provider returns the receipt.</span>
               </div>
             </div>
 
@@ -1212,7 +1461,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
       </section>
 
-      <section id="campaign-new" class="section">
+      <section id="campaign-new" class="section" data-back="dashboard" data-title="Create a Campaign">
         <div class="section-header">
           <h2>Create Campaign</h2>
           <p>Launch a new fundraising campaign. Fill in all the details below.</p>
@@ -1272,7 +1521,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
       </section>
 
-      <section id="campaigns" class="section">
+      <section id="campaigns" class="section" data-back="dashboard" data-title="My Campaigns">
         <div class="section-header">
           <h2>My Campaigns</h2>
           <p>All campaigns you have created.</p>
@@ -1289,10 +1538,10 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
       </section>
 
-      <section id="messages" class="section">
+      <section id="messages" class="section" data-back="dashboard" data-title="Messages">
         <div class="section-header">
           <h2>Messages</h2>
-          <p>Chat directly with donors, recipients, and verified organisations.</p>
+          <p>Chat directly with donors, recipients, and verified organizations.</p>
         </div>
 
         <div class="messages-shell card">
@@ -1304,8 +1553,8 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </button>
             </div>
             <label class="messages-search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="search" placeholder="Search chats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" aria-label="Search chats" placeholder="Search chats">
             </label>
             <?php if (!$inboxThreads): ?>
             <p class="empty-inline" style="padding:1rem;">No conversations yet.</p>
@@ -1334,7 +1583,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <?php endif; ?>
             </div>
 
-            <div class="chat-body">
+            <div class="chat-body" data-thread-id="<?= $activeThreadId > 0 ? (int) $activeThreadId : '' ?>">
               <?php if (!$activeThread): ?>
               <p class="empty-inline">Your messages will appear here.</p>
               <?php elseif (!$threadMessages): ?>
@@ -1345,7 +1594,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 $body = htmlspecialchars((string) $msg['body'], ENT_QUOTES, 'UTF-8');
                 $time = date('g:i A', strtotime((string) $msg['created_at']));
               ?>
-              <div class="chat-bubble <?= $bubbleClass ?>">
+              <div class="chat-bubble <?= $bubbleClass ?>" data-msg-id="<?= (int) $msg['id'] ?>">
                 <p><?= $body ?></p>
                 <time><?= htmlspecialchars($time, ENT_QUOTES, 'UTF-8') ?></time>
               </div>
@@ -1358,10 +1607,56 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <button type="button" class="chat-icon-btn" aria-label="Attach file">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
               </button>
-              <input type="text" name="message" placeholder="Write a message..." autocomplete="off">
+              <input type="text" name="message" aria-label="Write a message" placeholder="Write a message..." autocomplete="off">
               <button type="submit" class="btn btn-primary chat-send-btn">Send</button>
             </form>
           </div>
+        </div>
+      </section>
+
+      <?php /* Settings — X-style full-screen takeover via data-back; theme row is live, language row waits for i18n. */ ?>
+      <section id="settings" class="section" data-back="dashboard" data-title="Settings">
+        <div class="settings-list">
+          <!-- Theme row — clickable label flips light/dark via theme.js. -->
+          <button type="button" class="settings-row" data-theme-toggle aria-label="Toggle dark mode">
+            <span class="settings-row-icon">
+              <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </span>
+            <span class="settings-row-body">
+              <strong>Theme</strong>
+              <small>Switch between light and dark</small>
+            </span>
+            <span class="settings-row-state" data-theme-label></span>
+          </button>
+
+          <?php /* Language row — wire to /php/users/language.php when the strings catalog exists. */ ?>
+          <div class="settings-row is-disabled" aria-disabled="true">
+            <span class="settings-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            <span class="settings-row-body">
+              <strong>Language</strong>
+              <small>Switch between English and Arabic</small>
+            </span>
+            <span class="settings-row-soon">Coming soon</span>
+          </div>
+
+          <!-- Add an account — kicks off the multi-account flow. Backend has to
+               honor ?add=1 by NOT logging the current session out, just adding
+               the new account to a multi-session cookie. UI is real (no fake
+               account list); switching between accounts happens in the sidebar
+               user-card panel once the backend exposes the session list. -->
+          <a class="settings-row" href="login.php?add=1">
+            <span class="settings-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            </span>
+            <span class="settings-row-body">
+              <strong>Add an account</strong>
+              <small>Sign in to another Sawa account and switch between them</small>
+            </span>
+            <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
         </div>
       </section>
 
@@ -1400,7 +1695,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
             <button type="button" class="preset-btn" data-amount="25">$25</button>
             <button type="button" class="preset-btn" data-amount="50">$50</button>
           </div>
-          <input type="number" name="amount" id="modal-amount" placeholder="Or enter amount" min="1" step="1">
+          <input type="number" name="amount" id="modal-amount" aria-label="Donation amount in dollars" placeholder="Or enter amount" min="1" step="1">
 
           <div class="donation-fee-summary">
             <div><span>Your donation</span><strong id="modal-summary-amount">$0</strong></div>
@@ -1466,23 +1761,41 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </span>
             </span>
           </label>
-          <label class="payment-method-option is-best auth-only">
-            <input type="radio" name="payment_method_choice" value="wallet">
-            <span class="payment-method-icon" aria-hidden="true">
+          <?php /* Wallet-pay disabled by design — enable when the wallet-pay endpoint + provider integration are ready. */ ?>
+          <label class="payment-method-option is-coming-soon auth-only" aria-disabled="true">
+            <input type="radio" name="payment_method_choice" value="wallet" disabled>
+            <span class="payment-method-icon payment-method-icon--wallet" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </span>
             <span class="payment-method-body">
               <strong>Sawa Wallet</strong>
-              <small>Use your account balance — instant, members only.</small>
-              <span class="payment-method-fee payment-method-fee--best">5% Sawa fee &middot; saves 5%</span>
+              <small>Pay from your Sawa balance — instant, members only.</small>
+              <span class="payment-method-fee payment-method-fee--soon">Coming soon</span>
               <span class="payment-method-extra">
-                <span class="pm-extra-row"><span class="pm-extra-label">Source</span><span>Uses your Sawa wallet balance only.</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Status</span><span>Wallet payments are launching soon &mdash; we&rsquo;ll notify you the moment they go live.</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Source</span><span>Will use your Sawa wallet balance only.</span></span>
                 <span class="pm-extra-row"><span class="pm-extra-label">Speed</span><span>Instant — no provider redirect.</span></span>
-                <span class="pm-extra-row"><span class="pm-extra-label">Top up</span><span>Add funds from the Wallet section before donating.</span></span>
-                <span class="pm-extra-row"><span class="pm-extra-label">Why cheaper</span><span>Members pay 5% on wallet donations. Direct payment (Whish/Visa) is 10%.</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Why cheaper</span><span>Members will pay 5% on wallet donations (vs 10% via Whish / Visa).</span></span>
               </span>
             </span>
           </label>
+          <!-- Guest-only "Sign up to unlock" Wallet promo. Fills the 3rd column
+               for guests (since the real Wallet card is auth-only) and nudges
+               signup with a real value prop (5% vs 10% fee). Links to signup.php
+               in a new tab so the user doesn't lose the donate flow. -->
+          <a class="payment-method-option is-locked guest-only" href="signup.php" target="_blank" rel="noopener">
+            <span class="payment-method-icon payment-method-icon--wallet" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            </span>
+            <span class="payment-method-body">
+              <strong>Sawa Wallet</strong>
+              <small>Sign up to unlock</small>
+              <span class="payment-method-fee payment-method-fee--save">Pay 5% instead of 10%</span>
+            </span>
+            <span class="payment-method-lock" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+          </a>
         </fieldset>
 
         <div class="payment-method-details" id="payment-method-details" aria-live="polite"></div>
@@ -1606,7 +1919,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
       </div>
 
       <ul class="donors-list" id="donors-list">
-        <!-- Placeholder rows — PHP will replace with a loop over real donations for this campaign -->
+        <?php /* Seed rows — PHP loop replaces these with real donations per campaign when data lands. */ ?>
         <li class="donor-row">
           <span class="donor-avatar">VD</span>
           <div class="donor-meta">
@@ -1708,21 +2021,32 @@ $partial = dirname(__DIR__) . '/php/partials/';
           </span>
         </div>
 
+        <!-- Creator row — Twitter/X style. Avatar + name is one clickable
+             target (opens creator profile). Message + Report sit as
+             companion action pills on the right. -->
         <div class="cm-creator">
-          <span class="cm-creator-avatar" id="cm-creator-avatar" aria-hidden="true">VO</span>
-          <span class="cm-creator-meta">
-            <small>Created by</small>
-            <strong id="cm-creator-name">Verified organisation
-              <span class="cm-verified" id="cm-verified" title="Verified creator" aria-label="Verified">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0l3 3 4 1 1 4 3 3-3 3-1 4-4 1-3 3-3-3-4-1-1-4-3-3 3-3 1-4 4-1z"/></svg>
-                <svg class="cm-verified-tick" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-            </strong>
-          </span>
-          <a class="cm-message-btn auth-only" id="cm-message-btn" href="#" aria-label="Message the campaign creator">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-            <span>Message</span>
-          </a>
+          <button type="button" class="cm-creator-link" id="cm-creator-link" aria-label="View creator profile">
+            <span class="cm-creator-avatar" id="cm-creator-avatar" aria-hidden="true">VO</span>
+            <span class="cm-creator-meta">
+              <small>Created by</small>
+              <strong id="cm-creator-name">Verified organization
+                <span class="cm-verified" id="cm-verified" title="Verified creator" aria-label="Verified">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0l3 3 4 1 1 4 3 3-3 3-1 4-4 1-3 3-3-3-4-1-1-4-3-3 3-3 1-4 4-1z"/></svg>
+                  <svg class="cm-verified-tick" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+              </strong>
+            </span>
+          </button>
+          <div class="cm-creator-actions">
+            <a class="cm-action-btn auth-only" id="cm-message-btn" href="#" aria-label="Message the campaign creator">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span>Message</span>
+            </a>
+            <button type="button" class="cm-action-btn cm-action-btn-danger" id="cm-report-creator-btn" aria-label="Report creator">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="22" x2="4" y2="15"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
+              <span>Report</span>
+            </button>
+          </div>
         </div>
 
         <div class="cm-progress">
@@ -1758,7 +2082,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <input type="hidden" name="campaign_id" id="cm-comment-camp-id">
               <div class="cm-comment-form-row">
                 <img class="cm-comment-form-avatar" src="../images/user-profile.svg" alt="" aria-hidden="true">
-                <textarea name="body" id="cm-comment-input" placeholder="Add a comment — be kind." maxlength="500" rows="2" required></textarea>
+                <textarea name="body" id="cm-comment-input" aria-label="Add a comment" placeholder="Add a comment — be kind." maxlength="500" rows="2" required></textarea>
               </div>
               <div class="cm-comment-form-foot">
                 <span class="cm-comment-counter" id="cm-comment-counter">0 / 500</span>
@@ -1787,48 +2111,80 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
   <div id="toast" class="toast"></div>
 
-  <!-- Bottom nav (mobile only) -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="bottom-nav-item active" data-section="dashboard">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+  <!-- ─── Report modal — supports BOTH campaign + user reports.
+       JS sets data-mode="campaign" or "user", which swaps the title and reason
+       list. Submits via fetch to /php/engagement/report.php with { type,
+       target_id, reason, message }. Admin reviews in admin.php. -->
+  <div class="report-overlay" id="report-overlay" hidden>
+    <div class="report-modal" id="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-title" data-mode="campaign">
+      <button type="button" class="report-close" id="report-close" aria-label="Close">&times;</button>
+      <h3 id="report-title">Report this campaign</h3>
+      <p class="report-sub">
+        Help us keep Sawa safe. An admin will review your report.
+        <strong id="report-target-name"></strong>
+      </p>
+
+      <!-- Segmented control: lets the user switch between reporting the
+           campaign itself or its creator (fake account, impersonation, etc). -->
+      <div class="report-segmented" role="tablist" aria-label="Report target">
+        <button type="button" class="report-seg-btn is-active" data-report-mode="campaign" role="tab" aria-selected="true">Campaign</button>
+        <button type="button" class="report-seg-btn" data-report-mode="user" role="tab" aria-selected="false">User</button>
+      </div>
+
+      <form id="report-form" class="report-form" action="../php/engagement/report.php" method="POST" novalidate>
+        <?= Csrf::field() ?>
+        <input type="hidden" name="target_id" id="report-target-id" value="">
+        <input type="hidden" name="type" id="report-type" value="campaign">
+
+        <label for="report-reason">Reason</label>
+        <select id="report-reason" name="reason" required>
+          <option value="">Select a reason…</option>
+        </select>
+
+        <label for="report-message">Message <small>(optional)</small></label>
+        <textarea id="report-message" name="message" rows="4" maxlength="500"
+                  placeholder="Tell us what's wrong…"></textarea>
+
+        <div class="report-actions">
+          <button type="button" class="btn btn-outline" id="report-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit report</button>
+        </div>
+
+        <p class="report-success" id="report-success" hidden>
+          Thanks — your report was received. An admin will review it shortly.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bottom nav (mobile only) — 5 slots: Home · Campaigns · [+ Create] · Wallet · Profile.
+       Center FAB = primary action (Create Campaign). Donations item was removed
+       because it pointed at "Bills" and confused users. -->
+  <nav class="bottom-nav auth-only" id="bottom-nav" aria-label="Primary mobile navigation">
+    <button class="bottom-nav-item active" data-section="dashboard" aria-label="Home" aria-current="page">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
       <span>Home</span>
     </button>
-    <button class="bottom-nav-item" data-section="discover">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      <span>Discover</span>
+    <button class="bottom-nav-item" data-section="discover" aria-label="Campaigns">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <span>Campaigns</span>
     </button>
-    <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" title="New Campaign" aria-label="Create new campaign">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+    <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" aria-label="Create new campaign">
+      <svg fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     </button>
-    <button class="bottom-nav-item" data-section="messages">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 13h5"/></svg>
-      <span>Chat</span>
-    </button>
-    <button class="bottom-nav-item" data-section="wallet">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+    <button class="bottom-nav-item" data-section="wallet" aria-label="Wallet">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
       <span>Wallet</span>
     </button>
-    <button class="bottom-nav-item" data-section="profile">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+    <button class="bottom-nav-item" data-section="profile" aria-label="Profile">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
       <span>Profile</span>
     </button>
   </nav>
 
-  <div class="auth-overlay" id="auth-overlay">
-    <div class="auth-modal">
-      <button type="button" class="auth-modal-close" id="auth-modal-close" aria-label="Close">&times;</button>
-      <div class="auth-logo-wrap">
-        <img src="../images/sawa_v2.svg" alt="Sawa">
-      </div>
-      <h2 class="auth-title">Welcome to Sawa</h2>
-      <p class="auth-subtitle">Sign in or create a free account to access your dashboard, support campaigns, and make a real difference.</p>
-      <div class="auth-links">
-        <a href="signup.php" class="auth-btn auth-btn-primary">Sign Up Free</a>
-        <a href="login.php" class="auth-btn auth-btn-outline">Log In</a>
-      </div>
-      <button type="button" class="auth-modal-cancel" id="auth-modal-cancel">Keep browsing as guest</button>
-    </div>
-  </div>
+  <!-- Removed: #auth-overlay (sign-in nudge modal). Its only trigger was the
+       bottom-nav guest-restriction handler, but the bottom-nav is auth-only.
+       Effectively unreachable; HTML + CSS + JS all removed in Task 1. -->
 
   <!-- ─── Page footer (guest-only — auth dashboard doesn't need marketing footer) ─── -->
   <footer class="site-footer guest-only">
@@ -1863,17 +2219,17 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
       <div class="site-footer-col">
         <h4>Sawa</h4>
-        <a href="about-us.html">About us</a>
-        <a href="about-us.html#how-to-donate">How to donate</a>
+        <a href="about-us.php">About us</a>
+        <a href="about-us.php#how-to-donate">How to donate</a>
         <a href="signup.php">Become a creator</a>
-        <a href="about-us.html#faq">FAQs</a>
+        <a href="about-us.php#faq">FAQs</a>
       </div>
 
       <div class="site-footer-col">
-        <h4>Trust &amp; legal</h4>
-        <a href="about-us.html#terms">Terms &amp; conditions</a>
-        <a href="about-us.html#privacy">Privacy policy</a>
-        <a href="about-us.html#faq">How verification works</a>
+        <h4>Trust &amp; safety</h4>
+        <a href="about-us.php#trust">How verification works</a>
+        <a href="about-us.php#faq">Terms &amp; privacy</a>
+        <a href="guide.html">User guide</a>
         <a href="mailto:sawatogether961@gmail.com">Report a campaign</a>
       </div>
 
@@ -1893,6 +2249,3 @@ $partial = dirname(__DIR__) . '/php/partials/';
   <script src="../js/userhome.js"></script>
 </body>
 </html>
-
-
-

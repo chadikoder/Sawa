@@ -8,8 +8,35 @@ document.querySelectorAll('nav a, .sidebar-item, .sidebar-toggle, .sidebar-user,
   el.addEventListener('touchcancel', () => el.classList.remove('pressed'), {passive: true});
 });
 
+/* ── Sub-section back-bar (X / Twitter pattern) ──
+   Sections that carry data-back="<parent-id>" are sub-pages. We inject a
+   sticky back bar at the very top of each sub-section once, on demand.
+   The bar shows the section title (data-title) and a ← back arrow that
+   returns to the parent section. We push a navigation history stack so
+   sequential sub-page taps still go back through them properly. */
+const _SECTION_HISTORY = [];
+
+function ensureBackBar(section) {
+  if (!section || !section.dataset.back || section.querySelector(':scope > .section-back-bar')) return;
+  const bar = document.createElement('div');
+  bar.className = 'section-back-bar';
+  bar.innerHTML =
+    '<button type="button" class="section-back-btn" aria-label="Back">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>'
+    + '</button>'
+    + '<span class="section-back-title">' + (section.dataset.title || '') + '</span>';
+  bar.querySelector('.section-back-btn').addEventListener('click', () => {
+    // Pop the history stack if it has anything, otherwise fall back to data-back.
+    const previous = _SECTION_HISTORY.pop() || section.dataset.back;
+    switchSection(previous, { fromBack: true });
+  });
+  section.prepend(bar);
+}
+
+document.querySelectorAll('.section[data-back]').forEach(ensureBackBar);
+
 /* ── Section switching ── */
-function switchSection(sectionId) {
+function switchSection(sectionId, opts) {
   // If the campaign-detail modal is open, close it first — otherwise the
   // section change happens behind the modal and looks like a broken click.
   const cm = document.getElementById('campaign-modal');
@@ -18,8 +45,19 @@ function switchSection(sectionId) {
     cm.setAttribute('aria-hidden', 'true');
   }
 
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
+  // History bookkeeping: when navigating FORWARD into a sub-page from
+  // somewhere else, push the current section so back can return. Skipped
+  // when this call came from the back button itself (opts.fromBack).
+  const currentActive = document.querySelector('.section.active');
+  if (currentActive && currentActive.id !== sectionId && !(opts && opts.fromBack)) {
+    const targetEl = document.getElementById(sectionId);
+    if (targetEl && targetEl.dataset.back) _SECTION_HISTORY.push(currentActive.id);
+  }
+
+  document.querySelectorAll('.sidebar-item, .bottom-nav-item').forEach(i => {
+    i.classList.remove('active');
+    i.removeAttribute('aria-current');
+  });
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active', 'section-entering', 'campaign-entering'));
 
   const section = document.getElementById(sectionId);
@@ -29,7 +67,28 @@ function switchSection(sectionId) {
     window.setTimeout(() => section.classList.remove('section-entering', 'campaign-entering'), 420);
   }
 
-  document.querySelectorAll(`[data-section="${sectionId}"]`).forEach(el => el.classList.add('active'));
+  // Full-screen sub-page mode: when the active section has data-back, the
+  // dashboard chrome (top header + bottom bar) hides via body.in-subpage so
+  // the section takes the full viewport. Top-level sections show chrome again.
+  if (section && section.dataset.back) {
+    document.body.classList.add('in-subpage');
+  } else {
+    document.body.classList.remove('in-subpage');
+  }
+
+  document.querySelectorAll(`[data-section="${sectionId}"]`).forEach(el => {
+    el.classList.add('active');
+    if (el.matches('.sidebar-item, .bottom-nav-item')) el.setAttribute('aria-current', 'page');
+  });
+
+  // Sync top-nav (site-nav-link uses data-jump + .is-active, not data-section + .active)
+  document.querySelectorAll('[data-jump]').forEach(el => {
+    const isActive = el.dataset.jump === sectionId;
+    el.classList.toggle('is-active', isActive);
+    if (isActive) el.setAttribute('aria-current', 'page');
+    else el.removeAttribute('aria-current');
+  });
+
   updateBottomNavGlass();
   closeSidebar();
 }
@@ -41,6 +100,19 @@ document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
 document.querySelectorAll('.bottom-nav-item[data-section]').forEach(item => {
   item.addEventListener('click', () => switchSection(item.dataset.section));
 });
+
+// Catch-all for any other in-page jump button (e.g. dashboard "How Sawa works"
+// cards, profile quick actions). Skips elements already handled above and
+// anything that has a real href so links still work normally.
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-section]');
+  if (!el) return;
+  if (el.matches('.sidebar-item, .bottom-nav-item')) return;
+  if (el.tagName === 'A' && el.getAttribute('href')) return;
+  e.preventDefault();
+  switchSection(el.dataset.section);
+});
+
 
 /* ── Sidebar open / close (mobile) ── */
 function closeSidebar() {
@@ -135,58 +207,46 @@ document.getElementById('nav-user-btn')?.addEventListener('click', () => {
   }
 });
 
-/* Sign-in-required prompt for guests trying to use auth-only bottom-nav items.
-   Reuses #auth-overlay; rewrites the subtitle for context. */
-const _AUTH_SUBTITLE_DEFAULT = document.querySelector('#auth-overlay .auth-subtitle')?.textContent || '';
-const _AUTH_TITLE_DEFAULT    = document.querySelector('#auth-overlay .auth-title')?.textContent || '';
-function promptSignIn(feature) {
-  const overlay  = document.getElementById('auth-overlay');
-  const title    = overlay?.querySelector('.auth-title');
-  const subtitle = overlay?.querySelector('.auth-subtitle');
-  if (title)    title.textContent    = 'Sign in to continue';
-  if (subtitle) subtitle.textContent = `You need to sign in to use ${feature}. Create a free Sawa account in seconds — it only takes a minute.`;
-  overlay?.classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-function closeAuthPrompt() {
-  const overlay  = document.getElementById('auth-overlay');
-  const title    = overlay?.querySelector('.auth-title');
-  const subtitle = overlay?.querySelector('.auth-subtitle');
-  overlay?.classList.remove('show');
-  document.body.style.overflow = '';
-  if (title    && _AUTH_TITLE_DEFAULT)    title.textContent    = _AUTH_TITLE_DEFAULT;
-  if (subtitle && _AUTH_SUBTITLE_DEFAULT) subtitle.textContent = _AUTH_SUBTITLE_DEFAULT;
-}
+/* Removed: promptSignIn / closeAuthPrompt / GUEST_RESTRICTED + their listeners.
+   The only caller was the bottom-nav guest-restriction handler, but the
+   bottom-nav is auth-only — guests never see it. All dead code. */
 
-document.getElementById('auth-overlay')?.addEventListener('click', (e) => {
-  if (e.target.id === 'auth-overlay') closeAuthPrompt();
-});
-document.getElementById('auth-modal-close')?.addEventListener('click', closeAuthPrompt);
-document.getElementById('auth-modal-cancel')?.addEventListener('click', closeAuthPrompt);
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('auth-overlay')?.classList.contains('show')) {
-    closeAuthPrompt();
+/* ── Discover filters: bottom-sheet on mobile ──
+   The trigger button (#discover-filter-trigger) is rendered mobile-only via
+   CSS. Tapping opens the sheet (.discover-filters slides up). Backdrop tap,
+   close button, or Escape closes. Desktop never invokes any of this — the
+   filter panel is inline as before. */
+(function () {
+  const sheet    = document.getElementById('discover-filters-sheet');
+  const backdrop = document.getElementById('discover-filters-backdrop');
+  const trigger  = document.getElementById('discover-filter-trigger');
+  const closeBtn = document.getElementById('discover-filter-close');
+  if (!sheet || !backdrop || !trigger) return;
+
+  function open() {
+    sheet.classList.add('is-open');
+    backdrop.classList.add('is-open');
+    backdrop.hidden = false;
+    document.body.classList.add('filters-open');
+    trigger.setAttribute('aria-expanded', 'true');
   }
-});
+  function close() {
+    sheet.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+    backdrop.hidden = true;
+    document.body.classList.remove('filters-open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
 
-/* Bottom-nav: gate auth-only items for guests (show 'Sign in' prompt) */
-const GUEST_RESTRICTED = {
-  'wallet':       'your wallet',
-  'profile':      'your profile',
-  'campaign-new': 'create a campaign',
-  'activity':     'your activity and bills',
-  'messages':     'your messages',
-};
-document.querySelectorAll('.bottom-nav-item[data-section]').forEach(item => {
-  item.addEventListener('click', (e) => {
-    const target = item.dataset.section;
-    if (document.body.classList.contains('is-guest') && GUEST_RESTRICTED[target]) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      promptSignIn(GUEST_RESTRICTED[target]);
-    }
-  }, true);
-});
+  trigger.addEventListener('click', () => {
+    if (sheet.classList.contains('is-open')) close(); else open();
+  });
+  backdrop.addEventListener('click', close);
+  closeBtn?.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sheet.classList.contains('is-open')) close();
+  });
+})();
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSidebar();
@@ -275,16 +335,26 @@ document.querySelector('.sidebar-toggle')?.addEventListener('click', () => {
         ? allCards.length
         : allCards.filter(c => c.dataset.category === cat).length;
       span.textContent = n;
+      // Hide the "0" badge — ambiguous and adds noise per UX review.
+      span.hidden = (n === 0);
     });
   }
 
   function updateAdvCount() {
-    if (!advCount) return;
+    // Counts the number of non-default refinements (urgency / location / category).
+    // Drives both the inline "More filters" badge AND the mobile trigger badge,
+    // so the user sees how many filters are applied without opening the sheet.
     let n = 0;
-    if (state.urgency !== 'All') n++;
+    if (state.category !== 'All') n++;
+    if (state.urgency !== 'All')  n++;
     if (state.location !== 'all') n++;
-    if (n > 0) { advCount.hidden = false; advCount.textContent = n; }
-    else       { advCount.hidden = true; }
+    const setBadge = (el) => {
+      if (!el) return;
+      if (n > 0) { el.hidden = false; el.textContent = n; }
+      else       { el.hidden = true;  }
+    };
+    setBadge(advCount);
+    setBadge(document.getElementById('discover-filter-trigger-count'));
   }
 
   function renderActivePills() {
@@ -748,6 +818,15 @@ window.addEventListener('orientationchange', () => window.setTimeout(updateBotto
         bellBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
+    // "View all notifications" → close panel + switch to Activity & Bills.
+    // The href="#" is just a fallback; we always handle it here.
+    document.querySelector('.dash-notif-foot')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        wrap.classList.remove('open');
+        bellBtn.setAttribute('aria-expanded', 'false');
+        switchSection('activity');
+    });
+
     document.addEventListener('click', (e) => {
         if (!wrap.contains(e.target)) {
             wrap.classList.remove('open');
@@ -803,10 +882,46 @@ window.addEventListener('orientationchange', () => window.setTimeout(updateBotto
 
   rows.forEach(row => row.addEventListener('click', () => syncBill(row)));
 
+  /* Activity tabs: real filtering, not just visual toggle.
+     Predicate is on the button's data-filter (set in HTML). Rows are matched
+     against data-bill-id (the only ledger state currently exposed on the DOM):
+       all      → every row
+       paid     → bill_id !== 'PENDING'
+       pending  → bill_id === 'PENDING'
+     Empty-state message shows when no rows match. */
   document.querySelectorAll('.activity-filter-tabs button').forEach(button => {
     button.addEventListener('click', () => {
-      button.closest('.activity-filter-tabs')?.querySelectorAll('button').forEach(item => item.classList.remove('active'));
+      const tabs = button.closest('.activity-filter-tabs');
+      tabs?.querySelectorAll('button').forEach(item => item.classList.remove('active'));
       button.classList.add('active');
+
+      const list   = document.getElementById('activity-ledger-list');
+      const filter = button.dataset.filter || 'all';
+      if (!list) return;
+
+      let shown = 0;
+      list.querySelectorAll('.activity-ledger-row').forEach(row => {
+        const billId  = row.dataset.billId || '';
+        const isPending = billId === 'PENDING';
+        const match = filter === 'all'
+          || (filter === 'paid'    && !isPending)
+          || (filter === 'pending' && isPending);
+        row.hidden = !match;
+        if (match) shown++;
+      });
+
+      // Toggle a "no results" line below the rows.
+      let emptyEl = list.querySelector('.activity-filter-empty');
+      if (shown === 0 && !emptyEl) {
+        emptyEl = document.createElement('p');
+        emptyEl.className = 'activity-empty activity-filter-empty';
+        emptyEl.textContent = filter === 'pending'
+          ? 'No pending activity right now.'
+          : 'Nothing in this view yet.';
+        list.appendChild(emptyEl);
+      } else if (shown > 0 && emptyEl) {
+        emptyEl.remove();
+      }
     });
   });
 
@@ -973,15 +1088,8 @@ function enhanceCampCards(root = document) {
       footer.insertBefore(pill, footer.firstChild);
     }
 
-    // Promote the existing % into an absolute chip on the progress bar
-    const pctEl  = card.querySelector('.camp-pct');
-    const bar    = card.querySelector('.progress-bar');
-    if (bar && pctEl && !bar.querySelector('.progress-pct-chip')) {
-      const chip = document.createElement('span');
-      chip.className = 'progress-pct-chip';
-      chip.textContent = pctEl.textContent.trim();
-      bar.appendChild(chip);
-    }
+    // Old: promoted % into a chip floating on the bar.
+    // Removed — % now lives inline in .camp-progress-info (cleaner layout).
   });
 }
 
@@ -1198,8 +1306,12 @@ function openCampaignModal(card) {
   // Message-creator deep link — PHP wires this to its messaging route.
   // Hide the button if no org id on the card (no destination = no button).
   const msgBtn = document.getElementById('cm-message-btn');
+  const reportBtn = document.getElementById('cm-report-creator-btn');
+  const creatorLink = document.getElementById('cm-creator-link');
+  const orgId = card.dataset.orgId || '';
+  const creatorName = card.dataset.creator || 'this creator';
+
   if (msgBtn) {
-    const orgId = card.dataset.orgId || '';
     if (orgId) {
       msgBtn.href = `../php/messaging/start.php?with=${encodeURIComponent(orgId)}`;
       msgBtn.style.display = '';
@@ -1207,6 +1319,27 @@ function openCampaignModal(card) {
       msgBtn.removeAttribute('href');
       msgBtn.style.display = 'none';
     }
+  }
+
+  // Report-creator button — pipes into the existing report modal in user mode.
+  // The report modal's [data-report-user] handler reads these data attributes.
+  if (reportBtn) {
+    reportBtn.dataset.reportUser = '';
+    reportBtn.dataset.userId = orgId;
+    reportBtn.dataset.userName = creatorName;
+    if (!orgId) reportBtn.style.display = 'none';
+    else        reportBtn.style.display = '';
+  }
+
+  // Creator chip click — TODO(backend): route to a real creator profile page
+  // once the route exists. For now, show a friendly toast.
+  if (creatorLink && !creatorLink.dataset.bound) {
+    creatorLink.dataset.bound = '1';
+    creatorLink.addEventListener('click', () => {
+      if (typeof showToast === 'function') {
+        showToast('Creator profiles are coming soon.');
+      }
+    });
   }
 
   // ── Slideshow ──
@@ -1633,23 +1766,376 @@ document.querySelector('.campaign-form')?.addEventListener('submit', e => {
   if (firstErr) { e.preventDefault(); firstErr.focus(); }
 });
 
-/* ── Read-more on campaign cards (PHP renders cards into the grids on page load) ── */
-function initReadMore(grid) {
-  if (!grid) return;
-  grid.querySelectorAll('.campaign-card-body > p').forEach(function (p) {
-    if (p.dataset.rmInit) return;
-    p.dataset.rmInit = '1';
-    var toggle = document.createElement('button');
-    toggle.className   = 'read-more-btn';
-    toggle.textContent = 'Read more';
-    toggle.addEventListener('click', function (ev) {
-      ev.stopPropagation();
-      var expanded = p.classList.toggle('expanded');
-      toggle.textContent = expanded ? 'Show less' : 'Read more';
-    });
-    p.after(toggle);
-  });
-}
+/* Removed: initReadMore — targeted .campaign-card-body > p (the legacy
+   card layout). The new .camp-card has no read-more affordance. */
 
-initReadMore(document.getElementById('discover-grid'));
-initReadMore(document.getElementById('my-campaigns-list'));
+/* ── Site footer: accordion behavior on mobile (≤600px) ──
+   Each .site-footer-col (excluding the brand col) collapses to just its h4
+   header on small screens. Tapping the h4 toggles open/closed.
+   Desktop is unaffected — we only add the class while ≤600px. */
+(function setupFooterAccordion() {
+  const cols = document.querySelectorAll('.site-footer-col');
+  if (!cols.length) return;
+  const mq = window.matchMedia('(max-width: 600px)');
+
+  function syncToViewport() {
+    cols.forEach(col => {
+      if (mq.matches) col.classList.add('is-closed');
+      else col.classList.remove('is-closed');
+    });
+  }
+
+  cols.forEach(col => {
+    const heading = col.querySelector('h4');
+    if (!heading) return;
+    heading.setAttribute('role', 'button');
+    heading.setAttribute('tabindex', '0');
+    const toggle = () => {
+      if (!mq.matches) return;        // ignore on desktop
+      col.classList.toggle('is-closed');
+    };
+    heading.addEventListener('click', toggle);
+    heading.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  });
+
+  syncToViewport();
+  mq.addEventListener('change', syncToViewport);
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
+   Stage 3a — Report Campaign
+   Injects a Report button onto every .camp-card, opens the report modal,
+   and POSTs { type, target_id, reason, message } to
+   /php/engagement/report.php. Admin reviews in admin.php.
+   ════════════════════════════════════════════════════════════════════════ */
+(function setupReportCampaign() {
+  const overlay = document.getElementById('report-overlay');
+  const form = document.getElementById('report-form');
+  if (!overlay || !form) return;
+
+  const modal = document.getElementById('report-modal');
+  const closeBtn = document.getElementById('report-close');
+  const cancelBtn = document.getElementById('report-cancel');
+  const titleEl = document.getElementById('report-title');
+  const targetIdField = document.getElementById('report-target-id');
+  const typeField = document.getElementById('report-type');
+  const targetNameField = document.getElementById('report-target-name');
+  const reasonField = document.getElementById('report-reason');
+  const messageField = document.getElementById('report-message');
+  const successMsg = document.getElementById('report-success');
+
+  // Reason lists per report type. Last entry is always "Other".
+  const REASONS = {
+    campaign: [
+      ['fake', 'Fake campaign'],
+      ['offensive', 'Offensive content'],
+      ['wrong_info', 'Wrong information'],
+      ['suspicious', 'Suspicious campaign'],
+      ['duplicate', 'Duplicate campaign'],
+      ['other', 'Other'],
+    ],
+    user: [
+      ['fake_account', 'Fake account'],
+      ['impersonation', 'Impersonation'],
+      ['scam', 'Spam or scam'],
+      ['inappropriate', 'Inappropriate behaviour'],
+      ['harassment', 'Harassment'],
+      ['other', 'Other'],
+    ],
+  };
+
+  // Cache so we can restore the right name when the user toggles modes.
+  let lastCampaign = { id: '', title: '' };
+  let lastUser = { id: '', name: '' };
+
+  function setMode(mode) {
+    mode = mode === 'user' ? 'user' : 'campaign';
+    modal.dataset.mode = mode;
+    typeField.value = mode;
+
+    // Update segmented control active state.
+    modal.querySelectorAll('.report-seg-btn').forEach(btn => {
+      const isActive = btn.dataset.reportMode === mode;
+      btn.classList.toggle('is-active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    // Swap title + name + reason list.
+    if (mode === 'campaign') {
+      titleEl.textContent = 'Report this campaign';
+      targetIdField.value = lastCampaign.id || '';
+      targetNameField.textContent = lastCampaign.title ? '“' + lastCampaign.title + '”' : '';
+    } else {
+      titleEl.textContent = 'Report this user';
+      targetIdField.value = lastUser.id || '';
+      targetNameField.textContent = lastUser.name ? '“' + lastUser.name + '”' : '';
+    }
+
+    // Rebuild reason options.
+    reasonField.innerHTML = '<option value="">Select a reason…</option>' +
+      REASONS[mode].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+  }
+
+  // ── Inject a Report flag icon onto every campaign card (top-right of media) ──
+  function ensureReportButton(card) {
+    if (!card || card.querySelector('.camp-report-btn')) return;
+    const media = card.querySelector('.camp-card-media');
+    if (!media) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'camp-report-btn';
+    btn.title = 'Report this campaign';
+    btn.setAttribute('aria-label', 'Report this campaign');
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<line x1="4" y1="22" x2="4" y2="15"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>';
+    media.appendChild(btn);
+  }
+
+  function scanCards() {
+    document.querySelectorAll('.camp-card').forEach(ensureReportButton);
+  }
+  scanCards();
+  // Re-scan when cards are added dynamically (filter / search re-renders).
+  const observer = new MutationObserver(scanCards);
+  document.querySelectorAll('#discover-grid, #my-campaigns-list, .urgent-list')
+    .forEach(el => observer.observe(el, { childList: true, subtree: true }));
+
+  // ── Open / close modal ──
+  function openModal({ mode = 'campaign', id = '', name = '' } = {}) {
+    if (mode === 'user') {
+      lastUser = { id, name };
+    } else {
+      lastCampaign = { id, title: name };
+    }
+    messageField.value = '';
+    successMsg.hidden = true;
+    setMode(mode);
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    reasonField.focus();
+  }
+  function closeModal() {
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  // Capture-phase listener so it runs BEFORE the campaign card's own click
+  // handler that opens the detail modal. Otherwise clicking Report opens both.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.camp-report-btn');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const card = btn.closest('.camp-card');
+    openModal({
+      mode: 'campaign',
+      id: card?.dataset.campId,
+      name: card?.dataset.campTitle,
+    });
+  }, true);
+
+  // Future: any element with [data-report-user] opens the user variant.
+  // Example markup: <button data-report-user data-user-id="42" data-user-name="Foo">Report</button>
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-report-user]');
+    if (!trigger) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openModal({
+      mode: 'user',
+      id: trigger.dataset.userId,
+      name: trigger.dataset.userName,
+    });
+  }, true);
+
+  // Segmented control toggles between campaign + user modes.
+  modal.querySelectorAll('.report-seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.reportMode));
+  });
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !overlay.hidden) closeModal();
+  });
+
+  // ── Submit — POST to /php/engagement/report.php via fetch, hard-form fallback on failure. ──
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!reasonField.value) {
+      reasonField.focus();
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    const data = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      body: data,
+      credentials: 'same-origin',
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then(() => {
+        successMsg.hidden = false;
+        setTimeout(closeModal, 1800);
+      })
+      .catch(() => {
+        form.submit();
+      })
+      .finally(() => {
+        if (submitBtn) submitBtn.disabled = false;
+      });
+  });
+})();
+
+/* ── Escape key + browser back gesture pop the section stack ──
+   On sub-pages, Esc goes back to the parent section. The browser's back
+   button is hooked via history.pushState (best-effort — degrades cleanly
+   if the user has navigated externally). */
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const active = document.querySelector('.section.active');
+  if (!active || !active.dataset.back) return;
+  const previous = _SECTION_HISTORY.pop() || active.dataset.back;
+  switchSection(previous, { fromBack: true });
+});
+
+(function () {
+  if (!('history' in window) || !history.pushState) return;
+  // Seed a history entry so the very first sub-page tap has somewhere to pop to.
+  history.replaceState({ section: 'dashboard' }, '');
+  const _origSwitch = switchSection;
+  window.switchSection = function (id, opts) {
+    _origSwitch(id, opts);
+    if (!opts || !opts.fromBack) {
+      const target = document.getElementById(id);
+      if (target && target.dataset.back) {
+        history.pushState({ section: id }, '', '#' + id);
+      }
+    }
+  };
+  window.addEventListener('popstate', (e) => {
+    const target = (e.state && e.state.section) || 'dashboard';
+    _origSwitch(target, { fromBack: true });
+  });
+})();
+
+/* Profile edit: Cancel button on #profile-edit returns to #profile via the
+   sub-page navigation stack. The Edit profile button itself is a regular
+   [data-section="profile-edit"] handled by the catch-all delegated handler. */
+document.querySelectorAll('[data-back-to]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchSection(btn.dataset.backTo, { fromBack: true });
+  });
+});
+
+/* Sidebar account switcher: tiny caret on the user card toggles the panel.
+   The panel itself is real (current account + Add an account); additional
+   accounts are populated by PHP once /php/auth/sessions.php exists. */
+(function () {
+  const toggle = document.getElementById('sidebar-account-toggle');
+  const panel  = document.getElementById('sidebar-account-panel');
+  if (!toggle || !panel) return;
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = panel.hidden;
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+})();
+
+/* Instant messaging: send via fetch (no page reload) and poll for new messages
+   so incoming replies appear without refreshing. Falls back to a normal form
+   POST if anything goes wrong. */
+(function () {
+  const form = document.querySelector('.chat-compose');
+  const body = document.querySelector('.chat-body');
+  if (!form || !body) return;
+
+  const threadId = body.dataset.threadId;
+  if (!threadId) return; // no active conversation selected
+
+  const input = form.querySelector('input[name="message"]');
+  const csrf = form.querySelector('input[name="_csrf"]');
+
+  let lastId = 0;
+  body.querySelectorAll('.chat-bubble[data-msg-id]').forEach((el) => {
+    lastId = Math.max(lastId, parseInt(el.dataset.msgId, 10) || 0);
+  });
+
+  function fmtTime(raw) {
+    const d = new Date(String(raw).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function appendBubble(msg, outgoing) {
+    if (msg.id && msg.id <= lastId) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-bubble ' + (outgoing ? 'outgoing' : 'incoming');
+    if (msg.id) wrap.dataset.msgId = msg.id;
+    const p = document.createElement('p');
+    p.textContent = msg.body; // textContent prevents XSS
+    const t = document.createElement('time');
+    t.textContent = fmtTime(msg.created_at);
+    wrap.appendChild(p);
+    wrap.appendChild(t);
+    // Drop the "No messages yet" placeholder if present.
+    const placeholder = body.querySelector('.empty-inline');
+    if (placeholder) placeholder.remove();
+    body.appendChild(wrap);
+    if (msg.id) lastId = Math.max(lastId, msg.id);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  form.addEventListener('submit', (e) => {
+    const text = (input?.value || '').trim();
+    if (!text) { e.preventDefault(); return; }
+    e.preventDefault();
+
+    const data = new FormData();
+    data.append('thread_id', threadId);
+    data.append('message', text);
+    if (csrf) data.append('_csrf', csrf.value);
+
+    const sendBtn = form.querySelector('button[type="submit"]');
+    if (sendBtn) sendBtn.disabled = true;
+
+    fetch('../php/messaging/send.php', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      body: data,
+      credentials: 'same-origin',
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((res) => {
+        if (res && res.message) appendBubble(res.message, true);
+        if (input) input.value = '';
+      })
+      .catch(() => { form.submit(); }) // hard fallback to full-page POST
+      .finally(() => { if (sendBtn) sendBtn.disabled = false; });
+  });
+
+  function poll() {
+    if (document.visibilityState !== 'visible') return;
+    fetch('../php/messaging/thread.php?thread_id=' + encodeURIComponent(threadId) + '&after=' + lastId, {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'same-origin',
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((res) => {
+        if (!res || !Array.isArray(res.messages)) return;
+        res.messages.forEach((m) => appendBubble(m, Number(m.sender_id) === Number(res.me)));
+      })
+      .catch(() => {});
+  }
+  setInterval(poll, 4000);
+})();
