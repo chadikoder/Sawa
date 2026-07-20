@@ -892,6 +892,30 @@ body.admin-page select {
 .admin-table-wrap {
   width: 100%;
   overflow-x: auto;
+  /* At 390px only 325px of the 960px table is visible, and Chrome's overlay
+     scrollbar stays hidden until you actually scroll — so the table looked
+     chopped off mid-word at the right edge with nothing to say it continued.
+     Classic background-attachment:local scroll shadows: the two `local` layers
+     scroll with the content and mask the `scroll` shadow layers when you are
+     already at that end, so each shadow appears only when there is more table
+     to reach. No markup or JS needed. */
+  background:
+    linear-gradient(to right, var(--color-surface) 30%, rgba(255, 255, 255, 0)) left center,
+    linear-gradient(to left, var(--color-surface) 30%, rgba(255, 255, 255, 0)) right center,
+    radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0)) left center,
+    radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0)) right center;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+  /* Snap to column edges so a swipe settles on a whole column instead of
+     leaving a half-cut word at the edge. `proximity` (not `mandatory`) keeps
+     free scrolling for anyone dragging across several columns at once. */
+  scroll-snap-type: x proximity;
+}
+
+.admin-table th,
+.admin-table td {
+  scroll-snap-align: start;
 }
 
 .admin-table {
@@ -1206,6 +1230,19 @@ html[data-theme="dark"] .admin-sidebar,
 html[data-theme="dark"] .admin-topbar,
 html[data-theme="dark"] .admin-stat-card,
 html[data-theme="dark"] .admin-summary-card,
+/* The scroll-shadow gradients hardcode the light panel colour, so restate them
+   against #111c2f with a stronger shadow that reads on a dark surface. */
+html[data-theme="dark"] .admin-table-wrap {
+  background:
+    linear-gradient(to right, #111c2f 30%, rgba(17, 28, 47, 0)) left center,
+    linear-gradient(to left, #111c2f 30%, rgba(17, 28, 47, 0)) right center,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0)) left center,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0)) right center;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
 /* Match the sticky identity column to the dark panel, or rows would show
    through it while the table scrolls. */
 html[data-theme="dark"] .admin-table th:nth-child(2),

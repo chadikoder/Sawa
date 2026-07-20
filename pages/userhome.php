@@ -155,10 +155,6 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <div class="site-header-auth">
         <a href="login.php" class="site-auth-link">Log In</a>
         <a href="signup.php" class="site-auth-btn">Sign Up Free</a>
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
-          <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </button>
       </div>
       <button class="site-header-burger" id="site-burger" type="button" aria-label="Open menu" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -1614,22 +1610,11 @@ $partial = dirname(__DIR__) . '/php/partials/';
         </div>
       </section>
 
-      <?php /* Settings — X-style full-screen takeover via data-back; theme row is live, language row waits for i18n. */ ?>
+      <?php /* Settings — X-style full-screen takeover via data-back; language row waits for i18n.
+               The theme row was removed with the other per-page toggles: the
+               single global control now lives on the landing page. */ ?>
       <section id="settings" class="section" data-back="dashboard" data-title="Settings">
         <div class="settings-list">
-          <!-- Theme row — clickable label flips light/dark via theme.js. -->
-          <button type="button" class="settings-row" data-theme-toggle aria-label="Toggle dark mode">
-            <span class="settings-row-icon">
-              <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-              <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-            </span>
-            <span class="settings-row-body">
-              <strong>Theme</strong>
-              <small>Switch between light and dark</small>
-            </span>
-            <span class="settings-row-state" data-theme-label></span>
-          </button>
-
           <?php /* Language row — wire to /php/users/language.php when the strings catalog exists. */ ?>
           <div class="settings-row is-disabled" aria-disabled="true">
             <span class="settings-row-icon">

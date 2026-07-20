@@ -61,10 +61,6 @@ $year = date('Y');
           <a href="signup.php" class="nav-btn-signup">Sign Up Free</a>
         </div>
       </div>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
-        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      </button>
       <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
