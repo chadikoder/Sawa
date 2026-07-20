@@ -237,36 +237,21 @@ final class DonationService
             $totals['families'] = (int) $row['families'];
         }
 
-        try {
-            // SQLite path — prepare() itself throws on MySQL, so it must stay
-            // inside the try alongside execute().
-            $monthStmt = $pdo->prepare(
-                "SELECT
-                    COALESCE(SUM(CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now') THEN d.amount ELSE 0 END), 0) AS this_month,
-                    COALESCE(SUM(CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now', '-1 month') THEN d.amount ELSE 0 END), 0) AS last_month,
-                    COUNT(DISTINCT CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now') THEN c.owner_user_id END) AS families_this,
-                    COUNT(DISTINCT CASE WHEN strftime('%Y-%m', d.created_at) = strftime('%Y-%m', 'now', '-1 month') THEN c.owner_user_id END) AS families_last
-                 FROM donations d
-                 INNER JOIN campaigns c ON c.id = d.campaign_id
-                 WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
-            );
-            $monthStmt->execute([$userId]);
-            $row = $monthStmt->fetch();
-        } catch (Throwable) {
-            // MySQL fallback: DATE_FORMAT syntax if strftime isn't available.
-            $monthStmt = $pdo->prepare(
-                "SELECT
-                    COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS this_month,
-                    COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS last_month,
-                    COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN c.owner_user_id END) AS families_this,
-                    COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN c.owner_user_id END) AS families_last
-                 FROM donations d
-                 INNER JOIN campaigns c ON c.id = d.campaign_id
-                 WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
-            );
-            $monthStmt->execute([$userId]);
-            $row = $monthStmt->fetch();
-        }
+        // php/config/db.php builds a hardcoded mysql: DSN with emulated prepares
+        // off, so an earlier strftime() variant here could never prepare — it
+        // failed on every call and always fell through to this query.
+        $monthStmt = $pdo->prepare(
+            "SELECT
+                COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS this_month,
+                COALESCE(SUM(CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN d.amount ELSE 0 END), 0) AS last_month,
+                COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') THEN c.owner_user_id END) AS families_this,
+                COUNT(DISTINCT CASE WHEN DATE_FORMAT(d.created_at, '%Y-%m') = DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m') THEN c.owner_user_id END) AS families_last
+             FROM donations d
+             INNER JOIN campaigns c ON c.id = d.campaign_id
+             WHERE d.donor_id = ? AND d.status IN ('verified','completed')"
+        );
+        $monthStmt->execute([$userId]);
+        $row = $monthStmt->fetch();
 
         $thisMonth = (float) ($row['this_month'] ?? 0);
         $lastMonth = (float) ($row['last_month'] ?? 0);

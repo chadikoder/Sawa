@@ -42,11 +42,16 @@
 .back-home svg { flex-shrink: 0; }
 
 /* ── Auth switch ── */
+/* .back-home is position:fixed, so it leaves the flow and this paragraph —
+   which follows it in the markup — renders underneath it. On narrow screens
+   the centred text starts at ~x61 while the button reaches x158, so the fixed
+   button covered the words "Already h". Clear the button's 5.3rem bottom edge
+   on mobile; ≥768px there is room beside it and the original spacing returns. */
 .auth-switch {
     font-size: 1.4rem;
     color: #6b7280;
     text-align: center;
-    margin: 1.6rem 0 0;
+    margin: 6.4rem 0 0;
     padding: 0 2rem;
 }
 .auth-switch a { color: var(--blue); font-weight: 600; text-decoration: underline; }
@@ -442,19 +447,25 @@ span { display: inline-block; }
 
 .gender-group .label_text { font-size: 1.4rem; }
 
+/* Four options never fit one phone-width row. As a nowrap flex row the items
+   could not shrink below their min-content width (flex items default to
+   min-width:auto, and "Prefer" sets the floor), so the last box overflowed the
+   card and "Prefer not to say" wrapped one word per line — stretching all four
+   boxes to 144px tall. Grid with minmax(0, 1fr) lets the columns shrink;
+   two per row here, four per row at ≥768px. */
 .gender-options {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
     width: 100%;
 }
 
 .gender-option {
-    flex: 1;
     display: flex;
     align-items: center;
     gap: 0.8rem;
     cursor: pointer;
-    padding: 1.2rem 1.6rem;
+    padding: 1.2rem 1.2rem;
     background: var(--input-bg);
     border: 1.5px solid var(--border);
     border-radius: 1.2rem;
@@ -711,6 +722,18 @@ span { display: inline-block; }
 
     body {
         background: linear-gradient(160deg, #eff6ff 0%, #eff6ff 55%, #e0e7ff 100%);
+    }
+
+    /* Wide enough that the centred text clears .back-home horizontally. */
+    .auth-switch {
+        margin-top: 1.6rem;
+    }
+
+    /* Stays two columns: .gender-group is capped at 36rem at every width, so
+       four columns would be ~82px each and break "Prefer not to say" over four
+       lines here too. Only the roomier padding comes back. */
+    .gender-option {
+        padding: 1.2rem 1.6rem;
     }
 
     /* Role card grid — side by side on desktop */

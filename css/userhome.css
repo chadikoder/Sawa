@@ -3019,7 +3019,8 @@ body.is-guest .dash-lower {
 .urgent-meta strong { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
 .urgent-meta small { font-size: 1.2rem; color: #64748b; }
 .urgent-priority {
-  font-size: 1.1rem;
+  /* 1.1rem rendered at 11px, under the 12px minimum for body text on phones. */
+  font-size: 1.2rem;
   font-weight: 700;
   padding: 0.4rem 0.9rem;
   border-radius: 9999px;
@@ -3030,10 +3031,14 @@ body.is-guest .dash-lower {
 .urgent-progress-row {
   display: flex;
   justify-content: space-between;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   color: #475569;
 }
 .urgent-progress-row strong { color: #0f172a; font-weight: 700; }
+/* <small> applies its own 0.8333 factor, which took the goal amount down to
+   10.42px against a 1.25rem parent — the least legible text on the mobile
+   dashboard. Pin it to 12px rather than letting it inherit-and-shrink. */
+.urgent-progress-row small { font-size: 1.2rem; }
 .urgent-item .progress-bar {
   width: 100%;
   height: 0.7rem;
@@ -4630,13 +4635,17 @@ html[data-theme="dark"] .guest-action-card:hover {
   position: absolute;
   top: 0.4rem;
   right: 0.4rem;
-  font-size: 0.95rem;
+  /* Was 0.95rem — 9.5px, the smallest text on the dashboard. At 12px the
+     word itself measures ~49.5px against a 6rem thumb, so it fits: the
+     padding and letter-spacing were what pushed the pill to 73px and made it
+     hang off the tile. Tightened both rather than shrinking the text back. */
+  font-size: 1.2rem;
   font-weight: 700;
-  padding: 0.2rem 0.6rem;
+  padding: 0.2rem 0.4rem;
   background: rgba(255, 255, 255, 0.95);
   color: #b91c1c;
   border-radius: 9999px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 .featured-camp-body {
   display: flex;
@@ -6251,7 +6260,7 @@ body.is-guest #discover .discover-filters {
 }
 .trust-stats > div { text-align: center; }
 .trust-stats strong { display: block; font-size: 1.8rem; font-weight: 800; color: var(--color-primary-dark); }
-.trust-stats span   { font-size: 1.1rem; color: #64748b; }
+.trust-stats span   { font-size: 1.2rem; color: #64748b; }
 
 /* ════════════════════════════════════════════════════════════
    Site footer (guest-only marketing footer)
@@ -6337,7 +6346,7 @@ body.is-guest #discover .discover-filters {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: rgba(148, 163, 184, 0.85);
 }
 .site-footer-bottom p { margin: 0; }
@@ -6497,7 +6506,7 @@ body.is-guest #discover .discover-filters {
 }
 .guest-unlock-icon svg { width: 1.6rem; height: 1.6rem; }
 .guest-unlock-list strong { display: block; font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 0.1rem; }
-.guest-unlock-list small  { font-size: 1.15rem; color: var(--color-text-muted); line-height: 1.4; }
+.guest-unlock-list small  { font-size: 1.2rem; color: var(--color-text-muted); line-height: 1.4; }
 .guest-unlock-cta-row {
   display: flex;
   align-items: center;
@@ -6635,7 +6644,9 @@ body.is-guest #discover .discover-filters {
   .activity-row { padding: 0.8rem; gap: 0.8rem; }
   .activity-avatar { width: 3rem; height: 3rem; font-size: 1.2rem; }
   .activity-text { font-size: 1.2rem; }
-  .activity-meta { font-size: 1.05rem; }
+  /* Was 1.05rem: the mobile override made timestamps *smaller* than the
+     1.15rem desktop size, landing at 10.5px on the narrowest screens. */
+  .activity-meta { font-size: 1.2rem; }
 }
 
 /* ════════════════════════════════════════════════════════════

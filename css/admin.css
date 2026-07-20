@@ -21,6 +21,11 @@ body.admin-page button,
 body.admin-page input,
 body.admin-page select {
   font: inherit;
+  /* `font: inherit` on its own takes font-size from body, which is 1rem = 10px
+     under the 62.5% root. At 0,1,2 this selector outranks every `.admin-*
+     button` rule (0,1,1), so all of them silently lost their intended 1.25rem
+     and every button, input and select in the admin panel rendered at 10px. */
+  font-size: 1.25rem;
 }
 
 .admin-boot {
@@ -145,7 +150,7 @@ body.admin-page select {
 .admin-nav-group p {
   margin: 0 0 0.4rem;
   color: #94a3b8;
-  font-size: 1.08rem;
+  font-size: 1.2rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -241,12 +246,26 @@ body.admin-page select {
   color: #0f172a;
 }
 
-.admin-profile-card span,
-.admin-list-row span,
-.admin-table td span {
+/* None of the three set a size. The table and list variants inherit 1.3rem
+   from their cell, but the sidebar profile card inherits body's 1rem = 10px,
+   so the signed-in admin's own name was the smallest text on the page. */
+.admin-profile-card strong {
+  font-size: 1.3rem;
+}
+
+/* :not(.admin-badge) matters. This rule is meant for the muted secondary line
+   in a cell (the email under a name), but `.admin-table td span` (0,1,2)
+   outranks `.admin-badge` and every `.admin-badge--*` modifier (0,1,0), so it
+   was also hitting status chips — forcing them to display:block and a flat
+   grey. Their tinted backgrounds survived because this rule sets colour but
+   not background, so "active", "rejected" and "verified" all rendered as grey
+   text on a coloured pill, with the status colour coding effectively dead. */
+.admin-profile-card span:not(.admin-badge),
+.admin-list-row span:not(.admin-badge),
+.admin-table td span:not(.admin-badge) {
   display: block;
   color: #64748b;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   line-height: 1.45;
 }
 
@@ -891,6 +910,22 @@ body.admin-page select {
   font-size: 1.3rem;
 }
 
+/* Keep the identity column visible while the 96rem table scrolls sideways.
+   On a 390px screen the wrap shows ~325px of 960px, so reaching Status and
+   Actions scrolled the User column away entirely — every row then read just
+   "Active / Suspend" with nothing to say which account it belonged to, right
+   next to a button that suspends one. Sticky only engages once the cell would
+   pass the left edge, so at rest the layout is unchanged and the checkbox
+   column simply slides underneath. */
+.admin-table th:nth-child(2),
+.admin-table td:nth-child(2) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  box-shadow: 1px 0 0 #e5eaf1;
+}
+
 .admin-table th:last-child,
 .admin-table td:last-child {
   min-width: 20rem;
@@ -898,7 +933,8 @@ body.admin-page select {
 
 .admin-table th {
   color: #64748b;
-  font-size: 1.08rem;
+  /* 1.08rem rendered at 10.8px — the column headers you scan the table by. */
+  font-size: 1.2rem;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -963,7 +999,8 @@ body.admin-page select {
   border-radius: 999px;
   color: #64748b;
   background: var(--color-bg-deep);
-  font-size: 1.08rem;
+  /* Status/role badges carry the row's key fact — 10.8px was too small. */
+  font-size: 1.2rem;
   font-weight: 900;
   text-transform: capitalize;
   white-space: nowrap;
@@ -1169,6 +1206,14 @@ html[data-theme="dark"] .admin-sidebar,
 html[data-theme="dark"] .admin-topbar,
 html[data-theme="dark"] .admin-stat-card,
 html[data-theme="dark"] .admin-summary-card,
+/* Match the sticky identity column to the dark panel, or rows would show
+   through it while the table scrolls. */
+html[data-theme="dark"] .admin-table th:nth-child(2),
+html[data-theme="dark"] .admin-table td:nth-child(2) {
+  background: #111c2f;
+  box-shadow: 1px 0 0 #273449;
+}
+
 html[data-theme="dark"] .admin-panel,
 html[data-theme="dark"] .admin-modal-card,
 html[data-theme="dark"] .admin-menu {

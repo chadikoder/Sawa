@@ -692,6 +692,48 @@ INNER JOIN campaigns c ON c.title = s.campaign_title
 LEFT  JOIN users     u ON u.email = s.donor_email
 WHERE NOT EXISTS (SELECT 1 FROM donations d WHERE d.payment_ref = s.ref);
 
+-- Organisation wallet ledger for the donations above.
+-- At runtime DonationService::completeDonation() always calls
+-- WalletService::creditOrganisation(), so seeded donations must produce the
+-- same credit rows. Without them WalletService::orgBalance() finds no rows and
+-- returns 0.0 — the admin money view showed a $0.00 balance for Community Care
+-- NGO against the $28,550 its four campaigns had raised.
+-- Only organisation-owned campaigns credit a wallet; the beneficiary-owned
+-- "Medical aid for my daughter Lina" ($3,200) correctly contributes nothing.
+-- balance_after is a running total ordered by donation id, which is the order
+-- the rows above were inserted, so the highest-id row (the one orgBalance()
+-- reads) carries the correct final balance.
+-- Idempotent: rows already carrying a related_donation_id are skipped.
+INSERT INTO wallet_transactions
+  (organisation_id, type, amount, currency, balance_after, related_donation_id, description, created_by, created_at)
+SELECT c.organisation_id,
+       'credit',
+       d.amount,
+       'USD',
+       (SELECT ROUND(SUM(d2.amount), 2)
+          FROM donations d2
+          INNER JOIN campaigns c2 ON c2.id = d2.campaign_id
+         WHERE c2.organisation_id = c.organisation_id
+           AND d2.status IN ('verified','completed')
+           AND d2.id <= d.id),
+       d.id,
+       CONCAT('Donation #', d.id),
+       NULL,
+       d.verified_at
+FROM donations d
+INNER JOIN campaigns c ON c.id = d.campaign_id
+WHERE c.organisation_id IS NOT NULL
+  AND d.status IN ('verified','completed')
+  -- Derived table forces materialisation so MySQL allows referencing the
+  -- INSERT target inside the guard.
+  AND d.id NOT IN (
+        SELECT existing.related_donation_id FROM (
+          SELECT w.related_donation_id FROM wallet_transactions w
+          WHERE w.related_donation_id IS NOT NULL
+        ) AS existing
+      )
+ORDER BY d.id;
+
 -- =============================================================================
 -- End of database_complete.sql
 -- =============================================================================

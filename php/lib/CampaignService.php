@@ -80,13 +80,17 @@ final class CampaignService
         if ($role === 'organisation') {
             $sql = 'SELECT c.*, cat.name_en AS category_name, loc.slug AS location_slug,
                            loc.name_en AS location_name,
-                           (SELECT COUNT(*) FROM donations d WHERE d.campaign_id = c.id) AS donor_count,
+                           COALESCE(o.name, u.full_name) AS creator_name,
+                           o.user_id AS org_user_id,
+                           (SELECT COUNT(DISTINCT d.donor_id) FROM donations d
+                            WHERE d.campaign_id = c.id AND d.status IN (\'verified\',\'completed\')) AS donor_count,
                            (SELECT GROUP_CONCAT(ci.image_path ORDER BY ci.sort_order SEPARATOR \'|\')
                             FROM campaign_images ci WHERE ci.campaign_id = c.id) AS image_paths
                     FROM campaigns c
                     INNER JOIN organisations o ON o.id = c.organisation_id AND o.user_id = ?
                     LEFT JOIN categories cat ON cat.id = c.category_id
                     LEFT JOIN locations loc ON loc.id = c.location_id
+                    LEFT JOIN users u ON u.id = c.owner_user_id
                     ORDER BY c.created_at DESC';
             $stmt = db()->prepare($sql);
             $stmt->execute([$userId]);
@@ -95,12 +99,17 @@ final class CampaignService
 
         $sql = 'SELECT c.*, cat.name_en AS category_name, loc.slug AS location_slug,
                        loc.name_en AS location_name,
-                       (SELECT COUNT(*) FROM donations d WHERE d.campaign_id = c.id) AS donor_count,
+                       COALESCE(o.name, u.full_name) AS creator_name,
+                       o.user_id AS org_user_id,
+                       (SELECT COUNT(DISTINCT d.donor_id) FROM donations d
+                        WHERE d.campaign_id = c.id AND d.status IN (\'verified\',\'completed\')) AS donor_count,
                        (SELECT GROUP_CONCAT(ci.image_path ORDER BY ci.sort_order SEPARATOR \'|\')
                         FROM campaign_images ci WHERE ci.campaign_id = c.id) AS image_paths
                 FROM campaigns c
                 LEFT JOIN categories cat ON cat.id = c.category_id
                 LEFT JOIN locations loc ON loc.id = c.location_id
+                LEFT JOIN organisations o ON o.id = c.organisation_id
+                LEFT JOIN users u ON u.id = c.owner_user_id
                 WHERE c.owner_user_id = ?
                 ORDER BY c.created_at DESC';
         $stmt = db()->prepare($sql);

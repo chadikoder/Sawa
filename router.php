@@ -9,6 +9,17 @@ declare(strict_types=1);
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 $root = __DIR__;
 
+// Mirror the <FilesMatch> denials in .htaccess. Apache enforces those in
+// production, but the built-in server honours no .htaccess — without this it
+// serves database_complete.sql (which contains the seed password hashes) and
+// .env verbatim to anything that can reach the port.
+$denied = ['/.env', '/database_complete.sql', '/php/config/hosting.php'];
+if (in_array(strtolower($uri), $denied, true) || str_ends_with(strtolower($uri), '/hosting.php')) {
+    http_response_code(403);
+    require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '403.html';
+    return true;
+}
+
 if (str_starts_with($uri, '/storage/uploads/')) {
     $file = $root . str_replace('/', DIRECTORY_SEPARATOR, $uri);
     if (is_file($file)) {

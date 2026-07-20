@@ -38,6 +38,13 @@ if ($isGuest && $guestName === '') {
 }
 
 $pdo = db();
+// One transaction around the whole write. WalletService::debit() and
+// DonationService::completeDonation() both branch on $pdo->inTransaction():
+// with no outer transaction debit() committed on its own, so a failure in
+// completeDonation() (e.g. a deadlock on the organisations row when two
+// wallet donations to the same campaign overlap) left the donor debited,
+// raised_amount unchanged and the donation stranded in 'pending'.
+$pdo->beginTransaction();
 try {
     $pdo->prepare(
         'INSERT INTO donations (campaign_id, donor_id, guest_name, guest_email, guest_phone,
@@ -61,8 +68,15 @@ try {
         WalletService::debit($donorId, $breakdown['total'], 'donation', 'Donation to campaign #' . $campaignId, $donationId);
         DonationService::completeDonation($donationId, 'WALLET-' . $donationId);
         ReceiptService::createForDonation($donationId);
+        $pdo->commit();
+        // Best-effort side effect, deliberately after the commit: a failed
+        // notification must not roll back a completed donation.
         if ($donorId) {
-            NotificationService::send($donorId, 'donation_complete', 'Donation confirmed', 'Thank you for your support.');
+            try {
+                NotificationService::send($donorId, 'donation_complete', 'Donation confirmed', 'Thank you for your support.');
+            } catch (Throwable) {
+                // ignored — the donation is already durable
+            }
         }
         Response::redirectStatus('pages/userhome.php', 'payment_confirmed', $returnExtra);
     }
@@ -75,7 +89,11 @@ try {
         $donorId,
         $donationId
     );
+    $pdo->commit();
 } catch (Throwable) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     Response::redirectStatus('pages/userhome.php', 'payment_failed', $returnExtra ?? []);
 }
 
