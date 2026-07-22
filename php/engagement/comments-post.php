@@ -26,7 +26,13 @@ if (!$camp || $camp['status'] !== 'active') {
 db()->prepare('INSERT INTO comments (campaign_id, user_id, body) VALUES (?, ?, ?)')
     ->execute([$campaignId, Auth::id(), $body]);
 
-// Deliberately no 'campaign' parameter: js/userhome.js opens the campaign
-// modal whenever one is present, so returning with it made the whole campaign
-// screen spring open again the moment a comment was posted.
-Response::redirect('pages/userhome.php', ['status' => 'comment_posted']);
+// Straight back to the campaign that was commented on, opened on the comments
+// tab, so the new comment is visible where it was written. This is the
+// opposite of the payment flow on purpose: a payment returns to the dashboard
+// because reopening the campaign there buried the payment status modal, but a
+// comment belongs to the campaign and losing your place is the wrong outcome.
+Response::redirect('pages/userhome.php', [
+    'status'   => 'comment_posted',
+    'campaign' => $campaignId,
+    'tab'      => 'comments',
+]);

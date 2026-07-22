@@ -1518,10 +1518,20 @@ window.addEventListener('DOMContentLoaded', () => {
   if (campId) {
     const card = document.querySelector(`.camp-card[data-camp-id="${CSS.escape(campId)}"]`);
     if (card && typeof openCampaignModal === 'function') {
-      requestAnimationFrame(() => openCampaignModal(card));
+      const wantedTab = params.get('tab');
+      requestAnimationFrame(() => {
+        openCampaignModal(card);
+        // Returning from posting a comment should land on the comments tab, so
+        // the comment just written is the first thing on screen rather than
+        // hidden behind the About tab the modal opens on by default.
+        if (wantedTab && typeof cmSwitchTab === 'function') {
+          setTimeout(() => cmSwitchTab(wantedTab), 60);
+        }
+      });
     }
     const clean = new URL(window.location.href);
     clean.searchParams.delete('campaign');
+    clean.searchParams.delete('tab');
     window.history.replaceState({}, document.title, clean.pathname + clean.search);
   }
   const toastMessages = {
