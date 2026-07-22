@@ -2773,17 +2773,43 @@ html[data-theme="dark"] .cashout-grid input {
   max-height: 36rem;
   overflow-y: auto;
 }
+/* The row is now a plain <li> wrapper; the flex layout and the hit area moved
+   onto .dash-notif-hit, which is the <a> or <button> inside it. Rows used to be
+   inert <li>s that merely looked clickable — cursor:pointer with nothing bound
+   to them. */
 .dash-notif-row {
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+}
+.dash-notif-hit {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
+  width: 100%;
   padding: 1.2rem 1.6rem;
-  border-bottom: 1px solid #f1f5f9;
+  background: none;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.15s;
-  position: relative;
 }
-.dash-notif-row:hover { background: #f8fafc; }
+.dash-notif-hit:hover { background: #f8fafc; }
+.dash-notif-hit:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+.dash-notif-chevron {
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--color-text-light);
+}
+html[data-theme="dark"] .dash-notif-hit:hover { background: rgba(148, 163, 184, 0.08); }
 .dash-notif-row:last-child { border-bottom: none; }
 .dash-notif-row.unread::before {
   content: '';
@@ -3896,6 +3922,25 @@ body.is-guest .dash-lower {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Full page from 769px up. A campaign is a page's worth of content — gallery,
+   description, donors, comments — and a 78rem card floating in the middle left
+   most of a desktop screen unused while the content inside it scrolled. Mobile
+   already fills the screen, so this makes the two agree. */
+@media (min-width: 769px) {
+  .modal-overlay.camp-modal-overlay,
+  #campaign-modal.modal-overlay {
+    padding: 0;
+  }
+  .camp-modal {
+    max-width: none;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    max-height: none;
+    border-radius: 0;
+  }
 }
 .camp-modal .modal-close {
   z-index: 5;

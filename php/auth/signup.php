@@ -171,7 +171,13 @@ if ($hasEmail) {
     Mailer::sendVerification(strtolower($email), $token);
 }
 
-Auth::login($userId, $role);
+// Signing up from Settings while already signed in should add the new account
+// alongside the current one, not evict it. Auth::login() has always taken this
+// flag; signup simply never passed it, so creating a second account silently
+// signed the first one out. Only honoured when there is genuinely a session to
+// add to, so a normal signup is unaffected.
+$addMode = !empty($_POST['add']) && Auth::check();
+Auth::login($userId, $role, $addMode);
 
 if ($role === 'organisation') {
     Response::redirect('pages/org-pending.html');

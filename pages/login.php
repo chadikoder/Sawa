@@ -22,9 +22,12 @@ $addMode = isset($_GET['add']) && Auth::check();
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <a href="../index.html" class="back-home">
+    <?php /* Adding an account is reached from Settings while already signed
+             in, so back has to return to the dashboard. Sending that user to
+             the public landing page looked like being signed out. */ ?>
+    <a href="<?= $addMode ? 'userhome.php' : '../index.html' ?>" class="back-home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>Back to home</span>
+      <span><?= $addMode ? 'Back to dashboard' : 'Back to home' ?></span>
     </a>
     <div class="login-page" id="main">
 
@@ -117,7 +120,15 @@ $addMode = isset($_GET['add']) && Auth::check();
 
             </form>
 
-            <p class="auth-switch">Don't have an account? <a href="signup.php">Sign up</a></p>
+            <?php /* In add-account mode this used to read "Don't have an
+                     account? Sign up", which invites creating a second account
+                     when the intent was to sign in to an existing one — the
+                     opposite of what this screen is for. */ ?>
+            <?php if ($addMode): ?>
+              <p class="auth-switch">Adding an account keeps your current one signed in. No account yet? <a href="signup.php?add=1">Create one</a> &middot; <a href="userhome.php">Cancel</a></p>
+            <?php else: ?>
+              <p class="auth-switch">Don't have an account? <a href="signup.php">Sign up</a></p>
+            <?php endif; ?>
         </div>
 
     </div>

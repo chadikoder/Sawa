@@ -16,6 +16,8 @@ $signupErrors = [
     'phone_taken'       => 'An account with that phone number already exists.',
     'server'            => 'Something went wrong on our end. Please try again in a moment.',
 ];
+// ?add=1 arrives from "Add an account" when the visitor is already signed in.
+$addMode = isset($_GET['add']) && Auth::check();
 $signupErrorCode = (string) ($_GET['error'] ?? '');
 $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 ?>
@@ -40,9 +42,9 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <a href="../index.html" class="back-home">
+    <a href="<?= $addMode ? 'userhome.php' : '../index.html' ?>" class="back-home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>Back to home</span>
+      <span><?= $addMode ? 'Back to dashboard' : 'Back to home' ?></span>
     </a>
     <?php if ($signupErrorMessage !== null): ?>
       <div class="signup-error-banner" role="alert">
@@ -109,6 +111,7 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
     
     <form action="../php/auth/signup.php" method="POST" enctype="multipart/form-data" class="form_submit">
     <?= Csrf::field() ?>
+    <?php if ($addMode): ?><input type="hidden" name="add" value="1"><?php endif; ?>
 
     <div class="step_1" style="display: flex;">
 
