@@ -179,6 +179,21 @@ html, body {
   max-width: 100%;
 }
 
+/* ── Hide scrollbar chrome everywhere ──────────────────────────────────────
+   Requested globally: the page, the drawer and the campaign modal all still
+   scroll by wheel, touch, keyboard and scrollIntoView — only the visible bar
+   is removed. Worth knowing: a hidden scrollbar also removes the only visual
+   cue that a region scrolls at all, so any container that relies on it needs
+   its own affordance (a fade, a chevron, or content peeking past the edge). */
+* {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* legacy Edge */
+}
+*::-webkit-scrollbar {            /* Chrome, Safari */
+  width: 0;
+  height: 0;
+}
+
 html[data-theme="dark"] body {
   background-color: var(--color-bg);
   color: var(--color-text);

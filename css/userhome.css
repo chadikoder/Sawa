@@ -1726,17 +1726,23 @@ body.is-guest .fee-rate--user  { display: none !important; }
     position: fixed;
     top: 5.8rem;
     left: 0;
-    bottom: 0;
     /* Top of the stack while open: above the overlay (z:110) and the bottom
        nav (z:100). At z:30 the drawer rendered underneath both, so its items
        could be seen but not tapped. */
     z-index: 120;
-    /* The base rule pins height to 100dvh. Here the drawer starts 5.8rem down
-       to clear the header, so keeping a full-viewport height pushed its last
-       5.8rem below the fold — the bottom of the menu was cut off and the
-       drawer scrolled to reach it. Letting top/bottom size the box instead
-       gives exactly the space between the header and the screen edge. */
-    height: auto;
+    /* Sized by svh, not by dvh and not by top+bottom.
+       The base rule pins height to 100dvh; here the drawer starts 5.8rem down
+       to clear the header, so a full-viewport height pushed its last 5.8rem
+       below the fold and it had to scroll to reach them.
+       bottom:0 fixes that but introduces a worse problem on a phone: a fixed
+       box sized by bottom resolves against the *dynamic* viewport, and the
+       browser chrome collapsing as you scroll changes it — the drawer visibly
+       resized mid-scroll. svh is the viewport measured with the chrome
+       showing, i.e. the smallest it ever gets, so the height is constant from
+       open to close. The vh line is the fallback for engines without svh. */
+    bottom: auto;
+    height: calc(100vh - 5.8rem);
+    height: calc(100svh - 5.8rem);
     transform: translateX(-100%);
     transition: transform 0.3s;
     box-shadow: var(--shadow-lg);
