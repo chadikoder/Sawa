@@ -7,10 +7,10 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js"></script>
+    <script src="<?= asset('js/theme.js') ?>"></script>
     <title>Sawa — Forgot Password</title>
 </head>
 <body>
@@ -42,6 +42,6 @@ require_once dirname(__DIR__) . '/php/bootstrap.php';
             <p class="auth-switch"><a href="login.php">Back to log in</a></p>
         </div>
     </div>
-    <script src="../js/login.js"></script>
+    <script src="<?= asset('js/login.js') ?>"></script>
 </body>
 </html>

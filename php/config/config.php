@@ -105,6 +105,27 @@ function url(string $path = ''): string
 }
 
 /**
+ * URL for a static asset, with a cache-busting version stamp taken from the
+ * file's own modification time: css/userhome.css?v=1753207412
+ *
+ * Cache-Control alone was not enough. A browser that had already cached these
+ * files before that header existed kept serving its stale copy under heuristic
+ * freshness, so edits appeared not to apply — repeatedly, for hours, across
+ * CSS and JS both. A URL that changes whenever the file changes cannot be
+ * served from cache for the wrong version, and it costs nothing: the stamp
+ * only moves when the file does, so unchanged assets still cache normally.
+ *
+ * Falls back to a plain url() when the file is missing rather than failing.
+ */
+function asset(string $path): string
+{
+    $relative = ltrim($path, '/');
+    $file = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+    $stamp = is_file($file) ? filemtime($file) : false;
+    return url($relative) . ($stamp !== false ? '?v=' . $stamp : '');
+}
+
+/**
  * Fully-qualified URL (scheme + host + BASE_PATH + path), for email and
  * anywhere else a host-relative path would be meaningless.
  *

@@ -29,10 +29,10 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/signup.css" type="text/css">
+    <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/signup.css') ?>" type="text/css">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js"></script>
+    <script src="<?= asset('js/theme.js') ?>"></script>
 
     <title>Sign Up — Sawa</title>
 
@@ -333,7 +333,7 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 
     </form>
 
-    <script src="../js/signup.js"></script>
+    <script src="<?= asset('js/signup.js') ?>"></script>
 
 </body>
 </html>

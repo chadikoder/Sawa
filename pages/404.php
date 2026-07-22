@@ -29,10 +29,10 @@ if (!headers_sent()) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= url('css/tokens.css') ?>">
-    <link rel="stylesheet" href="<?= url('css/status.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/status.css') ?>">
     <link rel="icon" href="<?= url('images/sawa.svg') ?>" type="image/svg+xml">
-    <script src="<?= url('js/theme.js') ?>"></script>
+    <script src="<?= asset('js/theme.js') ?>"></script>
 </head>
 <body>
     <main class="status-shell" aria-labelledby="status-title">

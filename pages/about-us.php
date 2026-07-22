@@ -32,10 +32,10 @@ $year = date('Y');
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/nav.css">
-    <link rel="stylesheet" href="../css/about.css">
-    <script src="../js/theme.js"></script>
+    <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/nav.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/about.css') ?>">
+    <script src="<?= asset('js/theme.js') ?>"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -472,6 +472,6 @@ $year = date('Y');
     </div>
   </footer>
 
-  <script src="../js/about.js"></script>
+  <script src="<?= asset('js/about.js') ?>"></script>
 </body>
 </html>

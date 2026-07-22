@@ -129,9 +129,9 @@ $partial = dirname(__DIR__) . '/php/partials/';
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/userhome.css">
-  <script src="../js/theme.js"></script>
+  <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+  <link rel="stylesheet" href="<?= asset('css/userhome.css') ?>">
+  <script src="<?= asset('js/theme.js') ?>"></script>
   <title>Dashboard — Sawa</title>
 </head>
 <body class="<?= $bodyClass ?>">
@@ -2265,6 +2265,6 @@ $partial = dirname(__DIR__) . '/php/partials/';
     </div>
   </footer>
 
-  <script src="../js/userhome.js"></script>
+  <script src="<?= asset('js/userhome.js') ?>"></script>
 </body>
 </html>

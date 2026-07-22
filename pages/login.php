@@ -13,10 +13,10 @@ $addMode = isset($_GET['add']) && Auth::check();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="<?= asset('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/login.css') ?>">
     <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js"></script>
+    <script src="<?= asset('js/theme.js') ?>"></script>
     <title>Sawa — Log In</title>
 </head>
 <body>
@@ -122,6 +122,6 @@ $addMode = isset($_GET['add']) && Auth::check();
 
     </div>
 
-    <script src="../js/login.js"></script>
+    <script src="<?= asset('js/login.js') ?>"></script>
 </body>
 </html>
