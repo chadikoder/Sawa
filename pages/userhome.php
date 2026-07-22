@@ -283,6 +283,13 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3h6l1 2h3a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h3l1-2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11h8M8 15h5"/></svg>
         <span>Activity &amp; Bills</span>
       </button>
+      <?php /* Notifications gets its own sidebar entry so the full list is
+               reachable directly, without opening the bell dropdown first and
+               pressing "View all" to get there. */ ?>
+      <button class="sidebar-item auth-only" data-section="notifications">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span>Notifications</span>
+      </button>
       <button class="sidebar-item auth-only" data-section="messages">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 13h5"/></svg>
         <span>Messages</span>

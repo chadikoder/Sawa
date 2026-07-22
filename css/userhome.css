@@ -2677,6 +2677,17 @@ html[data-theme="dark"] .cashout-grid input {
 }
 .dash-bell-wrap.open .dash-bell { background: var(--color-primary-light); border-color: var(--color-primary); color: var(--color-primary); }
 
+/* "View all notifications" is a <button> now, not a link — these keep it
+   looking the way it did as an <a>. Deliberately outside the media query
+   below, since it applies at every width. */
+.dash-notif-foot {
+  width: 100%;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* Notifications dropdown panel */
 .dash-notif-panel {
   position: absolute;
@@ -2701,10 +2712,26 @@ html[data-theme="dark"] .cashout-grid input {
   pointer-events: auto;
 }
 
-/* Mobile: Twitter-style notification feed — anchored under the top header,
-   slides DOWN from the top, fills the viewport down to the bottom-bar.
-   Feels like a dedicated notifications page, not a tiny dropdown. */
-@media (max-width: 768px) {
+/* Between phone and desktop the bell does not sit at the far right of the
+   header, so anchoring the panel's right edge to it pushed a 36rem card off
+   the left of the screen (measured at 697px: left -52). Anchoring the left
+   edge instead keeps it on screen, and max-width caps it if the card would
+   otherwise run past the right. */
+@media (max-width: 900px) {
+  .dash-notif-panel {
+    right: auto;
+    left: 0;
+    max-width: calc(100vw - 3.2rem);
+  }
+}
+
+/* Phones only: the panel becomes a full-width sheet under the header, because
+   a 36rem card cannot sit sensibly on a 360px screen.
+   This used to cut in at 768px, which meant every tablet and small laptop
+   window got the sheet instead of a dropdown — the bell stopped looking like a
+   dropdown at all anywhere under 768px wide. Above this the card applies, and
+   "View all notifications" opens the full-page section for the long list. */
+@media (max-width: 520px) {
   .dash-notif-panel {
     position: fixed;
     /* Top-anchored (just under the 6.4rem top header).
@@ -2734,13 +2761,7 @@ html[data-theme="dark"] .cashout-grid input {
     background: var(--color-surface);
     z-index: 1;
   }
-  /* Now a <button>; these keep it looking like the link it replaced. */
-.dash-notif-foot {
-  width: 100%;
-  background: none;
-  border: 0;
-  font: inherit;
-  cursor: pointer;
+  .dash-notif-foot {
     position: sticky;
     bottom: 0;
     background: var(--color-surface);
