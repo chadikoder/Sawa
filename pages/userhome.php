@@ -57,6 +57,7 @@ $myCampaigns = ($auth && $userId !== null && $userRole !== null)
 $walletTransactions = ($auth && $userId !== null) ? WalletService::transactions($userId) : [];
 $activityRows = ($auth && $userId !== null) ? DonationService::activityForUser($userId) : [];
 $notifications = ($auth && $userId !== null) ? NotificationService::listForUser($userId) : [];
+$notificationGroups = ($auth && $userId !== null) ? NotificationService::groupedForUser($userId) : [];
 $inboxThreads = ($auth && $userId !== null) ? MessageService::inbox($userId) : [];
 $activeThreadId = (int) ($_GET['thread'] ?? 0);
 $threadMessages = [];
@@ -427,7 +428,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <!-- Jumps to Activity & Bills section (which lists the full
                      notification + donation history). Uses data-section so the
                      existing catch-all click handler handles section switching. -->
-                <a href="#" class="dash-notif-foot" data-section="activity">View all notifications</a>
+                <a href="#" class="dash-notif-foot" data-section="notifications">View all notifications</a>
               </div>
             </div>
             <button class="dash-cta donor-only" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
@@ -1602,6 +1603,35 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <?php /* Settings — X-style full-screen takeover via data-back; language row waits for i18n.
                The theme row was removed with the other per-page toggles: the
                single global control now lives on the landing page. */ ?>
+      <?php /* "View all notifications" used to land on Activity & Bills, which
+               is receipts and donations — not notifications. This is the real
+               home for them: same rows as the bell dropdown, grouped by day,
+               with a back bar like every other sub-page. */ ?>
+      <section id="notifications" class="section" data-back="dashboard" data-title="Notifications">
+        <div class="section-header">
+          <h2>Notifications</h2>
+          <p>Everything Sawa has sent you.</p>
+        </div>
+        <?php if (!$notificationGroups): ?>
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <h3>No notifications yet</h3>
+            <p>Donations, campaign updates and account changes will appear here.</p>
+          </div>
+        <?php else: ?>
+          <form id="notif-mark-all-form" method="POST" action="../php/engagement/notifications-mark-read.php" class="notif-mark-all">
+            <?= Csrf::field() ?>
+            <button type="submit" class="btn btn-outline">Mark all as read</button>
+          </form>
+          <?php foreach ($notificationGroups as $groupLabel => $groupRows): ?>
+            <h3 class="notif-group-label"><?= htmlspecialchars((string) $groupLabel, ENT_QUOTES, 'UTF-8') ?></h3>
+            <ul class="dash-notif-list notif-full-list">
+              <?php foreach ($groupRows as $n): include $partial . 'notification-row.php'; endforeach; ?>
+            </ul>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </section>
+
       <section id="settings" class="section" data-back="dashboard" data-title="Settings">
         <div class="settings-list">
           <?php /* Language row — wire to /php/users/language.php when the strings catalog exists. */ ?>

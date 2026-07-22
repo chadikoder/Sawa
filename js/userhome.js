@@ -2325,3 +2325,39 @@ document.getElementById('cm-comment-form')?.addEventListener('submit', async (e)
     if (btn) btn.disabled = false;
   }
 });
+
+
+/* ── Notifications: clear one dot when it is opened ───────────────────────
+   Only "mark all read" existed, so opening a single notification left it
+   looking unread. This clears its own dot the moment it is used and tells the
+   server in the background — the click itself is never blocked, because
+   navigating to the notification matters more than recording that it was seen.
+   The unread counter beside the bell is kept in step. */
+document.addEventListener('click', (e) => {
+  const hit = e.target.closest('.dash-notif-hit');
+  if (!hit) return;
+  const row = hit.closest('.dash-notif-row');
+  if (!row || !row.classList.contains('unread')) return;
+
+  const id = row.dataset.notifId;
+  row.classList.remove('unread');
+
+  const badge = document.getElementById('dash-notif-badge') || document.querySelector('.dash-notif-badge');
+  if (badge) {
+    const left = Math.max(0, (parseInt(badge.textContent, 10) || 0) - 1);
+    badge.textContent = left;
+    badge.hidden = left === 0;
+  }
+
+  if (!id) return;
+  const token = document.querySelector('input[name="_csrf"]')?.value;
+  if (!token) return;
+  const body = new FormData();
+  body.append('_csrf', token);
+  body.append('notification_id', id);
+  fetch('../php/engagement/notifications-mark-read.php', {
+    method: 'POST', body,
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' },
+    keepalive: true,      // survives the navigation this click may cause
+  }).catch(() => { /* the dot is already cleared locally; not worth a message */ });
+});

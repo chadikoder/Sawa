@@ -10305,3 +10305,26 @@ html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
   color: var(--color-text);
   overflow-wrap: anywhere;
 }
+
+/* ── Notifications section ────────────────────────────────────────────────
+   The full history, reached from "View all notifications". Rows are the same
+   partial the bell dropdown uses, so the two never drift apart. */
+.notif-group-label {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 2rem 0 0.8rem;
+}
+.notif-group-label:first-of-type { margin-top: 0.8rem; }
+.notif-full-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.notif-mark-all { display: flex; justify-content: flex-end; margin-bottom: 0.4rem; }

@@ -16,7 +16,7 @@ $safeLink = ($rawLink !== '' && !preg_match('#^[a-z]+:|^//#i', $rawLink))
     ? url(ltrim($rawLink, '/'))
     : '';
 ?>
-<li class="dash-notif-row<?= $unread ? ' unread' : '' ?>">
+<li class="dash-notif-row<?= $unread ? ' unread' : '' ?>" data-notif-id="<?= (int) $n['id'] ?>">
   <?php if ($safeLink !== ''): ?>
   <a class="dash-notif-hit" href="<?= htmlspecialchars($safeLink, ENT_QUOTES, 'UTF-8') ?>">
   <?php else: ?>
