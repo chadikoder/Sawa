@@ -42,8 +42,13 @@ body:has(.modal-overlay.show) { overflow: hidden; }
 
 /* --- Nav (top) ---
    Excludes .site-header-nav (the centered link group inside .site-header) so the
-   modern site-header layout isn't fighting this legacy frosted-bar styling. */
-nav:not(.bottom-nav):not(.site-header-nav) {
+   modern site-header layout isn't fighting this legacy frosted-bar styling.
+   Also excludes .guest-drawer-nav: it is a <nav>, so it was picking up
+   `position: sticky` and a fixed `height: var(--nav-height)` meant for a page
+   bar. Inside the guest menu that clamped the link list to 6.4rem while its
+   three links needed 15.2rem, so Sign Up Free and Log In were laid out from
+   the clamped height and painted straight over About Sawa. */
+nav:not(.bottom-nav):not(.site-header-nav):not(.guest-drawer-nav) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10580,4 +10585,270 @@ body.is-auth .site-header.auth-only .site-header-user,
    the ledger it is selected from. Both are redundant. */
 @media (max-width: 520px) {
   .bill-preview { order: 0; }
+}
+
+/* ── Sort dropdown ─────────────────────────────────────────────────────────
+   js/userhome.js replaces the native <select> with a button + listbox: an
+   <option> list is drawn by the operating system and no CSS reaches it, so the
+   toolbar's pill controls sat above a square grey Windows menu set in a
+   different font. The <select> remains the source of truth, so it is hidden
+   rather than removed. */
+#discover-sort.is-enhanced {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sort-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: none;
+  border: 0;
+  padding: 0 1.2rem 0 0;
+  min-height: 4.4rem;
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.sort-select-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 0.8rem;
+}
+.sort-select-chev {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform 0.18s ease;
+}
+.discover-sort-wrap.is-open .sort-select-chev { transform: rotate(180deg); }
+.discover-sort-wrap.is-open { border-color: var(--color-primary); }
+
+.sort-select-menu {
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  right: 0;
+  min-width: 22rem;
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.4rem;
+  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.16);
+  /* Above the campaign grid and the sticky toolbar it hangs from. */
+  z-index: 40;
+}
+.sort-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.sort-select-option:hover,
+.sort-select-option:focus-visible {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  outline: none;
+}
+.sort-select-tick {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  /* Holds its own column so every label starts on the same left edge whether
+     or not that row is the selected one. */
+  opacity: 0;
+  color: var(--color-primary);
+}
+.sort-select-option[aria-selected="true"] {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+.sort-select-option[aria-selected="true"] .sort-select-tick { opacity: 1; }
+
+/* On a phone the toolbar is a narrow stacked grid, so the menu takes the full
+   width of its control instead of hanging off the right edge. */
+@media (max-width: 768px) {
+  .sort-select-menu { left: 0; right: 0; min-width: 0; }
+}
+
+/* ── Receipt fills the section ─────────────────────────────────────────────
+   Full width was only half of it: the receipt still ended wherever its content
+   ran out, so a short donation left a shallow strip of paper floating in a tall
+   empty section. It now stands at least a screen tall, which is what a page you
+   are about to print should look like. */
+.bill-preview .bill-paper {
+  min-height: calc(100svh - 16rem);
+  display: flex;
+  flex-direction: column;
+}
+/* The footnote sinks to the bottom of the sheet so the extra height opens up
+   between the totals and the small print, not as a gap after the last line. */
+.bill-preview .bill-foot-note {
+  margin-top: auto;
+}
+
+/* ── Guest header: keep the auth pair with the burger ──────────────────────
+   Both .site-header-auth and .site-header-burger carried `margin-left: auto`.
+   Two auto margins in one flex row split the free space between them, so
+   Log In / Sign Up Free floated in the middle of the header with a ~180px
+   trench between them and the burger they belong beside. Only the first group
+   pushes; the burger then sits directly after it at the right-hand edge. */
+.site-header.guest-only .site-header-burger,
+.site-header-burger { margin-left: 0; }
+.site-header.guest-only .site-header-auth { margin-left: auto; }
+
+/* ── Urgent badge on a featured campaign thumb ─────────────────────────────
+   The thumb is 7.2rem square. A pill floated into its top-right corner had
+   nowhere to go: at any legible size the word "Urgent" is wider than the space
+   left beside the corner radius, so it hung over the edge of the image.
+
+   As a band across the top of the thumb it cannot overflow at any text size,
+   it reads as a label ON the image rather than a sticker beside it, and it
+   follows the thumb's own top corner radii. */
+.featured-camp-thumb .camp-urgent-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.3rem;
+  background: rgba(185, 28, 28, 0.94);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: none;
+}
+/* The pulsing dot is for the full-size card; at this scale it costs more width
+   than it earns. */
+.featured-camp-thumb .camp-urgent-badge::before {
+  display: none;
+}
+
+/* ── Guest menu: a dropdown from the header, not a side drawer ─────────────
+   The menu used to fly in from the right edge as a full-height panel, which
+   reads as a separate screen and gives no sense of having come from the button
+   that opened it. It now drops straight down from the header bar the burger
+   sits in, anchored to the same edges, so the connection is obvious.
+
+   Log In and Sign Up Free move inside it on narrow screens. They were being
+   drawn twice — once in the header and again in the menu — which is why the
+   header felt crowded next to the burger. Above 768px the header has room for
+   them and the burger is hidden, so the pair stays inline there. */
+.guest-drawer {
+  position: fixed;
+  top: 5.8rem;                 /* directly under the mobile header */
+  left: 0;
+  right: 0;
+  bottom: auto;
+  width: auto;
+  max-height: calc(100svh - 5.8rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.2rem 1.6rem 2rem;
+  border-radius: 0 0 1.8rem 1.8rem;
+  border-bottom: 1px solid var(--color-border);
+  /* Slides down from behind the header rather than in from the side. The
+     header sits above it so the panel appears to emerge from underneath. */
+  transform: translateY(-102%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  z-index: 90;
+}
+.guest-drawer.is-open {
+  transform: translateY(0);
+}
+/* The header must paint over the panel as it slides out from under it. */
+.site-header.guest-only {
+  z-index: 95;
+}
+.guest-drawer-backdrop {
+  /* Starts below the panel so a tap outside still closes it, but the dim never
+     covers the header the menu belongs to. */
+  top: 5.8rem;
+  z-index: 85;
+}
+
+/* The panel has the header immediately above it — repeating the logo and a
+   close button inside it is just clutter. */
+.guest-drawer-head { display: none; }
+.guest-drawer-nav { margin-top: 0; flex: 0 0 auto; }
+
+@media (min-width: 769px) {
+  /* Desktop keeps the inline pair; the burger is hidden at this width. */
+  .guest-drawer { display: none; }
+}
+
+@media (max-width: 768px) {
+  /* One home for Log In / Sign Up Free on narrow screens: the menu. */
+  .site-header.guest-only .site-header-auth { display: none; }
+  .site-header.guest-only .site-header-burger { margin-left: auto; }
+}
+
+/* The whole Sort pill opens the menu, not just the words in it.
+
+   The button only wrapped the current value and the chevron, so the sort icon,
+   the "SORT" label and every bit of padding around them were dead — the
+   control looked like one pill and behaved like a small target inside it.
+   Pressing the label was worse than dead: it is a <label for="discover-sort">,
+   so it moved focus to a select that is now visually hidden.
+
+   An overlay pinned to the wrapper makes the entire pill the hit area without
+   reordering anything. It stops at the wrapper's edges, so it cannot sit over
+   the menu, which is positioned below it. */
+.sort-select-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+/* The panel was built as a full-height column: .guest-drawer is a flex column
+   and .guest-drawer-nav took `flex: 1` to push the auth block to the bottom of
+   the screen. As a dropdown it is only as tall as its contents, so that column
+   had nothing to distribute — the auth block was shrunk by flex and its
+   buttons spilled back over the links above them.
+
+   Normal flow instead: each block is as tall as it needs to be and they stack
+   in order. */
+.guest-drawer {
+  display: block;
+}
+.guest-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+.guest-drawer-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+}
+.guest-drawer-link {
+  justify-content: flex-start;
+  width: 100%;
 }

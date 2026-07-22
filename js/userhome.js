@@ -2493,3 +2493,118 @@ async function loadCampaignDonors(campaignId) {
     list.innerHTML = '<li class="activity-empty">Could not load donors.</li>';
   }
 }
+
+/* ── Sort control: a real dropdown instead of the OS one ───────────────────
+   Sort was a bare <select>. Its list is drawn by the operating system, so on
+   Windows it opens as a grey system menu in a different typeface, square
+   corners, its own hover colour — sitting under a pill-shaped toolbar that
+   matches nothing about it. No CSS reaches inside a native option list; the
+   only way to design it is not to use it.
+
+   The <select> stays in the DOM and stays the source of truth: this reads its
+   options to build the menu, then writes back to select.value and dispatches
+   'change' on pick, so the Discover filter engine keeps listening to exactly
+   what it listened to before. With JS off the native control is still there
+   and still works. */
+(function () {
+  const select = document.getElementById('discover-sort');
+  if (!select) return;
+  const wrap = select.closest('.discover-sort-wrap');
+  if (!wrap) return;
+
+  const options = [...select.options];
+  select.classList.add('is-enhanced');
+  // Out of the tab order: the button below is the control now, and two tab
+  // stops for one setting is worse than none.
+  select.setAttribute('tabindex', '-1');
+  select.setAttribute('aria-hidden', 'true');
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'sort-select-btn';
+  btn.setAttribute('aria-haspopup', 'listbox');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-label', 'Sort campaigns');
+
+  const value = document.createElement('span');
+  value.className = 'sort-select-value';
+  value.textContent = select.selectedOptions[0] ? select.selectedOptions[0].text : options[0].text;
+
+  const chev = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  chev.setAttribute('viewBox', '0 0 24 24');
+  chev.setAttribute('class', 'sort-select-chev');
+  chev.setAttribute('aria-hidden', 'true');
+  chev.innerHTML = '<polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+
+  btn.append(value, chev);
+
+  const menu = document.createElement('ul');
+  menu.className = 'sort-select-menu';
+  menu.setAttribute('role', 'listbox');
+  menu.hidden = true;
+
+  const items = options.map(function (opt, i) {
+    const li = document.createElement('li');
+    li.className = 'sort-select-option';
+    li.setAttribute('role', 'option');
+    li.dataset.value = opt.value;
+    li.tabIndex = -1;
+    li.setAttribute('aria-selected', String(i === select.selectedIndex));
+    li.innerHTML =
+      '<svg viewBox="0 0 24 24" class="sort-select-tick" aria-hidden="true">'
+      + '<polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '<span></span>';
+    li.querySelector('span').textContent = opt.text;
+    menu.appendChild(li);
+    return li;
+  });
+
+  wrap.append(btn, menu);
+
+  const close = function () {
+    menu.hidden = true;
+    wrap.classList.remove('is-open');
+    btn.setAttribute('aria-expanded', 'false');
+  };
+  const open = function () {
+    menu.hidden = false;
+    wrap.classList.add('is-open');
+    btn.setAttribute('aria-expanded', 'true');
+    (items[select.selectedIndex] || items[0]).focus();
+  };
+
+  const pick = function (index) {
+    select.selectedIndex = index;
+    value.textContent = options[index].text;
+    items.forEach(function (li, i) { li.setAttribute('aria-selected', String(i === index)); });
+    // The filter engine listens for 'change', which only fires on real user
+    // interaction — setting selectedIndex in script does not raise it.
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    close();
+    btn.focus();
+  };
+
+  btn.addEventListener('click', function () { return menu.hidden ? open() : close(); });
+  items.forEach(function (li, i) { li.addEventListener('click', function () { pick(i); }); });
+
+  menu.addEventListener('keydown', function (e) {
+    const current = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const next = e.key === 'ArrowDown'
+        ? Math.min(items.length - 1, current + 1)
+        : Math.max(0, current - 1);
+      items[next].focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (current > -1) pick(current);
+    } else if (e.key === 'Escape') {
+      close();
+      btn.focus();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!menu.hidden && !wrap.contains(e.target)) close();
+  });
+})();
