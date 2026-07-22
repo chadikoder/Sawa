@@ -6117,20 +6117,28 @@ body.is-guest #discover .discover-toolbar {
   margin: -1rem 0 1.4rem;
   border-bottom: 1px solid var(--color-border);
 }
-body.is-guest #discover .discover-filters {
-  position: sticky;
-  top: calc(6.8rem + 6.4rem);
-  z-index: 29;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding-top: 0.6rem;
-  margin-top: -0.4rem;
+/* Desktop only. Under 768px .discover-filters is not a chip row at all — it is
+   the filter bottom-sheet, held off screen with transform: translateY(100%)
+   until the Filters button opens it. This selector carries an id and outranks
+   that, so on a phone or tablet the guest got the entire sheet — heading,
+   category list, urgency, location, Reset all — pinned open across the top of
+   Discover, sliding over the campaign cards as they scrolled past and burying
+   the Urgent badge and category tag on every one. */
+@media (min-width: 769px) {
+  body.is-guest #discover .discover-filters {
+    position: sticky;
+    top: calc(6.8rem + 6.4rem);
+    z-index: 29;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding-top: 0.6rem;
+    margin-top: -0.4rem;
+  }
 }
 
 @media (max-width: 768px) {
   body.is-guest #discover .discover-toolbar { top: 5.6rem; padding: 0.8rem 0; }
-  body.is-guest #discover .discover-filters { top: calc(5.6rem + 9rem); }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -7263,10 +7271,17 @@ html[data-theme="dark"] .testimonial-avatar {
   color: #bfdbfe;
 }
 
-html[data-theme="dark"] body.is-guest #discover .discover-toolbar,
-html[data-theme="dark"] body.is-guest #discover .discover-filters {
+html[data-theme="dark"] body.is-guest #discover .discover-toolbar {
   background: rgba(15, 23, 42, 0.94);
   border-color: rgba(148, 163, 184, 0.18);
+}
+/* Same reason as the light-mode rule above: below 769px this element is the
+   bottom-sheet, which brings its own surface colour. */
+@media (min-width: 769px) {
+  html[data-theme="dark"] body.is-guest #discover .discover-filters {
+    background: rgba(15, 23, 42, 0.94);
+    border-color: rgba(148, 163, 184, 0.18);
+  }
 }
 
 /* Dark mode for the mobile filter trigger button + sheet head + bottom-sheet
@@ -10541,4 +10556,28 @@ body.is-auth .site-header.auth-only .site-header-user,
    left edge lines up whichever state the panel is in. */
 .dash-notif-empty .dash-notif-text {
   padding: 1.6rem 2rem;
+}
+
+/* ── Receipt gets the full width of the section ────────────────────────────
+   Activity & Bills was a two-column grid: the ledger on the left and the
+   receipt squeezed into a 34rem sticky column on the right. A receipt is a
+   document — its parties sit side by side, its facts are a two-column grid and
+   its money column is right-aligned — and none of that survives at 34rem. On a
+   desktop window the receipt was narrower than the printed page it represents.
+
+   One column at every width: the ledger, then the receipt full width beneath
+   it. Non-sticky, because a full-width panel that follows the scroll would
+   cover the list it belongs to. */
+.activity-bills-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+.bill-preview {
+  position: static;
+  width: 100%;
+}
+/* The 900px override that flattened the grid on small screens is now what the
+   base rule already does, and the 520px reorder would put the receipt above
+   the ledger it is selected from. Both are redundant. */
+@media (max-width: 520px) {
+  .bill-preview { order: 0; }
 }

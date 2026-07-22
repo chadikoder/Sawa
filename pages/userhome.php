@@ -1911,10 +1911,19 @@ $partial = dirname(__DIR__) . '/php/partials/';
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
             Back
           </button>
-          <button type="button" class="btn btn-primary modal-next-btn" id="payment-next-btn">
+          <button type="button" class="btn btn-primary modal-next-btn auth-only" id="payment-next-btn">
             Review
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
+          <?php /* A guest cannot reach the end of this flow: Whish and Visa are
+                   not connected, and the Sawa Wallet — the one method that
+                   settles — needs an account. Sending them to a Review step
+                   they can never confirm is a dead end, so the guest gets the
+                   action that actually unblocks them instead. */ ?>
+          <a class="btn btn-primary modal-next-btn guest-only" href="signup.php">
+            Sign up free to donate
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
         </div>
       </div>
 
