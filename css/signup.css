@@ -51,7 +51,10 @@
     font-size: 1.4rem;
     color: #6b7280;
     text-align: center;
-    margin: 6.4rem 0 0;
+    /* Now sits inside the card under the Next button, so the old 6.4rem top
+       margin (which existed to clear .back-home when this floated above the
+       card) would just push it away from the button it belongs to. */
+    margin: 2rem 0 0;
     padding: 0 2rem;
 }
 .auth-switch a { color: var(--blue); font-weight: 600; text-decoration: underline; }
@@ -754,11 +757,6 @@ span { display: inline-block; }
         background: linear-gradient(160deg, #eff6ff 0%, #eff6ff 55%, #e0e7ff 100%);
     }
 
-    /* Wide enough that the centred text clears .back-home horizontally. */
-    .auth-switch {
-        margin-top: 1.6rem;
-    }
-
     /* Stays two columns: .gender-group is capped at 36rem at every width, so
        four columns would be ~82px each and break "Prefer not to say" over four
        lines here too.
@@ -1150,4 +1148,43 @@ html[data-theme="dark"] .back-home {
     background: rgba(15, 23, 42, 0.78);
     border-color: rgba(96, 165, 250, 0.28);
     color: #bfdbfe;
+}
+
+/* ── Brand mark above the signup card (small screens only) ──────────────────
+   Signup already had a gradient page and a white card, so it did not need the
+   login page's floating-card treatment — what it had was no brand at all.
+   This adds the logo, name and tagline directly on the existing gradient. A
+   filled band would have stacked a second blue on top of the first.
+   Above 768px the desktop layout takes over and this is hidden. */
+.auth-brand-band {
+    width: 100%;
+    text-align: center;
+    padding: 0 2rem;
+    margin: 0 0 1.6rem;
+}
+
+.auth-brand-band-logo {
+    width: 8rem;
+    height: 8rem;
+    filter: var(--auth-logo-filter);
+}
+
+.auth-brand-band-name {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--auth-panel-fg);
+    margin: 0.8rem 0 0.4rem;
+    line-height: 1;
+}
+
+.auth-brand-band-tag {
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--auth-panel-soft);
+    margin: 0;
+}
+
+@media (min-width: 768px) {
+    .auth-brand-band { display: none; }
 }

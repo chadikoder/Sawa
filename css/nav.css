@@ -57,7 +57,7 @@
 }
 
 .nav-logo {
-  height: 2.8rem;
+  height: 3.4rem;
   width: auto;
 }
 
@@ -262,10 +262,10 @@
 
   .nav-brand-name { font-size: 2.4rem; }
   .nav-logo-circle {
-    width: 4.8rem;
-    height: 4.8rem;
+    width: 5.6rem;
+    height: 5.6rem;
   }
-  .nav-logo { height: 3.2rem; }
+  .nav-logo { height: 3.8rem; }
 }
 
 /* Dark nav alignment: desktop links sit directly on the nav glass,

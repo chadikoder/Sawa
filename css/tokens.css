@@ -57,6 +57,17 @@ html {
   --color-dark:           #111827;
   --color-dark-soft:      #1e293b;
 
+  /* ─── Auth brand surface ──────────────────────
+     The gradient behind the login split-screen panel, the same gradient on
+     small screens where that panel is hidden, and the signup brand band.
+     Defined here rather than in login.css because signup.php loads only
+     tokens.css + signup.css, so anything left in login.css is invisible to it.
+     Login-only extras (--auth-tile-*, --auth-chip-*) stay in login.css. */
+  --auth-panel:           linear-gradient(145deg, #dbeafe 0%, #bfdbfe 48%, #e0e7ff 100%);
+  --auth-panel-fg:        #14294d;
+  --auth-panel-soft:      rgba(20, 41, 77, 0.74);
+  --auth-logo-filter:     none;
+
   /* ─── Typography ─────────────────────────────── */
   --font:       'Poppins', Arial, sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
@@ -155,6 +166,12 @@ html[data-theme="dark"] {
   --color-border-control: #64748b;
   --color-dark:           #020617;
   --color-dark-soft:      #0f172a;
+
+  /* Deep navy counterpart of the light auth gradient. */
+  --auth-panel:           linear-gradient(145deg, #123760 0%, #1d4ed8 48%, #0f172a 100%);
+  --auth-panel-fg:        #ffffff;
+  --auth-panel-soft:      rgba(255, 255, 255, 0.78);
+  --auth-logo-filter:     brightness(0) invert(1);
 }
 
 html, body {

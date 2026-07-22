@@ -1794,8 +1794,8 @@ body.is-guest .fee-rate--user  { display: none !important; }
 }
 
 .sidebar-logo-circle {
-  width: 5.2rem;
-  height: 5.2rem;
+  width: 6rem;
+  height: 6rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
@@ -1809,8 +1809,8 @@ body.is-guest .fee-rate--user  { display: none !important; }
 }
 
 .sidebar-logo-circle img {
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 4rem;
+  height: 4rem;
 }
 
 .sidebar-brand span {
@@ -5610,14 +5610,16 @@ body.is-guest .main-content { max-width: 124rem; margin: 0 auto; padding: 2.4rem
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.8rem;
-  height: 3.8rem;
+  /* Grown with its img (2.4 -> 2.9rem) so the circle keeps its padding ring.
+     Still well inside the 6.4rem header, which is the real constraint here. */
+  width: 4.4rem;
+  height: 4.4rem;
   background: #fff;
   border: 1.5px solid rgba(37, 99, 235, 0.28);
   box-shadow: 0 2px 10px rgba(37, 99, 235, 0.18);
   border-radius: 50%;
 }
-.site-brand-mark img { width: 2.4rem; height: 2.4rem; }
+.site-brand-mark img { width: 2.9rem; height: 2.9rem; }
 .site-brand-name {
   font-size: 1.7rem;
   font-weight: 800;
@@ -5976,7 +5978,7 @@ body.role-org   .site-header-user-role::before { content: "Organisation"; }
     white-space: nowrap;
   }
   .site-header.guest-only .site-brand-name { font-size: 1.55rem; }
-  .site-header.guest-only .site-brand-mark { width: 3.4rem; height: 3.4rem; }
+  .site-header.guest-only .site-brand-mark { width: 4rem; height: 4rem; }
 
   /* Mobile: drop the "Account" label in the sidebar (the top-nav user widget already shows identity) */
   body.is-auth .sidebar-section-label.auth-only { display: none; }

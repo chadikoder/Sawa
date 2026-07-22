@@ -44,7 +44,16 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
       <span>Back to home</span>
     </a>
-    <p class="auth-switch">Already have an account? <a href="login.php">Log in</a></p>
+    <?php /* Brand mark for small screens. Signup already had the page gradient
+             and a white form card, but no logo or name anywhere — so it read as
+             a bare form. This sits on the existing gradient rather than adding a
+             second filled band, which would just stack two blues. Hidden from
+             768px up, where the desktop layout takes over. */ ?>
+    <div class="auth-brand-band">
+      <img src="../images/sawa_v2.svg" alt="" class="auth-brand-band-logo">
+      <p class="auth-brand-band-name">SAWA</p>
+      <p class="auth-brand-band-tag">Connecting Lebanese donors<br>with families in need</p>
+    </div>
 
     <?php if ($signupErrorMessage !== null): ?>
       <div class="signup-error-banner" role="alert">
@@ -207,6 +216,11 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
         </div>
 
         <input type="button" value="Next" class="nextstep_2">
+
+        <?php /* Sits under the fields rather than floating above the card, so
+                 it mirrors login.php's "Don't have an account? Sign up" and is
+                 where someone looks after reading the form, not before it. */ ?>
+        <p class="auth-switch">Already have an account? <a href="login.php">Log in</a></p>
 
         </div>
 

@@ -14,15 +14,11 @@
        genuinely light; dark theme uses the deep navy gradient. Every value
        the panel paints with is routed through these so neither theme
        hardcodes the other's colours. */
-    --auth-panel:       linear-gradient(145deg, #dbeafe 0%, #bfdbfe 48%, #e0e7ff 100%);
-    --auth-panel-fg:    #14294d;
-    --auth-panel-soft:  rgba(20, 41, 77, 0.74);
     --auth-panel-faint: rgba(20, 41, 77, 0.58);
     --auth-tile-bg:     rgba(255, 255, 255, 0.58);
     --auth-tile-border: rgba(20, 41, 77, 0.12);
     --auth-tile-icon:   rgba(255, 255, 255, 0.85);
     --auth-icon-fg:     #1d4ed8;
-    --auth-logo-filter: none;
     --auth-chip-bg:     rgba(255, 255, 255, 0.72);
     --auth-chip-border: rgba(20, 41, 77, 0.16);
     --auth-chip-fg:     #1d4ed8;
@@ -30,15 +26,11 @@
 }
 
 html[data-theme="dark"] {
-    --auth-panel:       linear-gradient(145deg, #123760 0%, #1d4ed8 48%, #0f172a 100%);
-    --auth-panel-fg:    #ffffff;
-    --auth-panel-soft:  rgba(255, 255, 255, 0.78);
     --auth-panel-faint: rgba(255, 255, 255, 0.6);
     --auth-tile-bg:     rgba(255, 255, 255, 0.06);
     --auth-tile-border: rgba(255, 255, 255, 0.08);
     --auth-tile-icon:   rgba(255, 255, 255, 0.14);
     --auth-icon-fg:     #93c5fd;
-    --auth-logo-filter: brightness(0) invert(1);
     --auth-chip-bg:     rgba(255, 255, 255, 0.14);
     --auth-chip-border: rgba(255, 255, 255, 0.28);
     --auth-chip-fg:     #ffffff;
@@ -103,26 +95,39 @@ body {
     min-width: 0;
     min-height: 100vh;
     min-height: 100dvh;
+    /* Below the 780px split-screen breakpoint .login-brand is hidden, and the
+       page had no background of its own — so phones and tablets got a bare
+       white screen with a form on it while desktop got the full brand panel.
+       Reusing --auth-panel rather than a new colour means dark mode is already
+       handled: the token has a deep-navy variant. */
+    background: var(--auth-panel);
+    align-items: center;
+    justify-content: center;
+    /* Top padding clears the fixed .back-home chip. */
+    padding: 8rem 1.6rem 3.2rem;
 }
 
 /* Brand panel — desktop only */
 .login-brand { display: none; }
 
-/* Card fills full screen on mobile */
+/* A real floating card on small screens, not a full-bleed white sheet. */
 .login-card {
-    flex: 1;
+    width: 100%;
+    max-width: 44rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8rem 2.4rem 4rem;
-    background: #fff;
+    padding: 3.2rem 2.4rem 3.6rem;
+    background: var(--color-surface);
+    border-radius: var(--r-xl);
+    box-shadow: 0 18px 40px rgba(20, 41, 77, 0.18);
 }
 
 /* Mini logo shown on mobile */
 .card-logo {
-    width: 5.6rem;
-    height: 5.6rem;
+    width: 8rem;
+    height: 8rem;
     margin-bottom: 1.6rem;
 }
 
@@ -359,8 +364,8 @@ label {
     }
 
     .brand-logo {
-        width: 10rem;
-        height: 10rem;
+        width: 12rem;
+        height: 12rem;
         filter: var(--auth-logo-filter);
     }
 
@@ -385,6 +390,9 @@ label {
     .login-card {
         width: 52rem;
         min-width: 52rem;
+        /* max-width is reset because the mobile rule caps the card at 44rem to
+           keep it a card; left in place it would clamp this 52rem panel too. */
+        max-width: none;
         flex: 0 0 52rem;
         min-height: 100vh;
         min-height: 100dvh;
@@ -392,6 +400,12 @@ label {
         padding: 4rem 5.6rem;
         box-shadow: -24px 0 64px rgba(0, 0, 0, 0.14);
         justify-content: center;
+    }
+
+    /* The page itself no longer needs padding once the panel takes over. */
+    .login-page {
+        padding: 0;
+        align-items: stretch;
     }
 
     .card-logo { display: none; }

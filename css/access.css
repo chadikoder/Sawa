@@ -47,8 +47,8 @@ body {
 }
 
 .logo_image {
-    width: 9rem;
-    height: 9rem;
+    width: 11rem;
+    height: 11rem;
     filter: drop-shadow(0 6px 16px rgba(0,0,0,0.12));
 }
 
@@ -412,7 +412,7 @@ html[data-theme="dark"] .theme-toggle--floating:hover {
    DESKTOP (≥1024px) — wider brand panel
 ───────────────────────────────────────── */
 @media (min-width: 1024px) {
-    .logo_image { width: 12rem; height: 12rem; }
+    .logo_image { width: 14rem; height: 14rem; }
     .sawa { font-size: 5rem; }
     .sawa_arab { font-size: 3.2rem; }
     .value-prop { font-size: 1.7rem; max-width: 40rem; }
@@ -433,8 +433,8 @@ html[data-theme="dark"] .theme-toggle--floating:hover {
     }
 
     .logo_image {
-        width: 8rem;
-        height: 8rem;
+        width: 9.5rem;
+        height: 9.5rem;
     }
 
     .sawa {
