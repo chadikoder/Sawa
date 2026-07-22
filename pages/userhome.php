@@ -1038,7 +1038,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <div id="discover-grid" class="campaign-grid">
           <?php if (!$discoverCampaigns): ?>
             <p class="empty-state">No active campaigns yet. Check back soon.</p>
-          <?php else: foreach ($discoverCampaigns as $camp): include $partial . 'campaign-card.php'; endforeach; endif; ?>
+          <?php else:
+            /* Browsing everyone's campaigns — no owner controls here even on
+               your own, so Discover reads the same for every card. */
+            $showOwnerControls = false;
+            foreach ($discoverCampaigns as $camp): include $partial . 'campaign-card.php'; endforeach;
+          endif; ?>
         </div>
       </section>
 
@@ -1508,7 +1513,13 @@ $partial = dirname(__DIR__) . '/php/partials/';
             <p>Start a campaign to help those in need.</p>
             <button class="btn btn-primary" onclick="document.querySelector('[data-section=campaign-new]').click()">Create Your First Campaign</button>
           </div>
-          <?php else: foreach ($myCampaigns as $camp): include $partial . 'campaign-card.php'; endforeach; endif; ?>
+          <?php else:
+            /* The management view — Delete appears only here, and the partial
+               still confirms ownership per card before drawing it. */
+            $showOwnerControls = true;
+            foreach ($myCampaigns as $camp): include $partial . 'campaign-card.php'; endforeach;
+            $showOwnerControls = false;
+          endif; ?>
         </div>
       </section>
 

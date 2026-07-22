@@ -50,7 +50,12 @@ $creator = htmlspecialchars((string) ($camp['creator_name'] ?? 'Sawa member'), E
          a campaign raised by an individual, org_user_id one raised by an
          organisation the viewer represents. */
       $viewerId = Auth::check() ? (int) Auth::id() : 0;
-      $ownsCampaign = $viewerId > 0 && (
+      /* Two conditions, not one. $showOwnerControls is set by the including
+         section so Delete appears only in "My Campaigns" and never while
+         browsing Discover; the ownership test still runs per card, so the
+         button cannot be drawn on someone else's campaign even if a future
+         section sets the flag. The endpoint re-checks server-side regardless. */
+      $ownsCampaign = !empty($showOwnerControls) && $viewerId > 0 && (
           (int) ($camp['owner_user_id'] ?? 0) === $viewerId
           || (int) ($camp['org_user_id'] ?? 0) === $viewerId
       );

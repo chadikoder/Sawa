@@ -9448,9 +9448,14 @@ html[data-theme="dark"] .bill-verification {
 }
 .profile-banner-image {
   height: 16rem;
+  /* The gradient is the fallback when no banner has been uploaded. PHP injects
+     an inline background-image over it once user_profiles.banner_path is set,
+     and the picker previews one the same way before saving — so the sizing
+     below has to be here rather than inline at either call site. */
   background: linear-gradient(135deg, #1e3a8a 0%, var(--color-primary) 55%, #60a5fa 100%);
-  /* TODO(backend): once users.banner_path exists, PHP can inject the URL
-     as an inline background-image. Until then this gradient is the default. */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .profile-edit-toggle {
   position: absolute;

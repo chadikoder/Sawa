@@ -1610,6 +1610,31 @@ document.getElementById('avatar-input')?.addEventListener('change', function (e)
   }
 });
 
+/* ── Banner preview ──
+   Mirrors the avatar preview above. Without it the only feedback on choosing a
+   banner was the file dialog closing: the hero kept its old image until the
+   profile was saved and the page came back, so it looked as though nothing had
+   happened. Paints straight into .profile-banner-image, which is the same
+   element the server later fills with the stored URL. */
+document.getElementById('banner-upload')?.addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.querySelectorAll('.profile-banner-image').forEach(el => {
+      el.style.backgroundImage = `url('${ev.target.result}')`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    });
+    const label = document.querySelector('.profile-banner-edit-btn');
+    if (label) {
+      const text = [...label.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+      if (text) text.textContent = ' Banner selected — save to apply ';
+    }
+  };
+  reader.readAsDataURL(file);
+});
+
 /* ── Campaign image preview ── */
 const campaignImageInput = document.getElementById('camp-image-input');
 const campaignUploadPreview = document.getElementById('camp-upload-preview');
@@ -2224,29 +2249,79 @@ async function loadCampaignComments(campaignId) {
     // textContent everywhere below, never innerHTML with server data: comment
     // bodies are user-written and must not be able to inject markup here.
     list.innerHTML = '';
-    items.forEach(c => {
-      const li = document.createElement('li');
-      li.className = 'cm-comment-row';
-      const img = document.createElement('img');
-      img.className = 'cm-comment-avatar';
-      img.src = c.avatar || '../images/user-profile.svg';
-      img.alt = '';
-      const wrap = document.createElement('div');
-      wrap.className = 'cm-comment-body';
-      const head = document.createElement('div');
-      head.className = 'cm-comment-head';
-      const who = document.createElement('strong');
-      who.textContent = c.author;
-      const when = document.createElement('small');
-      when.textContent = c.ago;
-      head.append(who, when);
-      const text = document.createElement('p');
-      text.textContent = c.body;
-      wrap.append(head, text);
-      li.append(img, wrap);
-      list.appendChild(li);
-    });
+    items.forEach(c => list.appendChild(buildCommentRow(c)));
   } catch (e) {
     list.innerHTML = '<li class="activity-empty">Could not load comments.</li>';
   }
 }
+
+
+/* One row builder shared by the initial load and by posting, so a comment
+   written just now looks identical to one fetched from the server.
+   textContent throughout — comment bodies are user-written and must never be
+   parsed as markup. */
+function buildCommentRow(c) {
+  const li = document.createElement('li');
+  li.className = 'cm-comment-row';
+  const img = document.createElement('img');
+  img.className = 'cm-comment-avatar';
+  img.src = c.avatar || '../images/user-profile.svg';
+  img.alt = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'cm-comment-body';
+  const head = document.createElement('div');
+  head.className = 'cm-comment-head';
+  const who = document.createElement('strong');
+  who.textContent = c.author;
+  const when = document.createElement('small');
+  when.textContent = c.ago;
+  head.append(who, when);
+  const text = document.createElement('p');
+  text.textContent = c.body;
+  wrap.append(head, text);
+  li.append(img, wrap);
+  return li;
+}
+
+/* Post without leaving the page. Reloading meant the campaign modal closed and
+   sprang open again — the "opens twice" flicker. The comment is prepended in
+   place instead, the way a timeline reply behaves. Falls back to a normal form
+   submit if the request fails, so the feature still works without fetch. */
+document.getElementById('cm-comment-form')?.addEventListener('submit', async (e) => {
+  const form = e.target;
+  const input = document.getElementById('cm-comment-input');
+  const body = (input?.value || '').trim();
+  if (body.length < 2) return;                    // let the server say no
+  e.preventDefault();
+
+  const btn = form.querySelector('[type="submit"]');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' },
+    });
+    const data = await res.json();
+    if (!data || !data.ok) throw new Error('rejected');
+
+    const list = document.getElementById('cm-comments-list');
+    const empty = list?.querySelector('.activity-empty');
+    if (empty) empty.remove();
+    list?.prepend(buildCommentRow(data.comment));
+
+    const badge = document.getElementById('cm-comments-count');
+    if (badge) {
+      badge.textContent = (parseInt(badge.textContent, 10) || 0) + 1;
+      badge.hidden = false;
+    }
+    if (input) input.value = '';
+    const counter = document.getElementById('cm-comment-counter');
+    if (counter) counter.textContent = '0 / 500';
+    if (typeof showToast === 'function') showToast('Comment posted.');
+  } catch (err) {
+    form.submit();                                 // no-JS path still works
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+});
