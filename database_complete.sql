@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     -- transaction rolls back and the user is bounced with ?error=server.
     gender          ENUM('Male', 'Female', 'Other', 'Prefer not to say') NULL,
     avatar_path     VARCHAR(500) NULL,
+    banner_path     VARCHAR(500) NULL,
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id),
@@ -483,6 +484,22 @@ CREATE TABLE IF NOT EXISTS receipts (
     CONSTRAINT fk_receipt_donation FOREIGN KEY (donation_id) REFERENCES donations(id) ON DELETE SET NULL,
     CONSTRAINT fk_receipt_payment FOREIGN KEY (payment_session_id) REFERENCES payment_sessions(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
+-- Migration: user_profiles.banner_path
+--
+-- Same guarded pattern as the columns below — see the note on
+-- receipts.access_token for why this is built dynamically rather than using
+-- MariaDB's ADD COLUMN IF NOT EXISTS.
+-- -----------------------------------------------------------------------------
+SET @has_banner := (SELECT COUNT(*) FROM information_schema.COLUMNS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                       AND TABLE_NAME = 'user_profiles'
+                       AND COLUMN_NAME = 'banner_path');
+SET @sql := IF(@has_banner = 0,
+    'ALTER TABLE user_profiles ADD COLUMN banner_path VARCHAR(500) NULL AFTER avatar_path',
+    'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- -----------------------------------------------------------------------------
 -- Migration: user_profiles.gender

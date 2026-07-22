@@ -23,6 +23,13 @@ $avatarUrl = !empty($user['avatar_path'])
     ? htmlspecialchars(Upload::publicUrl((string) $user['avatar_path']), ENT_QUOTES, 'UTF-8')
     : '../images/user-profile.svg';
 $bioValue = htmlspecialchars((string) ($user['bio'] ?? ''), ENT_QUOTES, 'UTF-8');
+$bannerPath = (string) ($user['banner_path'] ?? '');
+$bannerUrl = $bannerPath !== ''
+    ? htmlspecialchars(Upload::publicUrl($bannerPath), ENT_QUOTES, 'UTF-8')
+    : '';
+// Built here rather than inline so the quoting stays readable: the attribute
+// is delimited with double quotes and the CSS url() with single ones.
+$bannerStyle = $bannerUrl !== '' ? " style=\"background-image: url('{$bannerUrl}')\"" : '';
 $walletBalance = '0.00';
 $userId = $auth ? Auth::id() : null;
 $userRole = $auth ? ((string) ($user['role'] ?? Auth::role() ?? 'user')) : null;
@@ -220,6 +227,13 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <button class="site-nav-link" type="button" data-jump="discover">Campaigns</button>
         <a class="site-nav-link" href="guide.html">Help</a>
       </nav>
+      <?php /* js/theme.js binds [data-theme-toggle] by delegation, so this
+               needs no extra script — the button works as soon as it exists.
+               .theme-toggle is styled in tokens.css. */ ?>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1090,8 +1104,9 @@ $partial = dirname(__DIR__) . '/php/partials/';
              inside .profile-card becomes interactive. Save submits to the
              existing PHP endpoint; Cancel reverts. -->
         <div class="profile-banner card profile-hero">
-          <?php /* Banner defaults to a gradient. When users.banner_path lands, echo it as background-image here. */ ?>
-          <div class="profile-banner-image" aria-hidden="true"></div>
+          <?php /* Falls back to the gradient in css/userhome.css when the user
+                   has not uploaded one. */ ?>
+          <div class="profile-banner-image" aria-hidden="true"<?= $bannerStyle ?>></div>
 
           <button type="button" class="profile-edit-toggle" id="profile-edit-toggle" data-section="profile-edit">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1217,11 +1232,14 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <input type="file" name="profile_image" id="avatar-input" accept="image/*" hidden>
               </label>
               <span class="profile-role-badge" aria-label="Account role"></span>
-              <!-- Banner upload disabled until backend adds users.banner_path. -->
-              <button type="button" class="profile-banner-edit-btn" disabled title="Coming soon">
+              <?php /* A <label> rather than a <button>: it opens the hidden
+                       file input natively, so this needs no JavaScript to work.
+                       The form is already enctype="multipart/form-data". */ ?>
+              <label class="profile-banner-edit-btn" for="banner-upload">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-                Change banner · Coming soon
-              </button>
+                Change banner
+              </label>
+              <input type="file" name="banner_image" id="banner-upload" accept="image/png,image/jpeg,image/webp" hidden>
             </div>
 
             <div class="profile-edit-fields">

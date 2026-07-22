@@ -6706,6 +6706,15 @@ body.is-guest #discover .discover-filters {
 }
 .mobile-overlay.show { display: block; }
 
+/* The drawer only exists below 769px. Above that the sidebar is a permanent
+   column and there is nothing to dim — but the .show class can survive a
+   resize, and at z-index 110 this overlay covers the sidebar (z:60) and the
+   whole page, blocking every click on desktop. */
+@media (min-width: 769px) {
+  .mobile-overlay,
+  .mobile-overlay.show { display: none; }
+}
+
 /* ════════════════════════════════════════════════════════════════════════
    Bottom nav — single Fluent-style block (replaces all legacy bottom-nav CSS).
    Mobile-only. 5 equal items. No FAB protrusion. Labels always visible.

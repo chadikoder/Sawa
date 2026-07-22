@@ -31,18 +31,30 @@ if (!empty($_FILES['profile_image']['tmp_name'])) {
     }
 }
 
-if ($avatarPath !== null) {
-    $pdo->prepare(
-        'INSERT INTO user_profiles (user_id, bio, avatar_path)
-         VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE bio = VALUES(bio), avatar_path = VALUES(avatar_path)'
-    )->execute([$userId, $bio !== '' ? $bio : null, $avatarPath]);
-} else {
-    $pdo->prepare(
-        'INSERT INTO user_profiles (user_id, bio)
-         VALUES (?, ?)
-         ON DUPLICATE KEY UPDATE bio = VALUES(bio)'
-    )->execute([$userId, $bio !== '' ? $bio : null]);
+$bannerPath = null;
+if (!empty($_FILES['banner_image']['tmp_name'])) {
+    try {
+        $bannerPath = Upload::store($_FILES['banner_image'], 'banners/' . $userId);
+    } catch (RuntimeException) {
+        Response::redirectStatus('pages/userhome.php', 'error', ['section' => 'profile']);
+    }
 }
+
+// Built from a fixed whitelist rather than branching per combination: with an
+// avatar and a banner both optional there are four cases, and the previous
+// if/else pair already had to repeat the whole statement for two. Only columns
+// the user actually submitted are touched, so uploading a banner does not wipe
+// an existing avatar and vice versa. The names here are literals, never input.
+$columns = ['bio'];
+$values  = [$bio !== '' ? $bio : null];
+if ($avatarPath !== null) { $columns[] = 'avatar_path'; $values[] = $avatarPath; }
+if ($bannerPath !== null) { $columns[] = 'banner_path'; $values[] = $bannerPath; }
+
+$assignments = implode(', ', array_map(static fn (string $c): string => "$c = VALUES($c)", $columns));
+$pdo->prepare(
+    'INSERT INTO user_profiles (user_id, ' . implode(', ', $columns) . ')
+     VALUES (?, ' . implode(', ', array_fill(0, count($columns), '?')) . ')
+     ON DUPLICATE KEY UPDATE ' . $assignments
+)->execute(array_merge([$userId], $values));
 
 Response::redirectStatus('pages/userhome.php', 'success', ['section' => 'profile']);

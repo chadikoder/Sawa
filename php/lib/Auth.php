@@ -143,7 +143,7 @@ final class Auth
             return [];
         }
         $stmt = db()->prepare(
-            'SELECT u.*, p.bio, p.location, p.birthdate, p.gender, p.avatar_path
+            'SELECT u.*, p.bio, p.location, p.birthdate, p.gender, p.avatar_path, p.banner_path
              FROM users u
              LEFT JOIN user_profiles p ON p.user_id = u.id
              WHERE u.id = ? AND u.active = 1
