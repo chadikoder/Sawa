@@ -247,6 +247,31 @@ html[data-theme="dark"] .modal-sub {
   color: var(--color-text-muted);
 }
 
+/* ── Logo marks go white in dark mode ──────────────────────────────────────
+   sawa_v2.svg is a two-tone blue/green mark drawn for light surfaces; on a
+   dark background it reads muddy and low-contrast. brightness(0) flattens it
+   to black and invert(1) turns that pure white, which is why the pair is used
+   rather than a colour filter.
+
+   Only the login panel and the signup band had this. Every container listed
+   here was checked in dark mode first — a white mark on a light chip would
+   erase itself, and .site-brand-mark and .admin-brand img both paint a chip
+   behind the logo (they resolve to translucent blue over a dark header here,
+   so they are safe). .logo_image keeps its drop-shadow by restating it: the
+   filter property replaces, it does not accumulate. */
+html[data-theme="dark"] .card-logo,
+html[data-theme="dark"] .status-logo,
+html[data-theme="dark"] .nav-logo,
+html[data-theme="dark"] .sidebar-logo-circle img,
+html[data-theme="dark"] .site-brand-mark img,
+html[data-theme="dark"] .admin-brand img {
+  filter: var(--auth-logo-filter);
+}
+
+html[data-theme="dark"] .logo_image {
+  filter: var(--auth-logo-filter) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35));
+}
+
 .theme-toggle {
   width: 4rem;
   height: 4rem;
