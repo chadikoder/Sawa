@@ -86,12 +86,21 @@ body {
     background: linear-gradient(160deg, #eff6ff 0%, #eff6ff 55%, #e0e7ff 100%);
     font-family: 'Poppins', Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    /* Top padding clears the fixed .back-home chip, which is 16px from the top
+       and 37px tall. Without it the card sat at y=16 and the chip crossed its
+       left edge by 12px — the button was drawn on top of the card corner. */
+    padding: 6.4rem 1.6rem;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    /* Was flex-start, which left the card at the top with ~200px of dead space
+       under it. `safe center` centres it but degrades to flex-start when the
+       step is taller than the viewport — plain `center` would push the top of
+       a tall step above the scroll origin, where it cannot be reached. The
+       unprefixed value is the fallback for browsers that do not parse `safe`. */
+    justify-content: center;
+    justify-content: safe center;
     align-items: center;
     gap: 0;
 }
