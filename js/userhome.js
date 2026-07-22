@@ -177,7 +177,12 @@ function openSidebar() {
         }, 280);
     }
 
-    burger?.addEventListener('click', openDrawer);
+    // Toggle, not open-only: the burger becomes a close button while the menu
+    // is open (js/burger.js morphs the icon to match), and pressing the thing
+    // that opened a menu is the first thing anyone tries to close it.
+    burger?.addEventListener('click', () => {
+        (drawer && drawer.classList.contains('is-open')) ? closeDrawer() : openDrawer();
+    });
     closeBtn?.addEventListener('click', closeDrawer);
     backdrop?.addEventListener('click', closeDrawer);
     document.addEventListener('keydown', e => {

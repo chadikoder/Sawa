@@ -351,3 +351,47 @@ html[data-theme="dark"] .theme-toggle .theme-sun { display: block; }
   outline: 3px solid rgba(255, 255, 255, 0.6);
   outline-offset: 2px;
 }
+
+/* ── Hamburger → close toggle (shared) ─────────────────────────────────────
+   Lives here rather than in a page stylesheet because both headers use it and
+   both load tokens.css. js/burger.js swaps the button's SVG for these three
+   bars and mirrors the panel's open state onto .is-open.
+
+   The bars are absolutely positioned against a fixed 1.8rem box so rotating
+   them cannot shift the button's size, and both states animate from the same
+   origin — the middle of that box. */
+.burger-toggle .burger-bars {
+  position: relative;
+  display: block;
+  width: 1.8rem;
+  height: 1.4rem;
+}
+.burger-toggle .burger-bars i {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0.22rem;
+  border-radius: 9999px;
+  background: currentColor;
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.16s linear;
+}
+.burger-toggle .burger-bars i:nth-child(1) { top: 0; }
+.burger-toggle .burger-bars i:nth-child(2) { top: 50%; transform: translateY(-50%); }
+.burger-toggle .burger-bars i:nth-child(3) { bottom: 0; }
+
+/* Outer bars travel to the centre line first, then rotate onto it. The middle
+   bar fades rather than moving, so nothing has to slide out of the box. */
+.burger-toggle.is-open .burger-bars i:nth-child(1) {
+  transform: translateY(0.59rem) rotate(45deg);
+}
+.burger-toggle.is-open .burger-bars i:nth-child(2) {
+  opacity: 0;
+  transform: translateY(-50%) scaleX(0.4);
+}
+.burger-toggle.is-open .burger-bars i:nth-child(3) {
+  transform: translateY(-0.59rem) rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burger-toggle .burger-bars i { transition: none; }
+}

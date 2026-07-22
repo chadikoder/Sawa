@@ -473,5 +473,6 @@ $year = date('Y');
   </footer>
 
   <script src="<?= asset('js/about.js') ?>"></script>
+  <script src="<?= asset('js/burger.js') ?>"></script>
 </body>
 </html>

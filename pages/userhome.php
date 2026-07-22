@@ -2352,5 +2352,8 @@ $partial = dirname(__DIR__) . '/php/partials/';
   </footer>
 
   <script src="<?= asset('js/userhome.js') ?>"></script>
+  <!-- After userhome.js: it binds the burger's click, this only redraws the
+       icon and mirrors the menu's open state onto it. -->
+  <script src="<?= asset('js/burger.js') ?>"></script>
 </body>
 </html>
