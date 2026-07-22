@@ -10852,3 +10852,58 @@ body.is-auth .site-header.auth-only .site-header-user,
   justify-content: flex-start;
   width: 100%;
 }
+
+/* ── Full-page receipt view ────────────────────────────────────────────────
+   Print used to go straight to the browser's print dialog, so the last look
+   you got at the receipt was the panel inside the dashboard — and a print
+   preview is the wrong place to find out you selected the wrong bill. The
+   receipt opens at full size first, with Print and Close on a bar above it. */
+.bill-fullpage {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+.bill-fullpage-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 2rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.bill-fullpage-bar strong {
+  font-size: 1.6rem;
+  margin-right: auto;
+}
+.bill-fullpage-sheet {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+/* A4 proportions on screen, so what is shown is what comes out of the
+   printer rather than a differently-shaped preview. */
+.bill-fullpage-sheet .bill-paper {
+  width: 100%;
+  max-width: 82rem;
+  min-height: auto;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .bill-fullpage-bar { padding: 1rem 1.4rem; }
+  .bill-fullpage-bar strong { font-size: 1.4rem; }
+  .bill-fullpage-sheet { padding: 1.2rem; }
+}
+
+/* The bar belongs on screen, never on paper. */
+@media print {
+  .bill-fullpage-bar { display: none !important; }
+}

@@ -122,9 +122,20 @@ document.addEventListener('click', (e) => {
    does not jump the page back to the top. */
 let _scrollLockY = 0;
 
-function closeSidebar() {
-  document.querySelector('.sidebar')?.classList.remove('open');
-  document.querySelector('.mobile-overlay')?.classList.remove('show');
+/* Extracted from openSidebar/closeSidebar so anything else that covers the
+   page — the full-page receipt view, for one — locks the document the same
+   way instead of reimplementing it slightly differently. */
+function lockScroll() {
+  _scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+  // position:fixed is what actually stops iOS Safari rubber-banding the page.
+  document.body.style.position = 'fixed';
+  document.body.style.top = (-_scrollLockY) + 'px';
+  document.body.style.width = '100%';
+}
+
+function unlockScroll() {
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
   document.body.style.position = '';
@@ -133,16 +144,16 @@ function closeSidebar() {
   window.scrollTo(0, _scrollLockY);
 }
 
+function closeSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.querySelector('.mobile-overlay')?.classList.remove('show');
+  unlockScroll();
+}
+
 function openSidebar() {
-  _scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
   document.querySelector('.sidebar')?.classList.add('open');
   document.querySelector('.mobile-overlay')?.classList.add('show');
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
-  // position:fixed is what actually stops iOS Safari rubber-banding the page.
-  document.body.style.position = 'fixed';
-  document.body.style.top = (-_scrollLockY) + 'px';
-  document.body.style.width = '100%';
+  lockScroll();
 }
 
 /* ── Guest unified header / mobile drawer ── */
@@ -1045,10 +1056,12 @@ window.addEventListener('orientationchange', () => window.setTimeout(updateBotto
      clipped containers, and any one of those ancestors can crop it on paper.
      Cloning the .bill-paper to a container at <body> level sidesteps all of
      that: the print rules then only have to hide the siblings. */
-  printBtn?.addEventListener('click', () => {
-    const paper = document.querySelector('#bill-preview .bill-paper');
-    if (!paper) { window.print(); return; }
-
+  /* Print opens the receipt full page first.
+     It used to go straight to the browser's print dialog, so the last thing
+     you saw of the receipt was the panel inside the dashboard — and the print
+     preview is the wrong place to discover you picked the wrong bill. The
+     receipt is shown at full size first, with Print and Close on it. */
+  const sendToPrinter = (paper) => {
     document.getElementById('print-root')?.remove();
     const root = document.createElement('div');
     root.id = 'print-root';
@@ -1067,6 +1080,48 @@ window.addEventListener('orientationchange', () => window.setTimeout(updateBotto
     window.addEventListener('afterprint', cleanup);
     window.print();
     setTimeout(cleanup, 1000);
+  };
+
+  printBtn?.addEventListener('click', () => {
+    const paper = document.querySelector('#bill-preview .bill-paper');
+    if (!paper) { window.print(); return; }
+
+    document.getElementById('bill-fullpage')?.remove();
+
+    const view = document.createElement('div');
+    view.id = 'bill-fullpage';
+    view.className = 'bill-fullpage';
+    view.setAttribute('role', 'dialog');
+    view.setAttribute('aria-modal', 'true');
+    view.setAttribute('aria-label', 'Receipt');
+
+    const bar = document.createElement('div');
+    bar.className = 'bill-fullpage-bar';
+    bar.innerHTML =
+      '<strong>Receipt</strong>'
+      + '<button type="button" class="btn btn-primary" data-fp-print>Print</button>'
+      + '<button type="button" class="btn btn-outline" data-fp-close>Close</button>';
+
+    const sheet = document.createElement('div');
+    sheet.className = 'bill-fullpage-sheet';
+    sheet.appendChild(paper.cloneNode(true));
+
+    view.append(bar, sheet);
+    document.body.appendChild(view);
+    lockScroll();
+
+    const close = () => {
+      view.remove();
+      unlockScroll();
+      document.removeEventListener('keydown', onKey);
+      printBtn.focus();
+    };
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    view.querySelector('[data-fp-close]').addEventListener('click', close);
+    view.querySelector('[data-fp-print]').addEventListener('click', () => sendToPrinter(paper));
+    document.addEventListener('keydown', onKey);
+    view.querySelector('[data-fp-print]').focus();
   });
 })();
 
