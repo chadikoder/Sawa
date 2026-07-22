@@ -3,15 +3,27 @@ declare(strict_types=1);
 
 final class ReceiptService
 {
-    public static function nextBillId(): string
+    /**
+     * Next sequential bill id for the current year.
+     *
+     * Reads MAX of the numeric suffix rather than COUNT(*). COUNT reuses a
+     * number the moment any receipt is deleted — delete SAWA-2026-0003 out of
+     * five rows and the next insert asks for -0005, which already exists — and
+     * bill_id carries a UNIQUE key, so that is a hard failure rather than a
+     * quiet duplicate.
+     *
+     * Still not atomic on its own: two donations completing together can read
+     * the same MAX. createForDonation() therefore retries on collision.
+     */
+    private static function nextBillId(): string
     {
         $year = date('Y');
         $stmt = db()->prepare(
-            'SELECT COUNT(*) FROM receipts WHERE bill_id LIKE ?'
+            "SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(bill_id, '-', -1) AS UNSIGNED)), 0)
+             FROM receipts WHERE bill_id LIKE ?"
         );
         $stmt->execute(["SAWA-{$year}-%"]);
-        $n = (int) $stmt->fetchColumn() + 1;
-        return sprintf('SAWA-%s-%04d', $year, $n);
+        return sprintf('SAWA-%s-%04d', $year, (int) $stmt->fetchColumn() + 1);
     }
 
     public static function createForDonation(int $donationId): int
@@ -28,8 +40,6 @@ final class ReceiptService
             throw new RuntimeException('donation_not_found');
         }
 
-        $billId = self::nextBillId();
-        $checksum = hash('sha256', $billId . '|' . $donationId . '|' . $don['total_charged'] . '|' . SESSION_SECRET);
         $method = match ($don['payment_method']) {
             'wallet'          => 'Sawa Wallet',
             'whish'           => 'Whish Money',
@@ -42,25 +52,45 @@ final class ReceiptService
         // from the bill id, the donation id or anything else guessable.
         $accessToken = bin2hex(random_bytes(32));
 
-        db()->prepare(
+        // nextBillId() reads a MAX and is not atomic, so two donations
+        // completing at once can pick the same number. bill_id is UNIQUE, so
+        // the loser gets a duplicate-key error rather than a corrupt row —
+        // recompute and try again. MySQL does not abort the surrounding
+        // transaction on a duplicate key, so retrying inside one is safe.
+        $insert = db()->prepare(
             'INSERT INTO receipts (bill_id, user_id, donation_id, recipient_label, method_label,
                                    subtotal, fee_amount, total_paid, provider_ref, checksum, access_token)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        )->execute([
-            $billId,
-            $don['donor_id'],
-            $donationId,
-            $don['campaign_title'],
-            $method,
-            $don['amount'],
-            $don['fee_amount'],
-            $don['total_charged'],
-            $don['payment_ref'],
-            substr($checksum, 0, 64),
-            $accessToken,
-        ]);
+        );
 
-        return (int) db()->lastInsertId();
+        for ($attempt = 1; ; $attempt++) {
+            $billId = self::nextBillId();
+            $checksum = hash('sha256', $billId . '|' . $donationId . '|' . $don['total_charged'] . '|' . SESSION_SECRET);
+            try {
+                $insert->execute([
+                    $billId,
+                    $don['donor_id'],
+                    $donationId,
+                    $don['campaign_title'],
+                    $method,
+                    $don['amount'],
+                    $don['fee_amount'],
+                    $don['total_charged'],
+                    $don['payment_ref'],
+                    substr($checksum, 0, 64),
+                    $accessToken,
+                ]);
+                return (int) db()->lastInsertId();
+            } catch (PDOException $e) {
+                // 23000 covers both UNIQUE keys on this table. Only bill_id can
+                // realistically repeat; a clash on the 256-bit access_token is
+                // not something a retry should paper over, and re-raising after
+                // a few attempts keeps a genuine constraint bug visible.
+                if ($e->getCode() !== '23000' || $attempt >= 5) {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /**

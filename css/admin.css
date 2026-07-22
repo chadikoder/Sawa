@@ -1889,3 +1889,10 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
     background: none;
   }
 }
+
+/* Same as the sidebar: the logout control is a CSRF-protected POST form, and
+   display:contents keeps the button laying out as a direct child of
+   .admin-menu, which already styles `a` and `button` identically. */
+.logout-form {
+  display: contents;
+}

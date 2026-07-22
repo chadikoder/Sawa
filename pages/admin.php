@@ -550,7 +550,12 @@ $notice = $_GET['status'] ?? null;
             <button class="admin-icon-btn" type="button" data-menu-toggle="admin-profile-menu" aria-label="Open admin menu">•••</button>
             <div class="admin-menu" id="admin-profile-menu" hidden>
                 <a href="<?= admin_route('settings') ?>">Settings</a>
-                <a href="<?= url('php/auth/logout.php') ?>">Log out</a>
+                <?php /* POST + CSRF — see php/auth/logout.php. .admin-menu
+                         already styles `button` identically to `a`. */ ?>
+                <form action="<?= url('php/auth/logout.php') ?>" method="POST" class="logout-form">
+                    <?= Csrf::field() ?>
+                    <button type="submit">Log out</button>
+                </form>
             </div>
         </div>
     </aside>
@@ -949,12 +954,12 @@ function render_audit_panel(array $rows): void
 
 function render_organizations_table(array $rows): void
 {
-    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th><input type="checkbox"></th><th>Organization</th><th>ID</th><th>Representative</th><th>Campaigns</th><th>Transaction Value</th><th>Registration</th><th>Verification</th><th>Actions</th></tr></thead><tbody>';
+    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>Organization</th><th>ID</th><th>Representative</th><th>Campaigns</th><th>Transaction Value</th><th>Registration</th><th>Verification</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $status = (int) $row['verified'] === 1 ? 'approved' : ((int) $row['rejected'] === 1 ? 'rejected' : 'pending');
-        echo '<tr><td><input type="checkbox"></td><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="' . url('php/admin/verify-organisation.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
+        echo '<tr><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="' . url('php/admin/verify-organisation.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
     }
-    if (!$rows) { echo admin_empty_row(9, 'organizations', 'No organizations yet', 'Approved NGOs will appear here once they finish onboarding.'); }
+    if (!$rows) { echo admin_empty_row(8, 'organizations', 'No organizations yet', 'Approved NGOs will appear here once they finish onboarding.'); }
     echo '</tbody></table></div></section>';
 }
 
@@ -963,7 +968,7 @@ function render_users_table(array $rows): void
     global $adminUser;
     $currentAdminId = (int) ($adminUser['id'] ?? 0);
 
-    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th><input type="checkbox"></th><th>User</th><th>ID</th><th>Account Type</th><th>Reports</th><th>Wallet</th><th>Verification</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>User</th><th>ID</th><th>Account Type</th><th>Reports</th><th>Wallet</th><th>Verification</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $rowId = (int) $row['id'];
         $isSelf = $rowId === $currentAdminId;
@@ -983,9 +988,9 @@ function render_users_table(array $rows): void
         }
 
         $roleLabel = admin_role_label((string) $row['role']);
-        echo '<tr><td><input type="checkbox" aria-label="Select user ' . admin_e($row['full_name']) . '"></td><td><strong>' . admin_e($row['full_name']) . '</strong><span>' . admin_e($row['email'] ?: $row['phone']) . '</span></td><td>USR-' . $rowId . '</td><td>' . admin_badge($roleLabel, strtolower($roleLabel)) . '</td><td>' . (int) $row['reports_count'] . '</td><td>' . admin_money($row['wallet_balance']) . '</td><td>' . ((int) $row['email_verified'] === 1 ? admin_badge('verified') : admin_badge('unverified', 'pending')) . '</td><td>' . ((int) $row['active'] === 1 ? admin_badge('active') : admin_badge('suspended')) . '</td><td>' . $actionCell . '</td></tr>';
+        echo '<tr><td><strong>' . admin_e($row['full_name']) . '</strong><span>' . admin_e($row['email'] ?: $row['phone']) . '</span></td><td>USR-' . $rowId . '</td><td>' . admin_badge($roleLabel, strtolower($roleLabel)) . '</td><td>' . (int) $row['reports_count'] . '</td><td>' . admin_money($row['wallet_balance']) . '</td><td>' . ((int) $row['email_verified'] === 1 ? admin_badge('verified') : admin_badge('unverified', 'pending')) . '</td><td>' . ((int) $row['active'] === 1 ? admin_badge('active') : admin_badge('suspended')) . '</td><td>' . $actionCell . '</td></tr>';
     }
-    if (!$rows) { echo admin_empty_row(9, 'users', 'No users yet', 'Once people sign up, they show up here.'); }
+    if (!$rows) { echo admin_empty_row(8, 'users', 'No users yet', 'Once people sign up, they show up here.'); }
     echo '</tbody></table></div></section>';
 }
 

@@ -10123,3 +10123,11 @@ html[data-theme="dark"] .how-mini li {
 }
 html[data-theme="dark"] .recent-donation-empty > strong { color: #f1f5f9; }
 html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
+
+/* Logout is a POST form so it can carry a CSRF token (see php/auth/logout.php).
+   display:contents removes the form from the box tree entirely, so the button
+   inside stays a direct flex child of .sidebar-nav and the sidebar lays out
+   exactly as it did when this was a bare <button>. */
+.logout-form {
+  display: contents;
+}

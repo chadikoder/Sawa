@@ -76,9 +76,21 @@ $hash = password_hash($password, PASSWORD_DEFAULT);
 try {
     $pdo->beginTransaction();
 
+    // Signup logs the new account straight in, but php/auth/login.php refuses
+    // any account with email_verified = 0. On a stock local install PHP's
+    // mail() has no SMTP to hand off to, so the verification email never
+    // arrives — which meant signing up, being let in, and then being locked
+    // out permanently the moment you logged out, with no way back. That is
+    // exactly the path someone running this from a handed-over folder takes.
+    //
+    // Outside production the account is therefore created already verified.
+    // Production keeps the real flow, and the token below is still issued in
+    // both cases so the verify link works wherever mail is actually delivered.
+    $emailVerified = APP_ENV === 'production' ? 0 : 1;
+
     $stmt = $pdo->prepare(
         'INSERT INTO users (email, phone, password_hash, full_name, role, email_verified)
-         VALUES (?, ?, ?, ?, ?, 0)'
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
     $stmt->execute([
         $hasEmail ? strtolower($email) : null,
@@ -86,6 +98,7 @@ try {
         $hash,
         $fullName,
         $role,
+        $emailVerified,
     ]);
     $userId = (int) $pdo->lastInsertId();
 
