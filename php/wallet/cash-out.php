@@ -19,17 +19,24 @@ if ($amount < 1 || $destination === '' || !in_array($method, ['whish', 'bank_car
     Response::redirectStatus('pages/userhome.php', 'error', ['section' => 'wallet']);
 }
 
+// The fee comes OUT of the requested amount; it is not added on top.
+// $amount is what leaves the wallet, $amount - $fee is what the user is paid.
+//
+// This used to debit $amount + $fee while also recording net as $amount - $fee,
+// charging the 5% twice: a $100 request took $105 from the wallet and paid out
+// $95. It also made cashing out a full balance impossible, because the debit
+// was always larger than the amount the user was allowed to type.
 $fee = round($amount * CASHOUT_FEE_RATE, 2);
-$totalDebit = $amount + $fee;
+$net = round($amount - $fee, 2);
 
 $pdo = db();
 try {
     $pdo->beginTransaction();
-    WalletService::debit(Auth::id(), $totalDebit, 'cashout', 'Cash-out request');
+    WalletService::debit(Auth::id(), $amount, 'cashout', 'Cash-out request');
     $pdo->prepare(
         'INSERT INTO cash_out_requests (user_id, amount, fee_amount, net_amount, method, destination)
          VALUES (?, ?, ?, ?, ?, ?)'
-    )->execute([Auth::id(), $amount, $fee, $amount - $fee, $method, $destination]);
+    )->execute([Auth::id(), $amount, $fee, $net, $method, $destination]);
     $pdo->commit();
 } catch (Throwable) {
     if ($pdo->inTransaction()) {

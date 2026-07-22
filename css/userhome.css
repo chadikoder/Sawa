@@ -7026,15 +7026,25 @@ html[data-theme="dark"] .site-auth-btn:hover {
   color: #020617;
 }
 
+/* Controls and control wrappers (both search bars are focus-within shells
+   around a real input, and .payment-method-option is a clickable radio
+   tile), so these take the control token. Was hardcoded #334155 = 1.72:1. */
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select,
 html[data-theme="dark"] .discover-search-bar,
 html[data-theme="dark"] .dash-search,
-html[data-theme="dark"] .payment-method-option,
+html[data-theme="dark"] .payment-method-option {
+  background: #0f172a;
+  border-color: var(--color-border-control);
+  color: #f8fafc;
+}
+
+/* Split out of the block above: the fee summary is a read-only panel, not a
+   control, so 1.4.11 does not apply and it keeps the decorative border. */
 html[data-theme="dark"] .donation-fee-summary {
   background: #0f172a;
-  border-color: #334155;
+  border-color: var(--color-border);
   color: #f8fafc;
 }
 
@@ -8853,10 +8863,12 @@ html[data-theme="dark"] .bill-verification strong {
   color: #e5e7eb;
 }
 
-html[data-theme="dark"] .messages-search,
+/* .messages-search and .chat-compose input used to be in this list too, but
+   both declarations were dead — the control rule further down the file has
+   equal specificity and wins on source order. Removed so the file states the
+   border once instead of contradicting itself. */
 html[data-theme="dark"] .message-thread:hover,
-html[data-theme="dark"] .message-thread.active,
-html[data-theme="dark"] .chat-compose input {
+html[data-theme="dark"] .message-thread.active {
   background: rgba(15, 23, 42, 0.76);
   border-color: rgba(148, 163, 184, 0.18);
 }
@@ -9932,8 +9944,6 @@ html[data-theme="dark"] .people-filter-tabs,
 html[data-theme="dark"] .person-profile-facts span,
 html[data-theme="dark"] .message-thread,
 html[data-theme="dark"] .messages-list,
-html[data-theme="dark"] .messages-search,
-html[data-theme="dark"] .chat-compose input,
 html[data-theme="dark"] .payment-method-details,
 html[data-theme="dark"] .payment-method-fee,
 html[data-theme="dark"] .modal-confirm-breakdown,
@@ -9941,6 +9951,17 @@ html[data-theme="dark"] .modal-confirm-note,
 html[data-theme="dark"] .sidebar-account-row.is-current {
   background: rgba(2, 6, 23, 0.52);
   border-color: rgba(148, 163, 184, 0.18);
+  color: var(--color-text);
+}
+
+/* Split out of the panel block above: the compose field and the message
+   search are real controls. They inherited the panels' rgba(148,163,184,.18)
+   edge, which lands at 1.32:1 once blended over this fill. Same fill and
+   text as the panels — only the border changes. */
+html[data-theme="dark"] .messages-search,
+html[data-theme="dark"] .chat-compose input {
+  background: rgba(2, 6, 23, 0.52);
+  border-color: var(--color-border-control);
   color: var(--color-text);
 }
 

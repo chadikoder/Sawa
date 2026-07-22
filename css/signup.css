@@ -7,7 +7,7 @@
     --text-muted: var(--color-text-muted);
     /* Control borders must clear 3:1 (WCAG 1.4.11); see --color-border-control
        in tokens.css. Every use of --border here is an interactive control. */
-    --border: var(--color-border-control, #75899f);
+    --border: var(--color-border-control, #868d96);
     --input-bg: #f8fafc;
     --white: var(--color-surface);
     --radius: var(--r);
@@ -456,30 +456,60 @@ span { display: inline-block; }
 .gender-options {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    /* Tighter than the old 1rem because each row now carries its own 1.2rem
+       of tap-target padding; the gap only has to separate the hit areas. */
+    gap: 0.2rem 1.6rem;
     width: 100%;
 }
 
 .gender-option {
+    /* flex-direction is set explicitly because the generic `label` rule near
+       the top of this file is `display:flex; flex-direction:column`, and this
+       is a <label>. Without the reset the dot stacked ABOVE its text and each
+       option became a 175x77 tile — the "card" look was an accident, not a
+       decision. */
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.9rem;
     cursor: pointer;
-    padding: 1.2rem 1.2rem;
-    background: var(--input-bg);
-    border: 1.5px solid var(--border);
-    border-radius: 1.2rem;
-    transition: border-color 0.2s, background 0.2s;
+    /* No fill, no border: this is a radio, not a card. The vertical padding
+       is not decoration — it is the tap target, taking the clickable row to
+       44px (12 + 20px dot + 12) so it stays thumb-friendly on a phone even
+       though the control now looks light. */
+    padding: 1.2rem 0.2rem;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    max-width: none;
+    transition: color 0.2s;
 }
-.gender-option:hover { background: #eff6ff; border-color: var(--blue); }
+.gender-option:hover .gender-pill { color: var(--blue); }
 
-.gender-option input[type="radio"] { display: none; }
+/* Visually hidden, NOT display:none. `display:none` drops a radio out of the
+   tab order and the accessibility tree, which left this whole group
+   unreachable by keyboard — there was no way to choose a gender without a
+   mouse. This keeps it focusable and announced while staying invisible. */
+.gender-option input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+/* The hidden input takes focus, so the visible dot has to show the ring. */
+.gender-option input[type="radio"]:focus-visible ~ .gender-radio-circle {
+    outline: 3px solid var(--color-primary-glow);
+    outline-offset: 2px;
+}
 
 .gender-radio-circle {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    border: 2px solid var(--color-border-control, #75899f);
+    border: 2px solid var(--color-border-control, #868d96);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -731,10 +761,10 @@ span { display: inline-block; }
 
     /* Stays two columns: .gender-group is capped at 36rem at every width, so
        four columns would be ~82px each and break "Prefer not to say" over four
-       lines here too. Only the roomier padding comes back. */
-    .gender-option {
-        padding: 1.2rem 1.6rem;
-    }
+       lines here too.
+       No horizontal padding to restore now that the box is gone — indenting
+       the dot would just push it out of line with the labels above it. The
+       vertical padding is the tap target and is already set in the base rule. */
 
     /* Role card grid — side by side on desktop */
     .role_cards {
@@ -1093,13 +1123,18 @@ html[data-theme="dark"] .role_cards span:not(.step-counter):not(.sp-dot) {
     color: #e5e7eb;
 }
 
+/* Every selector here is an interactive control or a control wrapper (the
+   file dropzone is clickable), so they all take the control token. Was
+   hardcoded #334155 = 1.72:1 on this field.
+   .gender-option is deliberately NOT in this list any more: it no longer
+   draws a box, so painting a dark fill and a border on it would put the card
+   back in dark mode only. Its dot already uses the control token. */
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select,
-html[data-theme="dark"] .gender-option,
 html[data-theme="dark"] .image_container_file {
     background: #0f172a;
-    border-color: #334155;
+    border-color: var(--color-border-control);
     color: #f8fafc;
 }
 

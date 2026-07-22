@@ -1312,16 +1312,25 @@ html[data-theme="dark"] .admin-top-link,
 html[data-theme="dark"] .admin-page-actions button,
 html[data-theme="dark"] .admin-table-toolbar button,
 html[data-theme="dark"] .admin-inline-form button,
-html[data-theme="dark"] .admin-search input,
-html[data-theme="dark"] .admin-table-toolbar input,
-html[data-theme="dark"] .admin-page-actions select,
-html[data-theme="dark"] .admin-settings-list input,
 html[data-theme="dark"] .admin-search-panel,
 html[data-theme="dark"] .admin-list-row,
 html[data-theme="dark"] .admin-report-card,
 html[data-theme="dark"] .admin-profile-card {
   background: #172236;
   border-color: #273449;
+  color: #f8fafc;
+}
+
+/* Controls split out of the panel block above. They shared the panels'
+   #273449 edge, which is 1.27:1 on this fill — the field outline was
+   invisible in dark mode. --color-border-control is 3.35:1 here. Fill and
+   text are unchanged; only the border moves. */
+html[data-theme="dark"] .admin-search input,
+html[data-theme="dark"] .admin-table-toolbar input,
+html[data-theme="dark"] .admin-page-actions select,
+html[data-theme="dark"] .admin-settings-list input {
+  background: #172236;
+  border-color: var(--color-border-control);
   color: #f8fafc;
 }
 

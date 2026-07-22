@@ -59,10 +59,85 @@ function env(string $key, ?string $default = null): ?string
 define('APP_ENV', env('SAWA_APP_ENV', 'development'));
 define('APP_URL', rtrim(env('SAWA_APP_URL', 'http://localhost:8000'), '/'));
 
+/**
+ * URL prefix the app is served under, with no trailing slash ('' at a domain
+ * root, '/sawa' when the folder is dropped into XAMPP's htdocs).
+ *
+ * Detected from the running script rather than read from .env: the project is
+ * handed over as a folder and unzipped into whatever directory the marker
+ * picks, so the bundled .env cannot know the prefix. SCRIPT_NAME is the URL
+ * path of the file PHP is executing and SCRIPT_FILENAME is its location on
+ * disk; the part of SCRIPT_NAME left after removing the file's path relative
+ * to the project root is the prefix. Falls back to the path in SAWA_APP_URL
+ * (and then to '') when there is no request, e.g. on the CLI.
+ */
+function base_path(): string
+{
+    static $base = null;
+    if ($base !== null) {
+        return $base;
+    }
+
+    $root = realpath(dirname(__DIR__, 2));
+    $script = realpath($_SERVER['SCRIPT_FILENAME'] ?? '');
+    $name = $_SERVER['SCRIPT_NAME'] ?? '';
+
+    if ($root !== false && $script !== false && $name !== '' && str_starts_with($script, $root . DIRECTORY_SEPARATOR)) {
+        // e.g. 'php/auth/login.php' — the tail SCRIPT_NAME must end with.
+        $relative = str_replace(DIRECTORY_SEPARATOR, '/', substr($script, strlen($root) + 1));
+        if (str_ends_with($name, '/' . $relative)) {
+            $base = rtrim(substr($name, 0, -strlen('/' . $relative)), '/');
+            return $base;
+        }
+    }
+
+    $fromUrl = parse_url(APP_URL, PHP_URL_PATH);
+    $base = is_string($fromUrl) ? rtrim($fromUrl, '/') : '';
+    return $base;
+}
+
+define('BASE_PATH', base_path());
+
+/** Absolute-from-host URL for an app-relative path: url('css/admin.css'). */
+function url(string $path = ''): string
+{
+    return BASE_PATH . '/' . ltrim($path, '/');
+}
+
+/**
+ * Fully-qualified URL (scheme + host + BASE_PATH + path), for email and
+ * anywhere else a host-relative path would be meaningless.
+ *
+ * Built from the live request for the same reason BASE_PATH is detected
+ * rather than configured: the project is handed over as a folder and unzipped
+ * into an unknown directory, so a bundled .env cannot know the real address.
+ * SAWA_APP_URL is usually stale on someone else's machine, which is what made
+ * emailed links and uploaded-image URLs point at the author's old setup.
+ *
+ * In production the Host header is deliberately NOT trusted — it is
+ * attacker-controlled, and a forged one would rewrite a password-reset link to
+ * point at the attacker's server. There APP_URL is authoritative, matching how
+ * php/config/db.php disables its convenience fallbacks in production.
+ */
+function absolute_url(string $path = ''): string
+{
+    if (APP_ENV !== 'production') {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        // Reject anything that is not a bare host[:port] before echoing it.
+        if ($host !== '' && preg_match('/^[A-Za-z0-9.\-]+(:\d{1,5})?$/', $host)) {
+            $secure = (($_SERVER['HTTPS'] ?? 'off') !== 'off')
+                || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+            return ($secure ? 'https' : 'http') . '://' . $host . url($path);
+        }
+    }
+
+    return rtrim(APP_URL, '/') . '/' . ltrim($path, '/');
+}
+
 define('DB_HOST', env('SAWA_DB_HOST', '127.0.0.1'));
 define('DB_PORT', (int) env('SAWA_DB_PORT', '3306'));
 define('DB_NAME', env('SAWA_DB_NAME', 'sawa'));
-define('DB_USER', env('SAWA_DB_USER', 'sawa'));
+define('DB_USER', env('SAWA_DB_USER', 'root'));
 define('DB_PASS', env('SAWA_DB_PASS', ''));
 
 define('MAIL_FROM', env('SAWA_MAIL_FROM', 'noreply@sawa-together.com'));

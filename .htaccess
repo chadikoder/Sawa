@@ -3,6 +3,13 @@ AddDefaultCharset UTF-8
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Refuse any path with a dot-segment: .git, .env, .gitignore, .claude.
+    # <FilesMatch> below only covers single files, not whole directories, and
+    # serving .git/config leaks the repository. Keep this first — [F] must win
+    # before the routing rules below get a chance to match.
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
     RewriteRule ^admin/?(.*)$ pages/admin.php [L,QSA]
     RewriteRule ^storage/uploads/(.*)$ storage/uploads/$1 [L]
 </IfModule>
@@ -19,4 +26,19 @@ AddDefaultCharset UTF-8
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Apache sends no Cache-Control for static files, so a browser falls back
+    # to heuristic freshness and may reuse a stylesheet for hours. Editing a
+    # CSS file and reloading then still showed the OLD design, which is both a
+    # trap while working and a real risk on handover — a marker who opened the
+    # site once would keep seeing a stale mix.
+    #
+    # "no-cache" does not disable caching; it requires revalidation. The
+    # browser still stores the file and still sends If-None-Match, so an
+    # unchanged file costs a 304 with no body and a changed one shows up at
+    # once. Images and fonts are deliberately left alone — they are the big
+    # payloads and they rarely change.
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
 </IfModule>

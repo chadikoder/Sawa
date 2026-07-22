@@ -29,7 +29,10 @@ if (in_array($currentStatus, ['completed', 'failed', 'cancelled'], true)) {
 }
 
 $refundStatuses = ['failed', 'cancelled'];
-$refundAmount = round((float) $request['amount'] + (float) $request['fee_amount'], 2);
+// Refund exactly what was debited, which is `amount` — the fee is taken out of
+// that amount, not added to it (see php/wallet/cash-out.php). Adding the fee
+// back on top here would credit the user more than the payout ever removed.
+$refundAmount = round((float) $request['amount'], 2);
 $pdo = db();
 $processedAtSql = in_array($status, ['completed', 'failed', 'cancelled'], true) ? ', processed_at = NOW()' : '';
 try {

@@ -20,7 +20,6 @@
 --
 -- This file is idempotent: re-importing will not duplicate tables or seed rows.
 -- =============================================================================
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';
@@ -51,7 +50,11 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     bio             VARCHAR(250) NULL,
     location        VARCHAR(80) NULL,
     birthdate       DATE NULL,
-    gender          ENUM('Male', 'Female') NULL,
+    -- All four values the signup form offers. Listing only Male/Female made
+    -- php/auth/signup.php fail on the other two: strict mode (MySQL 8's
+    -- default) raises "Data truncated for column 'gender'", the signup
+    -- transaction rolls back and the user is bounced with ?error=server.
+    gender          ENUM('Male', 'Female', 'Other', 'Prefer not to say') NULL,
     avatar_path     VARCHAR(500) NULL,
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -465,15 +468,64 @@ CREATE TABLE IF NOT EXISTS receipts (
     total_paid      DECIMAL(12,2) NOT NULL,
     provider_ref    VARCHAR(120) NULL,
     checksum        VARCHAR(64) NOT NULL,
+    -- Unguessable capability token for the guest receipt link. bill_id is
+    -- sequential and therefore enumerable, so it can never be the only thing
+    -- guarding a receipt. Members are authorised by session instead and their
+    -- rows may leave this NULL.
+    access_token    CHAR(64) NULL,
     pdf_path        VARCHAR(500) NULL,
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_receipt_bill (bill_id),
+    UNIQUE KEY uq_receipt_token (access_token),
     KEY idx_receipt_user (user_id, created_at),
     CONSTRAINT fk_receipt_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT fk_receipt_donation FOREIGN KEY (donation_id) REFERENCES donations(id) ON DELETE SET NULL,
     CONSTRAINT fk_receipt_payment FOREIGN KEY (payment_session_id) REFERENCES payment_sessions(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
+-- Migration: user_profiles.gender
+--
+-- Widen the enum on databases created before 'Other' / 'Prefer not to say'
+-- were listed. MODIFY is safe to re-run, but it rebuilds the table, so only
+-- issue it when the definition is actually out of date.
+-- -----------------------------------------------------------------------------
+SET @gender_type := (SELECT COLUMN_TYPE FROM information_schema.COLUMNS
+                      WHERE TABLE_SCHEMA = DATABASE()
+                        AND TABLE_NAME = 'user_profiles'
+                        AND COLUMN_NAME = 'gender');
+SET @sql := IF(@gender_type IS NOT NULL AND @gender_type NOT LIKE '%Prefer not to say%',
+    "ALTER TABLE user_profiles MODIFY COLUMN gender ENUM('Male','Female','Other','Prefer not to say') NULL",
+    'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- -----------------------------------------------------------------------------
+-- Migration: receipts.access_token
+--
+-- The CREATE TABLE above only runs on a fresh database. A database imported
+-- before this column existed keeps its old receipts table, so add the column
+-- and its unique index separately. `ADD COLUMN IF NOT EXISTS` is MariaDB-only,
+-- so this checks information_schema and builds the statement dynamically —
+-- that form works on both MySQL 8 and MariaDB 10.4, and is safe to re-run.
+-- -----------------------------------------------------------------------------
+SET @has_col := (SELECT COUNT(*) FROM information_schema.COLUMNS
+                  WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'receipts'
+                    AND COLUMN_NAME = 'access_token');
+SET @sql := IF(@has_col = 0,
+    'ALTER TABLE receipts ADD COLUMN access_token CHAR(64) NULL AFTER checksum',
+    'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @has_idx := (SELECT COUNT(*) FROM information_schema.STATISTICS
+                  WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'receipts'
+                    AND INDEX_NAME = 'uq_receipt_token');
+SET @sql := IF(@has_idx = 0,
+    'ALTER TABLE receipts ADD UNIQUE KEY uq_receipt_token (access_token)',
+    'DO 0');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

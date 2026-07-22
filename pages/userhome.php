@@ -1290,7 +1290,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
             <div class="cashout-grid">
               <label>
-                Amount ($)
+                Amount to withdraw ($)
                 <input type="number" name="cashout_amount" min="1" step="1" placeholder="50">
               </label>
               <label>
@@ -1300,7 +1300,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
             </div>
 
             <div class="cashout-note">
-              <strong>Processing time:</strong> cash-out and transfer requests usually take <strong>2&ndash;3 business days</strong>. Your balance is verified, the 5% Sawa fee is calculated upfront, and you&rsquo;ll get a status update as soon as your payout is processed.
+              <strong>Processing time:</strong> cash-out and transfer requests usually take <strong>2&ndash;3 business days</strong>. The amount you enter is what leaves your wallet &mdash; the <strong>5% Sawa fee comes out of it</strong>, so a $100 withdrawal pays out $95. You&rsquo;ll get a status update as soon as your payout is processed.
             </div>
 
             <button type="submit" class="btn btn-primary">Request Cash Out</button>

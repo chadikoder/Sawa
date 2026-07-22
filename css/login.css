@@ -5,7 +5,7 @@
     --blue-dark: var(--color-primary-dark);
     /* Control borders must clear 3:1 (WCAG 1.4.11); see --color-border-control
        in tokens.css. Only used by .input-wrap input here. */
-    --border: var(--color-border-control, #75899f);
+    --border: var(--color-border-control, #868d96);
     --text-body: #1e293b;
     --text-label: #374151;
     --text-muted: var(--color-text-muted);
@@ -243,7 +243,7 @@ label {
     -webkit-appearance: none;
     width: 1.8rem;
     height: 1.8rem;
-    border: 1.5px solid var(--color-border-control, #75899f);
+    border: 1.5px solid var(--color-border-control, #868d96);
     border-radius: 0.5rem;
     background: #fff;
     display: inline-grid;

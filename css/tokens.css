@@ -48,8 +48,12 @@ html {
   --color-border:         #e5e7eb;
   /* Border for interactive controls (inputs, selects, checkboxes). Must stay
      >=3:1 against the field background per WCAG 1.4.11 — this is why it is
-     darker than --color-border, which is decorative only (cards, dividers). */
-  --color-border-control: #75899f;
+     darker than --color-border, which is decorative only (cards, dividers).
+     Neutral grey, not slate: the previous #75899f (3.60:1) carried a blue cast
+     that read as heavy on the login/signup fields. #868d96 is 3.35:1 — softer
+     and untinted while still clearing 3:1. Do not lighten further by eye;
+     slate-400 (#94a3b8) is only 2.56:1 and gray-300 is 1.47:1. */
+  --color-border-control: #868d96;
   --color-dark:           #111827;
   --color-dark-soft:      #1e293b;
 
@@ -163,12 +167,17 @@ html[data-theme="dark"] body {
   color: var(--color-text);
 }
 
+/* Controls, not cards — so this takes --color-border-control, not
+   --color-border. This selector is (0,1,2) and outranks the page-level
+   `.input-wrap input` (0,1,1), so whatever it sets is what the field
+   actually paints; pointing it at the decorative token silently undid the
+   3:1 fix and left every dark-mode field at 1.72:1. */
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select {
   background-color: #0f172a;
   color: var(--color-text);
-  border-color: var(--color-border);
+  border-color: var(--color-border-control);
 }
 
 html[data-theme="dark"] input::placeholder,

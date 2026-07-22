@@ -30,10 +30,18 @@ if ($session && !empty($session['donation_id'])) {
 if ($action === 'confirm') {
     try {
         PaymentService::confirm($token, 'DEV-' . strtoupper(substr($token, 0, 8)));
-        Response::redirectStatus('pages/userhome.php', 'payment_confirmed', $returnExtra);
     } catch (Throwable) {
         Response::redirectStatus('pages/userhome.php', 'payment_failed', $returnExtra);
     }
+
+    // Deliberately outside the try above and after confirm() has committed: a
+    // guest has no account, so this link is their only route to the receipt,
+    // but failing to send it must not report the payment as failed.
+    if ($session && !empty($session['donation_id'])) {
+        ReceiptService::emailGuestCopy((int) $session['donation_id']);
+    }
+
+    Response::redirectStatus('pages/userhome.php', 'payment_confirmed', $returnExtra);
 }
 
 PaymentService::fail($token);

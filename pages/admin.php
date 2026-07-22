@@ -153,7 +153,7 @@ function admin_badge(string $value, ?string $tone = null): string
 
 function admin_route(string $section = 'overview', ?int $id = null): string
 {
-    $path = '/admin' . ($section !== 'overview' ? '/' . $section : '');
+    $path = BASE_PATH . '/admin' . ($section !== 'overview' ? '/' . $section : '');
     return $id !== null ? $path . '/' . $id : $path;
 }
 
@@ -499,11 +499,11 @@ $notice = $_GET['status'] ?? null;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/tokens.css">
-    <link rel="stylesheet" href="/css/admin.css">
-    <link rel="icon" href="/images/sawa.svg" type="image/svg+xml">
-    <script src="/js/theme.js"></script>
-    <script src="/js/admin.js" defer></script>
+    <link rel="stylesheet" href="<?= url('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= url('css/admin.css') ?>">
+    <link rel="icon" href="<?= url('images/sawa.svg') ?>" type="image/svg+xml">
+    <script src="<?= url('js/theme.js') ?>"></script>
+    <script src="<?= url('js/admin.js') ?>" defer></script>
     <title><?= admin_e($current[0]) ?> — SAWA Admin</title>
 </head>
 <body class="admin-page">
@@ -512,7 +512,7 @@ $notice = $_GET['status'] ?? null;
     <aside class="admin-sidebar" id="admin-sidebar">
         <div class="admin-brand">
             <a href="<?= admin_route() ?>" aria-label="SAWA Admin overview">
-                <img src="/images/sawa_v2.svg" alt="">
+                <img src="<?= url('images/sawa_v2.svg') ?>" alt="">
                 <span><strong>SAWA Admin</strong><small>Control Center</small></span>
             </a>
             <button class="admin-icon-btn" type="button" data-sidebar-toggle aria-label="Collapse sidebar">⇤</button>
@@ -543,7 +543,7 @@ $notice = $_GET['status'] ?? null;
             <button class="admin-icon-btn" type="button" data-menu-toggle="admin-profile-menu" aria-label="Open admin menu">•••</button>
             <div class="admin-menu" id="admin-profile-menu" hidden>
                 <a href="<?= admin_route('settings') ?>">Settings</a>
-                <a href="/php/auth/logout.php">Log out</a>
+                <a href="<?= url('php/auth/logout.php') ?>">Log out</a>
             </div>
         </div>
     </aside>
@@ -915,7 +915,7 @@ function render_organizations_table(array $rows): void
     echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th><input type="checkbox"></th><th>Organization</th><th>ID</th><th>Representative</th><th>Campaigns</th><th>Transaction Value</th><th>Registration</th><th>Verification</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $status = (int) $row['verified'] === 1 ? 'approved' : ((int) $row['rejected'] === 1 ? 'rejected' : 'pending');
-        echo '<tr><td><input type="checkbox"></td><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="/php/admin/verify-organisation.php" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
+        echo '<tr><td><input type="checkbox"></td><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="' . url('php/admin/verify-organisation.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
     }
     if (!$rows) { echo admin_empty_row(9, 'organizations', 'No organizations yet', 'Approved NGOs will appear here once they finish onboarding.'); }
     echo '</tbody></table></div></section>';
@@ -936,11 +936,11 @@ function render_users_table(array $rows): void
         if ($isSelf) {
             $actionCell = '<span class="admin-self-note" aria-label="This is you">— you —</span>';
         } elseif ((int) $row['active'] === 1) {
-            $actionCell = '<form action="/php/admin/update-user.php" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field()
+            $actionCell = '<form action="' . url('php/admin/update-user.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field()
                 . '<input type="hidden" name="user_id" value="' . $rowId . '">'
                 . '<button name="action" value="suspend" class="is-danger">Suspend</button></form>';
         } else {
-            $actionCell = '<form action="/php/admin/update-user.php" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field()
+            $actionCell = '<form action="' . url('php/admin/update-user.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field()
                 . '<input type="hidden" name="user_id" value="' . $rowId . '">'
                 . '<button name="action" value="activate">Activate</button></form>';
         }
@@ -988,12 +988,12 @@ function render_campaigns_table(array $rows): void
                 $primary = '<button name="action" value="pending">Move to pending</button>';
         }
 
-        $updateForm = '<form action="/php/admin/update-campaign.php" method="POST" class="admin-inline-form" data-confirm-action>'
+        $updateForm = '<form action="' . url('php/admin/update-campaign.php') . '" method="POST" class="admin-inline-form" data-confirm-action>'
             . $csrf . '<input type="hidden" name="campaign_id" value="' . $id . '">'
             . $primary . implode('', $secondary) . implode('', $overflow)
             . '</form>';
 
-        $deleteForm = '<form action="/php/admin/delete-campaign.php" method="POST" class="admin-inline-form" data-confirm-action data-confirm-message="Deleting a campaign is permanent. Continue?">'
+        $deleteForm = '<form action="' . url('php/admin/delete-campaign.php') . '" method="POST" class="admin-inline-form" data-confirm-action data-confirm-message="Deleting a campaign is permanent. Continue?">'
             . $csrf . '<input type="hidden" name="campaign_id" value="' . $id . '">'
             . '<button class="is-danger" aria-label="Delete campaign">Delete</button>'
             . '</form>';
@@ -1008,7 +1008,7 @@ function render_reports_table(array $rows): void
 {
     echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>Report ID</th><th>Reporter</th><th>Entity</th><th>Reason</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
-        echo '<tr><td>RPT-' . (int) $row['id'] . '</td><td>' . admin_e($row['reporter_name'] ?? 'Guest') . '</td><td>' . admin_e($row['target_type']) . ' #' . (int) $row['target_id'] . '</td><td><strong>' . admin_e($row['reason']) . '</strong><span>' . admin_e($row['details']) . '</span></td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge((string) $row['status']) . '</td><td><form action="/php/admin/moderate-content.php" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="report_id" value="' . (int) $row['id'] . '"><button name="action" value="resolve">Resolve</button><button name="action" value="dismiss">Dismiss</button></form></td></tr>';
+        echo '<tr><td>RPT-' . (int) $row['id'] . '</td><td>' . admin_e($row['reporter_name'] ?? 'Guest') . '</td><td>' . admin_e($row['target_type']) . ' #' . (int) $row['target_id'] . '</td><td><strong>' . admin_e($row['reason']) . '</strong><span>' . admin_e($row['details']) . '</span></td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge((string) $row['status']) . '</td><td><form action="' . url('php/admin/moderate-content.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="report_id" value="' . (int) $row['id'] . '"><button name="action" value="resolve">Resolve</button><button name="action" value="dismiss">Dismiss</button></form></td></tr>';
     }
     if (!$rows) { echo admin_empty_row(7, 'reports', 'No reports right now', 'A quiet queue is a good sign — new reports will show up here.'); }
     echo '</tbody></table></div></section>';
@@ -1051,7 +1051,7 @@ function render_cashouts_panel(array $rows): void
 {
     echo '<section class="admin-panel"><div class="admin-panel-head"><div><h2>Cash-Out Requests</h2><span>Real cash-out workflow.</span></div></div><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>User</th><th>Method</th><th>Net</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
-        echo '<tr><td><strong>' . admin_e($row['full_name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>' . admin_e($row['method']) . '</td><td>' . admin_money($row['net_amount']) . '</td><td>' . admin_badge((string) $row['status']) . '</td><td><form action="/php/admin/cash-out.php" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="request_id" value="' . (int) $row['id'] . '"><button name="action" value="processing">Processing</button><button name="action" value="completed">Complete</button><button name="action" value="failed" class="is-danger">Fail</button></form></td></tr>';
+        echo '<tr><td><strong>' . admin_e($row['full_name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>' . admin_e($row['method']) . '</td><td>' . admin_money($row['net_amount']) . '</td><td>' . admin_badge((string) $row['status']) . '</td><td><form action="' . url('php/admin/cash-out.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="request_id" value="' . (int) $row['id'] . '"><button name="action" value="processing">Processing</button><button name="action" value="completed">Complete</button><button name="action" value="failed" class="is-danger">Fail</button></form></td></tr>';
     }
     if (!$rows) { echo admin_empty_row(5, 'wallets', 'No cash-outs pending', 'Approved cash-out requests will queue here for processing.'); }
     echo '</tbody></table></div></section>';

@@ -6,13 +6,13 @@ final class Response
     public static function redirect(string $path, array $query = []): never
     {
         if (!str_starts_with($path, 'http')) {
-            if (str_starts_with($path, '/')) {
-                $url = $path;
-            } elseif (str_starts_with($path, 'pages/') || str_starts_with($path, '../')) {
-                $url = '/' . ltrim(str_replace('../', '', $path), '/');
-            } else {
-                $url = '/' . ltrim($path, '/');
-            }
+            // Every target is a project-relative path ('pages/login.php').
+            // Prefixing BASE_PATH keeps redirects working when the project is
+            // served from a subdirectory such as http://localhost/sawa/ —
+            // without it Apache sends the browser to /pages/login.php, which
+            // is outside the app and 404s.
+            $base = defined('BASE_PATH') ? BASE_PATH : '';
+            $url = $base . '/' . ltrim(str_replace('../', '', $path), '/');
         } else {
             $url = $path;
         }

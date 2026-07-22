@@ -57,8 +57,17 @@ final class Upload
         return trim($subdir, '/\\') . '/' . $name;
     }
 
+    /**
+     * URL for a stored upload, for use in an <img src>.
+     *
+     * Host-relative via url(), not absolute via APP_URL. Every caller drops
+     * this straight into markup, where a host is unnecessary, and APP_URL is
+     * whatever the bundled .env happened to say on the author's machine — so
+     * on a handed-over copy served from a different folder every avatar and
+     * campaign image resolved to an address that does not exist.
+     */
     public static function publicUrl(string $relativePath): string
     {
-        return APP_URL . '/storage/uploads/' . ltrim(str_replace('\\', '/', $relativePath), '/');
+        return url('storage/uploads/' . ltrim(str_replace('\\', '/', $relativePath), '/'));
     }
 }

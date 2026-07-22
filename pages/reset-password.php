@@ -3,7 +3,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/php/bootstrap.php';
 $token = trim((string) ($_GET['token'] ?? ''));
 if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
-    Response::redirect('forgot-password.php');
+    Response::redirect('pages/forgot-password.php');
 }
 ?>
 <!DOCTYPE html>
