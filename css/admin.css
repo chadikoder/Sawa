@@ -59,21 +59,8 @@ body.admin-page select {
   z-index: 30;
 }
 
-.admin-shell.is-collapsed {
-  grid-template-columns: 8rem minmax(0, 1fr);
-}
-
-.admin-shell.is-collapsed .admin-sidebar {
-  padding-inline: 1.2rem;
-}
-
-.admin-shell.is-collapsed .admin-brand span,
-.admin-shell.is-collapsed .admin-nav p,
-.admin-shell.is-collapsed .admin-nav a span:last-of-type,
-.admin-shell.is-collapsed .admin-profile-card > div,
-.admin-shell.is-collapsed .admin-nav b {
-  display: none;
-}
+/* The .is-collapsed rules went with the toggle that set them — an 8rem icon
+   rail with every nav label hidden. Nothing sets the class now. */
 
 .admin-brand {
   display: flex;
@@ -1967,4 +1954,65 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* ── Mobile sidebar drawer ─────────────────────────────────────────────────
+   Below 1024px the sidebar leaves the grid and becomes a drawer, but it was
+   only given `position: fixed` and a transform. Three things followed from
+   that:
+
+   1. No backdrop. The drawer slid over the page with the content still at full
+      contrast right beside it, so it read as two screens overlapping rather
+      than a panel above one. js/admin.js already closes on any click outside
+      .admin-sidebar, so the backdrop is drawn on .admin-workspace and needs no
+      handler of its own — and no extra element in the markup.
+   2. Nothing pinned it. With no top/left/width it fell back to whatever static
+      position the collapsed grid left it in, and its width came from its
+      content instead of the 26rem it is designed at.
+   3. No scrolling. The nav is taller than a phone screen, so Notifications and
+      Settings — the last two entries — could not be reached at all.
+
+   The drawer also starts below the topbar rather than at the top of the
+   viewport. The burger becomes an X while the drawer is open, and a full-height
+   drawer covered it, so the control that now looks like a close button could
+   not be pressed. Raising the button was not enough: .admin-topbar is
+   `position: sticky; z-index: 20`, which is its own stacking context, so no
+   z-index on a child inside it can rise above the drawer. Leaving the bar
+   uncovered keeps the X visible and pressable, and matches the guest menu,
+   which also drops from under its header. */
+@media (max-width: 1024px) {
+  /* Topbar min-height 7.2rem plus its 1px bottom border. */
+  .admin-sidebar {
+    top: 7.3rem;
+    left: 0;
+    width: 26rem;
+    max-width: 86vw;
+    height: calc(100svh - 7.3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 12px 0 32px rgba(15, 23, 42, 0.18);
+  }
+
+  /* The scroll belongs on the link list, not the panel. The sidebar is a flex
+     column of brand / nav / profile card; overflow on the panel did nothing
+     because flex had already shrunk those three to fit, so its scrollHeight
+     never exceeded its height and Notifications and Settings simply could not
+     be reached. `min-height: 0` is what allows a flex item to shrink below its
+     content and therefore to scroll at all. The brand stays at the top and the
+     admin's own card stays pinned at the bottom. */
+  .admin-nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .admin-shell.is-mobile-open .admin-workspace::before {
+    content: '';
+    position: fixed;
+    inset: 7.3rem 0 0 0;
+    background: rgba(15, 23, 42, 0.45);
+    /* Below the sidebar (30) so the drawer stays lit, above the content. */
+    z-index: 25;
+  }
 }

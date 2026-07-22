@@ -22,6 +22,9 @@
     { button: '.site-header-burger', panel: '#guest-drawer', openClass: 'is-open' },
     // about-us.php — shared nav component
     { button: '.nav-hamburger', panel: '#nav-links', openClass: 'open' },
+    // admin.php — the sidebar drawer. The open state lives on the shell, not
+    // on the sidebar itself (.admin-shell.is-mobile-open .admin-sidebar).
+    { button: '.admin-mobile-menu', panel: '[data-admin-shell]', openClass: 'is-mobile-open' },
   ];
 
   PAIRS.forEach(function (pair) {

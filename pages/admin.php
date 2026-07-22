@@ -525,6 +525,8 @@ $notice = $_GET['status'] ?? null;
     <link rel="icon" href="<?= url('images/sawa.svg') ?>" type="image/svg+xml">
     <script src="<?= asset('js/theme.js') ?>"></script>
     <script src="<?= asset('js/admin.js') ?>" defer></script>
+    <!-- defer on both, so this runs after admin.js has bound the button. -->
+    <script src="<?= asset('js/burger.js') ?>" defer></script>
     <title><?= admin_e($current[0]) ?> — SAWA Admin</title>
 </head>
 <body class="admin-page">
@@ -536,7 +538,12 @@ $notice = $_GET['status'] ?? null;
                 <img src="<?= url('images/sawa_v2.svg') ?>" alt="">
                 <span><strong>SAWA Admin</strong><small>Control Center</small></span>
             </a>
-            <button class="admin-icon-btn" type="button" data-sidebar-toggle aria-label="Collapse sidebar">⇤</button>
+            <?php /* The collapse toggle is gone. It shrank the sidebar to an
+                     8rem icon rail with every label hidden, which made the
+                     console harder to read for no gain — on desktop the
+                     sidebar is a permanent column, and below 1024px it is a
+                     drawer that leaves entirely. The same rail was removed
+                     from the member sidebar for the same reason. */ ?>
         </div>
 
         <nav class="admin-nav" aria-label="Admin navigation">

@@ -32,19 +32,11 @@
         }
     };
 
-    if (localStorage.getItem('sawa-admin-sidebar') === 'collapsed') {
-        shell.classList.add('is-collapsed');
-    }
-
-    document.querySelectorAll('[data-sidebar-toggle]').forEach((button) => {
-        button.addEventListener('click', () => {
-            shell.classList.toggle('is-collapsed');
-            localStorage.setItem(
-                'sawa-admin-sidebar',
-                shell.classList.contains('is-collapsed') ? 'collapsed' : 'expanded'
-            );
-        });
-    });
+    /* The sidebar collapse handler went with its button. It shrank the column
+       to an icon rail and hid every label; the state was also persisted, so an
+       admin who collapsed it once got a rail of unlabelled icons on every
+       later visit with no memory of why. */
+    localStorage.removeItem('sawa-admin-sidebar');
 
     document.querySelectorAll('[data-mobile-menu]').forEach((button) => {
         button.addEventListener('click', (event) => {
