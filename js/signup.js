@@ -158,15 +158,9 @@ function validateBasicInfo() {
     let valid = true;
     clearAllErrors();
 
-    // Bio is optional. The server already stores NULL for a blank one, and
-    // nothing downstream needs it — only enforce the minimum once the user has
-    // actually written something.
-    const bio = document.getElementById('user_description_basic');
-    const bioText = bio.value.trim();
-    if (bioText.length > 0 && bioText.length < 10) {
-        showError(bio, 'Either write at least 10 characters or leave the bio empty');
-        valid = false;
-    }
+    // Bio is not validated at all: it is optional, has no minimum, and the
+    // server stores NULL when it is blank. The maxlength attribute on the
+    // textarea already caps it at 250, which is the only limit that matters.
 
     const location = document.getElementById('user_location');
     if (location.value.trim().length < 2) {
@@ -181,13 +175,7 @@ function validateOrgInfo() {
     let valid = true;
     clearAllErrors();
 
-    // Optional, same as the personal bio above.
-    const bio = document.getElementById('user_description_org');
-    const bioText = bio.value.trim();
-    if (bioText.length > 0 && bioText.length < 10) {
-        showError(bio, 'Either write at least 10 characters or leave the bio empty');
-        valid = false;
-    }
+    // Optional and unvalidated, same as the personal bio above.
 
     const contact = document.getElementById('user_contact');
     if (!PHONE_RE.test(contact.value.trim())) {
