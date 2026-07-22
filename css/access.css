@@ -37,7 +37,7 @@ body {
        action card sit one above the other, and the panel was eating 650px of a
        ~780px window, pushing "Get Started" and both buttons entirely below the
        fold. The >=768px block restores the roomier desktop padding. */
-    padding: 2.8rem 2.4rem 2rem;
+    padding: 2rem 2.4rem 1.2rem;
     animation: fadeUp 0.6s ease both;
     text-align: center;
 }
@@ -51,8 +51,8 @@ body {
 }
 
 .logo_image {
-    width: 11rem;
-    height: 11rem;
+    width: 9rem;
+    height: 9rem;
     filter: drop-shadow(0 6px 16px rgba(0,0,0,0.12));
 }
 
@@ -101,10 +101,10 @@ body {
 
 /* Value proposition */
 .value-prop {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--text);
-    line-height: 1.65;
-    margin-top: 1.6rem;
+    line-height: 1.55;
+    margin-top: 1.2rem;
     max-width: 34rem;
     overflow-wrap: anywhere;
 }
@@ -117,7 +117,11 @@ body {
 .feature-list {
     list-style: none;
     display: flex;
-    flex-direction: column;
+    /* Three across instead of stacked rows. Three full-width rows cost ~184px
+       of a ~780px window; as a row of chips they cost ~70px, which is the
+       single biggest saving available on this screen. Restored to a column at
+       >=768px where the panel has a whole half of the viewport. */
+    flex-direction: row;
     gap: 0.8rem;
     margin-top: 1.2rem;
     width: 100%;
@@ -135,9 +139,14 @@ body {
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.7);
     border-radius: 1.2rem;
-    padding: 1rem 1.2rem;
+    padding: 0.9rem 0.6rem;
     min-width: 0;
+    /* Chip form: icon above the label, centred, sharing the row equally. */
+    flex: 1 1 0;
+    flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
+    text-align: center;
 }
 
 /* Stacked layout only: the icon and title carry the point on their own, and
@@ -152,8 +161,8 @@ body {
 }
 
 .feature-icon {
-    width: 3.6rem;
-    height: 3.6rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 50%;
     background: var(--color-primary-light);
     display: flex;
@@ -169,10 +178,11 @@ body {
 }
 
 .feature-item h4 {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 0.2rem;
+    margin-bottom: 0;
+    line-height: 1.3;
 }
 
 .feature-item p {
@@ -188,10 +198,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.6rem;
+    gap: 0.9rem;
     width: 100%;
     min-width: 0;
-    padding: 3.2rem 2.4rem 0;
+    padding: 1.6rem 2.4rem 0;
     animation: fadeUp 0.6s 0.15s ease both;
 }
 
@@ -300,7 +310,9 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.6rem;
-    padding: 1.6rem 0 1.6rem;
+    /* Trimmed on the stacked layout so the page clears the fold exactly;
+       the >=768px block puts the roomier padding back. */
+    padding: 1.2rem 0 1.2rem;
     margin-top: auto;
     width: 100%;
 }
@@ -414,8 +426,20 @@ html[data-theme="dark"] .theme-toggle--floating:hover {
 
     /* Side by side there is room for the full cards again. */
     .feature-item p { display: block; }
-    .feature-item { align-items: flex-start; padding: 1.2rem 1.4rem; }
-    .feature-list { gap: 1.2rem; margin-top: 2rem; }
+    .feature-item {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+        padding: 1.2rem 1.4rem;
+        gap: 1.2rem;
+    }
+    .feature-item h4 { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .feature-icon { width: 3.6rem; height: 3.6rem; }
+    .feature-list { flex-direction: column; gap: 1.2rem; margin-top: 2rem; }
+    .logo_image { width: 11rem; height: 11rem; }
+    .value-prop { font-size: 1.5rem; line-height: 1.65; margin-top: 1.6rem; }
+    .action-card { gap: 1.6rem; }
+    .footer { padding: 1.6rem 0; }
 
     .action-card {
         width: 40rem;
