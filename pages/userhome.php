@@ -428,7 +428,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
                 <!-- Jumps to Activity & Bills section (which lists the full
                      notification + donation history). Uses data-section so the
                      existing catch-all click handler handles section switching. -->
-                <a href="#" class="dash-notif-foot" data-section="notifications">View all notifications</a>
+                <?php /* A <button>, not <a href="#">. The in-page jump handler in
+                         js/userhome.js deliberately ignores any anchor that has an
+                         href so real links keep working — so this one fell through
+                         to the browser, which jumped to "#" and left no section
+                         active at all, showing a blank page. */ ?>
+                  <button type="button" class="dash-notif-foot" data-section="notifications">View all notifications</button>
               </div>
             </div>
             <button class="dash-cta donor-only" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">

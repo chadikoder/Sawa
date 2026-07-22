@@ -2734,7 +2734,13 @@ html[data-theme="dark"] .cashout-grid input {
     background: var(--color-surface);
     z-index: 1;
   }
-  .dash-notif-foot {
+  /* Now a <button>; these keep it looking like the link it replaced. */
+.dash-notif-foot {
+  width: 100%;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
     position: sticky;
     bottom: 0;
     background: var(--color-surface);
