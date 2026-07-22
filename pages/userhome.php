@@ -247,9 +247,9 @@ $partial = dirname(__DIR__) . '/php/partials/';
           <img src="../images/sawa_v2.svg" alt="Sawa">
         </div>
         <span>Sawa</span>
-        <button class="sidebar-toggle" aria-label="Collapse sidebar" title="Collapse sidebar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
+        <?php /* Collapse toggle removed: the rail it produced flashed on
+                   every click and the sidebar is either a permanent column
+                   (desktop) or a drawer (mobile) — neither needs a half state. */ ?>
       </div>
 
       <!-- User profile card (auth only). Tapping the card opens the Profile

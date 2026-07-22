@@ -6685,16 +6685,8 @@ body.is-guest #discover .discover-filters {
    - Main content is centered with comfortable max-width
    ════════════════════════════════════════════════════════════ */
 
-/* The desktop collapse toggle used to be killed here — the button was
-   display:none !important and .collapsed was neutralised back to full width,
-   so on desktop the sidebar could not be closed at all. Both are restored; the
-   real collapsed styling lives at ".sidebar.collapsed" further up (6rem rail,
-   labels hidden). The drawer on mobile is unaffected: .sidebar-toggle only
-   appears inside .sidebar-brand, which the drawer also shows. */
-@media (max-width: 768px) {
-  /* No collapsing inside the drawer — it slides away instead. */
-  .sidebar-toggle { display: none; }
-}
+/* The collapse toggle and its .sidebar.collapsed rail were removed entirely —
+   see the note in js/userhome.js. Nothing sets .collapsed any more. */
 
 /* Sidebar drawer definition consolidated to the top of this file — see the
    `.sidebar` rule under "--- Layout ---". It fixes two bugs reported here:

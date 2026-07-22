@@ -1,5 +1,5 @@
 // Press feedback for nav/sidebar/buttons on all devices
-document.querySelectorAll('nav a, .sidebar-item, .sidebar-toggle, .sidebar-user, .bottom-nav-item, .btn, .action-btn').forEach(el => {
+document.querySelectorAll('nav a, .sidebar-item, .sidebar-user, .bottom-nav-item, .btn, .action-btn').forEach(el => {
   el.addEventListener('mousedown', () => el.classList.add('pressed'));
   el.addEventListener('touchstart', () => el.classList.add('pressed'), {passive: true});
   el.addEventListener('mouseup', () => el.classList.remove('pressed'));
@@ -207,6 +207,27 @@ function openSidebar() {
 
 document.querySelector('.mobile-overlay')?.addEventListener('click', closeSidebar);
 
+/* Clicking anywhere outside the drawer closes it. The overlay above covers the
+   mobile case, but the overlay is hidden from 769px up — so a drawer left open
+   while the window was narrow stayed open and unclosable after a resize to
+   desktop, with the page still scroll-locked behind it. */
+document.addEventListener('click', (e) => {
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar || !sidebar.classList.contains('open')) return;
+  if (e.target.closest('.sidebar')) return;              // inside the drawer
+  if (e.target.closest('[data-open-sidebar], .site-header-user, .site-header-burger')) return;
+  closeSidebar();
+});
+
+/* Crossing into desktop turns the drawer back into a permanent column, so any
+   leftover open state (and its scroll lock) has to be cleared or the page
+   stays frozen with no visible way out. */
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768 && document.querySelector('.sidebar')?.classList.contains('open')) {
+    closeSidebar();
+  }
+});
+
 /* Sidebar user card → opens profile section (and closes drawer on mobile) */
 document.querySelector('.sidebar-user')?.addEventListener('click', () => {
   switchSection('profile');
@@ -271,9 +292,10 @@ document.addEventListener('keydown', e => {
 });
 
 /* ── Sidebar collapse (desktop toggle) ── */
-document.querySelector('.sidebar-toggle')?.addEventListener('click', () => {
-  document.querySelector('.sidebar').classList.toggle('collapsed');
-});
+/* The .sidebar-toggle collapse handler was removed along with its button: the
+   6rem icon rail it switched to flashed on every click and served no purpose —
+   on desktop the sidebar is a permanent column, on mobile it is a drawer that
+   slides away entirely. */
 
 /* ── Discover filter / search / sort engine ── */
 (function() {
