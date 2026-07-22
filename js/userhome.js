@@ -753,11 +753,70 @@ document.getElementById('review-back-btn')?.addEventListener('click', () => {
   showModalStep('modal-step-payment');
 });
 
-document.getElementById('donate-form')?.addEventListener('submit', () => {
+/* Wallet donations complete without leaving the campaign: the server settles
+   them in one transaction, so there is nothing to redirect to. The donors list
+   and the progress bar refresh in place and the donor sees their own name
+   appear — which is the point of donating from a campaign page.
+   Card and Whish still submit normally, because they must hand off to the
+   provider's hosted page; nothing here can change that. */
+document.getElementById('donate-form')?.addEventListener('submit', async (e) => {
+  const form = e.target;
   const btn = document.getElementById('confirm-donate-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Redirecting...';
+  const method = document.getElementById('modal-payment-method')?.value;
+
+  if (method !== 'wallet') {
+    if (btn) { btn.disabled = true; btn.textContent = 'Redirecting...'; }
+    return;                                   // let the browser post normally
+  }
+
+  e.preventDefault();
+  if (btn) { btn.disabled = true; btn.textContent = 'Paying...'; }
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch' },
+    });
+    const data = await res.json();
+    if (!data || !data.ok) {
+      const msg = data && data.error === 'wallet_short'
+        ? 'Not enough in your Sawa Wallet. Top up or pick another method.'
+        : 'Payment failed. Please try again.';
+      if (typeof showToast === 'function') showToast(msg, true);
+      return;
+    }
+
+    const campId = document.getElementById('modal-camp-id-hidden')?.value;
+    if (typeof loadCampaignDonors === 'function') loadCampaignDonors(campId);
+
+    // Keep the card and the modal in step with the new total.
+    if (data.goal > 0) {
+      const pct = Math.min(100, Math.round((data.raised / data.goal) * 100));
+      const fill = document.getElementById('modal-progress-fill');
+      if (fill) fill.style.width = pct + '%';
+      const raisedEl = document.getElementById('modal-raised');
+      if (raisedEl) raisedEl.textContent = '$' + Math.round(data.raised).toLocaleString();
+      const card = document.querySelector(`.camp-card[data-camp-id="${CSS.escape(String(campId))}"]`);
+      if (card) {
+        card.dataset.raised = Math.round(data.raised);
+        card.querySelector('.progress-fill')?.style.setProperty('width', pct + '%');
+        const cr = card.querySelector('.camp-raised strong');
+        if (cr) cr.textContent = '$' + Math.round(data.raised).toLocaleString();
+        const cp = card.querySelector('.camp-pct');
+        if (cp) cp.textContent = pct + '%';
+      }
+    }
+    const wallet = document.getElementById('wallet-balance');
+    if (wallet && typeof data.balance === 'number') {
+      wallet.textContent = data.balance.toFixed(2);
+    }
+
+    if (typeof cmSwitchTab === 'function') cmSwitchTab('donors');
+    if (typeof showToast === 'function') showToast('Thank you — your donation is confirmed.');
+  } catch (err) {
+    form.submit();                             // fall back to the normal post
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirm donation'; }
   }
 });
 
@@ -974,7 +1033,36 @@ window.addEventListener('orientationchange', () => window.setTimeout(updateBotto
     }
   });
 
-  printBtn?.addEventListener('click', () => window.print());
+  /* Print the receipt, not the dashboard.
+     window.print() on its own sent the whole page to the printer — sidebar,
+     bottom bar, every section, the lot. A print stylesheet alone is fragile
+     here because the receipt sits several levels deep inside scrolling,
+     clipped containers, and any one of those ancestors can crop it on paper.
+     Cloning the .bill-paper to a container at <body> level sidesteps all of
+     that: the print rules then only have to hide the siblings. */
+  printBtn?.addEventListener('click', () => {
+    const paper = document.querySelector('#bill-preview .bill-paper');
+    if (!paper) { window.print(); return; }
+
+    document.getElementById('print-root')?.remove();
+    const root = document.createElement('div');
+    root.id = 'print-root';
+    root.appendChild(paper.cloneNode(true));
+    document.body.appendChild(root);
+    document.body.classList.add('is-printing');
+
+    // afterprint covers both "printed" and "cancelled"; the timeout is the
+    // fallback for browsers that never fire it, so the clone can't be left
+    // behind in the DOM.
+    const cleanup = () => {
+      document.body.classList.remove('is-printing');
+      root.remove();
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+    setTimeout(cleanup, 1000);
+  });
 })();
 
 /* ── Dashboard search bridge → forwards to the Discover filter engine ── */

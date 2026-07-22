@@ -9,6 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 Csrf::validate();
 
+// A wallet donation completes entirely on the server — no provider redirect —
+// so the modal can post it with fetch and stay on the campaign. Card and Whish
+// cannot work this way: they must hand off to the provider's hosted page.
+$wantsJson = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    || (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json'));
+
 $campaignId = (int) ($_POST['campaign_id'] ?? 0);
 $amount = (float) ($_POST['amount'] ?? 0);
 $method = (string) ($_POST['payment_method'] ?? 'whish');
@@ -80,6 +86,21 @@ try {
                 // ignored — the donation is already durable
             }
         }
+        if ($wantsJson) {
+            $fresh = CampaignService::find($campaignId);
+            json_response([
+                'ok' => true,
+                'donation_id' => $donationId,
+                'amount' => $breakdown['donation'],
+                'fee' => $breakdown['fee'],
+                'total' => $breakdown['total'],
+                // Returned so the modal can update the progress bar without a
+                // second request or a guess at the new total.
+                'raised' => (float) ($fresh['raised_amount'] ?? 0),
+                'goal' => (float) ($fresh['goal_amount'] ?? 0),
+                'balance' => WalletService::balance((int) $donorId),
+            ]);
+        }
         Response::redirectStatus('pages/userhome.php', 'payment_confirmed', $returnExtra);
     }
 
@@ -102,6 +123,9 @@ try {
     // throws this before writing anything, so nothing needs undoing beyond the
     // rollback above.
     $status = $e->getMessage() === 'insufficient_balance' ? 'wallet_short' : 'payment_failed';
+    if ($wantsJson) {
+        json_error($status, 422);
+    }
     Response::redirectStatus('pages/userhome.php', $status, $returnExtra ?? []);
 }
 

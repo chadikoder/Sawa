@@ -10375,3 +10375,170 @@ html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
 .cm-donor-amount { font-size: 1.4rem; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
 /* The viewer's own contribution, so it is findable in a long list. */
 .cm-donor-row.is-you { background: var(--color-primary-light); border-radius: var(--r); padding-inline: 1rem; }
+
+/* ── Bell in the top nav ───────────────────────────────────────────────────
+   Moved out of the dashboard header so it is reachable from every section,
+   not just the dashboard, and so it stops being cropped on narrow screens.
+   The wrap must stay positioned: the dropdown is absolute against it. */
+.site-header-inner .dash-bell-wrap {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.site-header-inner .dash-bell-wrap + .theme-toggle { margin-left: 0.4rem; }
+
+/* Breathing room for the nav row and its links — items were sitting shoulder
+   to shoulder with no space to read them apart. */
+.site-header-inner {
+  gap: 1.2rem;
+  padding-inline: 2rem;
+}
+.site-header-nav {
+  gap: 0.6rem;
+}
+.site-header-nav .site-nav-link {
+  padding: 0.7rem 1.2rem;
+  border-radius: 9999px;
+}
+.site-header-nav .site-nav-link:hover {
+  background: var(--color-primary-light);
+}
+
+/* Centred under the bell, not pinned to one of its edges.
+
+   The bell used to live at the far right of the dashboard header, so the panel
+   was right-anchored; a later rule left-anchored it under 900px to stop it
+   running off screen. Now the bell sits beside the user chip near the LEFT, and
+   both of those look wrong — the card hangs off to one side of the button that
+   opened it. Centring keeps the panel visually attached to the bell at every
+   width above the phone sheet.
+
+   translateX(-50%) does the centring, so it has to be repeated in the open
+   state or the entrance transition would drop it and the panel would jump. */
+@media (min-width: 521px) {
+  .site-header-inner .dash-notif-panel {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(-6px) scale(0.98);
+  }
+  .site-header-inner .dash-bell-wrap.open .dash-notif-panel {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  /* Room to breathe: the rows sat tight against the card edges and against
+     each other, which made a three-line notification hard to read. */
+  .site-header-inner .dash-notif-panel .dash-notif-hit {
+    padding: 1.6rem 2rem;
+    gap: 1.4rem;
+  }
+  .site-header-inner .dash-notif-panel .dash-notif-head,
+  .site-header-inner .dash-notif-panel .dash-notif-foot {
+    padding-inline: 2rem;
+  }
+  .site-header-inner .dash-notif-panel .dash-notif-head {
+    padding-block: 1.6rem;
+  }
+}
+
+/* Bell sits next to the user chip, with room around it rather than jammed
+   against the name.
+
+   The chip carries `margin-right: auto` (the --user-lead variant uses it to
+   push the nav to the far right). That auto margin absorbs all the free space
+   in the flex row, so the bell was landing 237px away from the name instead of
+   beside it. The auto margin moves onto the bell: chip and bell stay together
+   on the left, everything after them still gets pushed right. Matching the
+   Three separate rules set that auto margin, the strongest being
+   `body.is-auth .site-header.auth-only .site-header-user` — so the override
+   has to carry the same `body.is-auth` prefix to outrank it. */
+body.is-auth .site-header.auth-only .site-header-user,
+.site-header.site-header--user-lead.auth-only .site-header-user,
+.site-header--user-lead .site-header-user { margin-right: 0; }
+.site-header-inner .dash-bell-wrap {
+  margin-left: 0.8rem;
+  margin-right: auto;
+}
+
+/* Why the two provider options are disabled, said once, under them. */
+.payment-method-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin: 0 0 1.2rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--r);
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+.payment-method-note svg { width: 1.8rem; height: 1.8rem; flex-shrink: 0; color: var(--color-warning); }
+.payment-method-note a { color: var(--color-primary); font-weight: 600; }
+
+/* The theme toggle is a settings row control now, not a floating header button. */
+.settings-row .theme-toggle { flex-shrink: 0; margin-left: auto; }
+
+/* ── Printing ──────────────────────────────────────────────────────────────
+   The Print button beside a receipt used to hand the entire dashboard to the
+   printer. js/userhome.js clones the receipt into #print-root at <body> level
+   first; these rules blank out everything else so only that clone reaches the
+   page. `display: none` on the siblings rather than `visibility: hidden` — a
+   hidden element still reserves its box, which produced pages of blank paper
+   before the receipt appeared. */
+@media print {
+  @page { margin: 14mm; }
+
+  body.is-printing > *:not(#print-root) { display: none !important; }
+
+  body.is-printing {
+    background: #fff;
+    display: block;
+    min-height: 0;
+  }
+
+  #print-root {
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Backgrounds and tints are dropped by default when printing; the receipt
+     reads fine without them, so rather than forcing colour adjustment we make
+     sure the borders that carry the structure stay visible. */
+  #print-root .bill-paper {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border: 1px solid #94a3b8;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+    page-break-inside: avoid;
+  }
+
+  /* Nothing interactive belongs on paper. */
+  #print-root .bill-actions,
+  #print-root button { display: none !important; }
+}
+
+/* Dark mode must not follow the receipt onto white paper. */
+@media print {
+  html[data-theme="dark"] #print-root .bill-paper,
+  html[data-theme="dark"] #print-root .bill-paper * {
+    background: #fff !important;
+    color: #000 !important;
+    border-color: #94a3b8 !important;
+  }
+}
+
+/* Empty state in the notifications dropdown.
+   A populated row draws its padding from .dash-notif-hit (the <a>/<button>
+   inside it). The "No notifications" row has no hit target, so it had none at
+   all and its text started at the very edge of the card while every real row —
+   and the "Notifications" heading — started 2rem in. Same padding here so the
+   left edge lines up whichever state the panel is in. */
+.dash-notif-empty .dash-notif-text {
+  padding: 1.6rem 2rem;
+}

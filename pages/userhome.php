@@ -223,18 +223,46 @@ $partial = dirname(__DIR__) . '/php/partials/';
           <small class="site-header-user-role" aria-hidden="true"></small>
         </span>
       </button>
+            <div class="dash-bell-wrap">
+              <button class="dash-bell" id="dash-bell-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span class="dash-bell-dot"></span>
+              </button>
+              <div class="dash-notif-panel" id="dash-notif-panel" role="menu">
+                <div class="dash-notif-head">
+                  <strong>Notifications</strong>
+                  <a href="#" class="dash-notif-mark" id="dash-notif-mark">Mark all read</a>
+                  <form id="dash-notif-mark-form" method="POST" action="../php/engagement/notifications-mark-read.php" hidden>
+                    <?= Csrf::field() ?>
+                  </form>
+                </div>
+                <ul class="dash-notif-list" id="dash-notif-list">
+                  <?php if (!$notifications): ?>
+                  <?php /* .dash-notif-empty because a real row gets its padding
+                          from the <a>/<button> inside it (.dash-notif-hit), and
+                          this row has neither — so the text sat flush against
+                          the card edge instead of lining up with the rows and
+                          the "Notifications" heading above it. */ ?>
+                  <li class="dash-notif-row dash-notif-empty"><div class="dash-notif-text"><strong>No notifications</strong><small>You are all caught up.</small></div></li>
+                  <?php else: foreach ($notifications as $n): include $partial . 'notification-row.php'; endforeach; endif; ?>
+                </ul>
+                <!-- Jumps to Activity & Bills section (which lists the full
+                     notification + donation history). Uses data-section so the
+                     existing catch-all click handler handles section switching. -->
+                <?php /* A <button>, not <a href="#">. The in-page jump handler in
+                         js/userhome.js deliberately ignores any anchor that has an
+                         href so real links keep working — so this one fell through
+                         to the browser, which jumped to "#" and left no section
+                         active at all, showing a blank page. */ ?>
+                  <button type="button" class="dash-notif-foot" data-section="notifications">View all notifications</button>
+              </div><!-- /.dash-notif-panel -->
+            </div><!-- /.dash-bell-wrap -->
+
       <nav class="site-header-nav" aria-label="Primary navigation">
         <button class="site-nav-link is-active" type="button" data-jump="dashboard" aria-current="page">Home</button>
         <button class="site-nav-link" type="button" data-jump="discover">Campaigns</button>
         <a class="site-nav-link" href="guide.html">Help</a>
       </nav>
-      <?php /* js/theme.js binds [data-theme-toggle] by delegation, so this
-               needs no extra script — the button works as soon as it exists.
-               .theme-toggle is styled in tokens.css. */ ?>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
-        <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      </button>
     </div>
   </header>
 
@@ -414,35 +442,6 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="search" id="dash-search-input" aria-label="Search campaigns" placeholder="Search campaigns…" autocomplete="off">
             </label>
-            <div class="dash-bell-wrap">
-              <button class="dash-bell" id="dash-bell-btn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                <span class="dash-bell-dot"></span>
-              </button>
-              <div class="dash-notif-panel" id="dash-notif-panel" role="menu">
-                <div class="dash-notif-head">
-                  <strong>Notifications</strong>
-                  <a href="#" class="dash-notif-mark" id="dash-notif-mark">Mark all read</a>
-                  <form id="dash-notif-mark-form" method="POST" action="../php/engagement/notifications-mark-read.php" hidden>
-                    <?= Csrf::field() ?>
-                  </form>
-                </div>
-                <ul class="dash-notif-list" id="dash-notif-list">
-                  <?php if (!$notifications): ?>
-                  <li class="dash-notif-row"><div class="dash-notif-text"><strong>No notifications</strong><small>You are all caught up.</small></div></li>
-                  <?php else: foreach ($notifications as $n): include $partial . 'notification-row.php'; endforeach; endif; ?>
-                </ul>
-                <!-- Jumps to Activity & Bills section (which lists the full
-                     notification + donation history). Uses data-section so the
-                     existing catch-all click handler handles section switching. -->
-                <?php /* A <button>, not <a href="#">. The in-page jump handler in
-                         js/userhome.js deliberately ignores any anchor that has an
-                         href so real links keep working — so this one fell through
-                         to the browser, which jumped to "#" and left no section
-                         active at all, showing a blank page. */ ?>
-                  <button type="button" class="dash-notif-foot" data-section="notifications">View all notifications</button>
-              </div>
-            </div>
             <button class="dash-cta donor-only" type="button" onclick="document.querySelector('[data-section=&quot;discover&quot;]').click()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span>New Donation</span>
@@ -1663,6 +1662,24 @@ $partial = dirname(__DIR__) . '/php/partials/';
                the new account to a multi-session cookie. UI is real (no fake
                account list); switching between accounts happens in the sidebar
                user-card panel once the backend exposes the session list. -->
+          <?php /* Appearance lives in Settings now rather than as a floating
+                   control in the header. js/theme.js binds [data-theme-toggle]
+                   by delegation, so the button works wherever it sits, and
+                   [data-theme-label] is filled in with the current mode. */ ?>
+          <div class="settings-row">
+            <span class="settings-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </span>
+            <span class="settings-row-body">
+              <strong>Appearance</strong>
+              <small>Currently <span data-theme-label>Light</span> mode</small>
+            </span>
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+              <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </button>
+          </div>
+
           <?php /* Account switching moved here from the sidebar panel, so
                    Settings is the single place accounts are managed. The
                    current account is shown for orientation; each other account
@@ -1744,7 +1761,12 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <form id="donate-form" action="../php/donations/donate.php" method="POST">
           <?= Csrf::field() ?>
           <input type="hidden" name="campaign_id" id="modal-camp-id-hidden">
-          <input type="hidden" name="payment_method" id="modal-payment-method" value="whish">
+          <?php /* Sawa Wallet is the only method that settles for real, so it is the
+                   default and the only one enabled. The two provider options are
+                   simulated stand-ins for a hosted checkout that does not exist
+                   yet; leaving them clickable let someone "pay" through a flow
+                   that never reaches a provider. */ ?>
+          <input type="hidden" name="payment_method" id="modal-payment-method" value="wallet">
           <input type="hidden" name="cover_platform_fee" value="1">
           <label for="modal-amount">Donation Amount ($)</label>
           <div class="preset-amounts modal-presets">
@@ -1787,13 +1809,13 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
         <fieldset class="payment-method-list">
           <legend>Payment method</legend>
-          <label class="payment-method-option is-recommended">
-            <input type="radio" name="payment_method_choice" value="whish" checked>
+          <label class="payment-method-option is-coming-soon" aria-disabled="true">
+            <input type="radio" name="payment_method_choice" value="whish" disabled>
             <span class="payment-method-icon payment-method-icon--whish" aria-hidden="true">W</span>
             <span class="payment-method-body">
               <strong>Whish Money</strong>
               <small>Pay from your Lebanese mobile wallet — instant.</small>
-              <span class="payment-method-fee">10% Sawa fee</span>
+              <span class="payment-method-fee payment-method-fee--soon">Not available yet</span>
               <span class="payment-method-extra">
                 <span class="pm-extra-row"><span class="pm-extra-label">How it works</span><span>You'll be redirected to Whish to confirm the payment.</span></span>
                 <span class="pm-extra-row"><span class="pm-extra-label">You'll need</span><span>Your Whish-registered Lebanese mobile number.</span></span>
@@ -1802,15 +1824,15 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </span>
             </span>
           </label>
-          <label class="payment-method-option">
-            <input type="radio" name="payment_method_choice" value="hosted_checkout">
+          <label class="payment-method-option is-coming-soon" aria-disabled="true">
+            <input type="radio" name="payment_method_choice" value="hosted_checkout" disabled>
             <span class="payment-method-icon payment-method-icon--card" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
             </span>
             <span class="payment-method-body">
               <strong>Visa / Mastercard</strong>
               <small>Secure hosted checkout — your card details never touch Sawa.</small>
-              <span class="payment-method-fee">10% Sawa fee</span>
+              <span class="payment-method-fee payment-method-fee--soon">Not available yet</span>
               <span class="payment-method-extra">
                 <span class="pm-extra-row"><span class="pm-extra-label">Accepted</span><span>Visa, Mastercard, Amex.</span></span>
                 <span class="pm-extra-row"><span class="pm-extra-label">Security</span><span>3-D Secure (one-time code from your bank) may be required.</span></span>
@@ -1819,6 +1841,16 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </span>
             </span>
           </label>
+          <?php /* Says plainly why the two options above cannot be picked and
+                   what to do instead, rather than leaving a disabled control
+                   with no reason attached. */ ?>
+          <p class="payment-method-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>Card and Whish payments are not connected yet.
+              <?php if ($auth): ?>Use your Sawa Wallet below — top it up from the Wallet section.<?php else: ?><a href="login.php">Sign in</a> to pay with your Sawa Wallet.<?php endif; ?>
+            </span>
+          </p>
+
           <?php /* Enabled: the backend has supported this the whole time —
                    php/donations/donate.php handles payment_method 'wallet',
                    debits through WalletService inside the donation transaction,
@@ -1826,8 +1858,8 @@ $partial = dirname(__DIR__) . '/php/partials/';
                    rate for it. Only this control was holding it back. Balance
                    is shown so the member can see whether it will cover the
                    donation; donate.php re-checks and rejects an overdraw. */ ?>
-          <label class="payment-method-option auth-only">
-            <input type="radio" name="payment_method_choice" value="wallet">
+          <label class="payment-method-option auth-only is-recommended">
+            <input type="radio" name="payment_method_choice" value="wallet" checked>
             <span class="payment-method-icon payment-method-icon--wallet" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </span>
