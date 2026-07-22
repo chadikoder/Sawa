@@ -2139,8 +2139,12 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
 
 /* Role under the name in the sidebar profile card. */
 .admin-profile-role {
+  /* The card is a grid, so `align-self` does nothing for the horizontal axis —
+     the badge stretched the full width of its column and read as a bar rather
+     than a tag. */
   display: inline-block;
-  align-self: flex-start;
+  justify-self: start;
+  width: fit-content;
   padding: 0.1rem 0.6rem;
   margin-block: 0.2rem;
   border-radius: 9999px;
@@ -2212,4 +2216,134 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
   .admin-notif-panel {
     top: calc(var(--admin-topbar-h, 7.3rem) + 0.6rem);
   }
+}
+
+/* ── Admin sidebar, matching the member sidebar ────────────────────────────
+   The two sidebars were designed apart and looked it: the member one is a
+   translucent blurred panel with a rounded outer edge, a logo in a ring, and
+   roomy 1.4rem rows whose icons are plain strokes; the admin one was a flat
+   opaque column with a squared edge, a logo in a rounded square, and tighter
+   1.32rem rows whose icons each sat in their own grey chip. Same product, two
+   different navigations.
+
+   These bring the admin column onto the member's design. Only presentation
+   changes — the grouping, the badge and the active link are all still driven
+   by the same PHP. */
+
+/* Panel: frosted, with the same rounded outer edge and shadow. */
+.admin-sidebar {
+  padding: 0 0.9rem 1.4rem;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 0 1.6rem 1.6rem 0;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Brand: the logo in a ringed circle, as on the member sidebar. The two-line
+   label stays — "SAWA Admin / Control Center" says which console you are in,
+   which the member sidebar has no need to. */
+.admin-brand {
+  padding: 2rem 1.1rem 1.6rem;
+  flex-shrink: 0;
+}
+.admin-brand img {
+  width: 6rem;
+  height: 6rem;
+  padding: 1rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(37, 99, 235, 0.22);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.14), 0 0 0 3px rgba(37, 99, 235, 0.06);
+}
+.admin-brand strong {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.admin-brand small {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Rows: the member sidebar's size, weight and spacing. */
+.admin-nav {
+  gap: 1.6rem;
+}
+.admin-nav a {
+  min-height: auto;
+  gap: 1.2rem;
+  padding: 1.2rem 1.1rem;
+  border-radius: 1.2rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.admin-nav a:hover {
+  background: var(--color-bg-deep, #f1f5f9);
+  color: var(--color-text);
+}
+.admin-nav a.is-active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+/* The active marker sits flush against the panel edge, like the member one,
+   rather than floating in the gutter at a negative offset. */
+.admin-nav a.is-active::before {
+  left: -0.9rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+}
+
+/* Icons as plain strokes. The grey chip behind each one gave the column a
+   column-of-buttons look the member sidebar does not have, and it fought the
+   active row's own tint. */
+.admin-nav-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+}
+.admin-nav-icon svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.admin-nav-group p {
+  padding-inline: 1.1rem;
+  font-size: 1.1rem;
+}
+
+.admin-profile-card {
+  margin-inline: 0.2rem;
+}
+
+/* Dark mode: the same frosted treatment the member sidebar gets, instead of
+   the flat panel colour the base dark rule would leave here. */
+html[data-theme="dark"] .admin-sidebar {
+  background: rgba(15, 23, 42, 0.9);
+  border-right-color: rgba(148, 163, 184, 0.18);
+}
+html[data-theme="dark"] .admin-brand img {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.28);
+}
+html[data-theme="dark"] .admin-nav-icon {
+  background: none;
+  color: inherit;
+}
+html[data-theme="dark"] .admin-nav a:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #e2e8f0;
+}
+html[data-theme="dark"] .admin-nav a.is-active {
+  background: rgba(96, 165, 250, 0.14);
+  color: #bfdbfe;
 }
