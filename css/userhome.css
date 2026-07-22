@@ -10355,3 +10355,23 @@ html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
   overflow: hidden;
 }
 .notif-mark-all { display: flex; justify-content: flex-end; margin-bottom: 0.4rem; }
+
+/* ── Donors list in the campaign modal ── */
+.cm-donor-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.cm-donor-row:last-child { border-bottom: 0; }
+.cm-donor-avatar {
+  width: 3.4rem; height: 3.4rem; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+}
+.cm-donor-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.cm-donor-body strong { font-size: 1.4rem; color: var(--color-text); }
+.cm-donor-body small { font-size: 1.2rem; color: var(--color-text-muted); }
+.cm-donor-amount { font-size: 1.4rem; font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
+/* The viewer's own contribution, so it is findable in a long list. */
+.cm-donor-row.is-you { background: var(--color-primary-light); border-radius: var(--r); padding-inline: 1rem; }

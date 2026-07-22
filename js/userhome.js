@@ -1321,10 +1321,10 @@ function openCampaignModal(card) {
 
   document.getElementById('cm-desc').textContent        = desc || 'No description provided.';
 
-  // Mock donors row for the Donors tab — PHP can replace #cm-donors-list later
-  document.getElementById('cm-donors-list').innerHTML = donors > 0
-    ? '<li class="activity-empty">Donor details rendered by PHP after donations are loaded.</li>'
-    : '<li class="activity-empty">No donors yet. Be the first.</li>';
+  // Real donors, fetched like the comments feed. This was a placeholder that
+  // read "Donor details rendered by PHP after donations are loaded", so a
+  // donation never showed up anywhere the donor could see it.
+  loadCampaignDonors(card.dataset.campId);
 
   // Comments tab — wire campaign id into the post form so PHP gets it on submit.
   const campIdHidden = document.getElementById('cm-comment-camp-id');
@@ -2361,3 +2361,47 @@ document.addEventListener('click', (e) => {
     keepalive: true,      // survives the navigation this click may cause
   }).catch(() => { /* the dot is already cleared locally; not worth a message */ });
 });
+
+
+/* ── Campaign donors ──────────────────────────────────────────────────────
+   Anonymity is decided server-side (see php/donations/campaign-donors.php);
+   this only renders what it is given, and never assumes a name is safe to
+   show. textContent throughout, same as the comment feed. */
+async function loadCampaignDonors(campaignId) {
+  const list = document.getElementById('cm-donors-list');
+  if (!list || !campaignId) return;
+  list.innerHTML = '<li class="activity-empty">Loading donors…</li>';
+  try {
+    const res = await fetch('../php/donations/campaign-donors.php?campaign_id=' + encodeURIComponent(campaignId),
+                            { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+    const items = (data && data.donors) || [];
+    if (!items.length) {
+      list.innerHTML = '<li class="activity-empty">No donors yet. Be the first.</li>';
+      return;
+    }
+    list.innerHTML = '';
+    items.forEach(d => {
+      const li = document.createElement('li');
+      li.className = 'cm-donor-row' + (d.isYou ? ' is-you' : '');
+      const img = document.createElement('img');
+      img.className = 'cm-donor-avatar';
+      img.src = d.avatar || '../images/user-profile.svg';
+      img.alt = '';
+      const body = document.createElement('div');
+      body.className = 'cm-donor-body';
+      const who = document.createElement('strong');
+      who.textContent = d.isYou ? d.label + ' (you)' : d.label;
+      const when = document.createElement('small');
+      when.textContent = d.ago;
+      body.append(who, when);
+      const amt = document.createElement('span');
+      amt.className = 'cm-donor-amount';
+      amt.textContent = '$' + Number(d.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      li.append(img, body, amt);
+      list.appendChild(li);
+    });
+  } catch (e) {
+    list.innerHTML = '<li class="activity-empty">Could not load donors.</li>';
+  }
+}
