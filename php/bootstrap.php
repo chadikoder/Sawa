@@ -25,6 +25,7 @@ require_once __DIR__ . '/lib/NotificationService.php';
 require_once __DIR__ . '/lib/MessageService.php';
 require_once __DIR__ . '/lib/ReceiptService.php';
 require_once __DIR__ . '/lib/Format.php';
+require_once __DIR__ . '/lib/Pdf.php';
 
 // Security headers on every response
 header('X-Content-Type-Options: nosniff');
