@@ -16,7 +16,7 @@ $root = __DIR__;
 $denied = ['/.env', '/database_complete.sql', '/php/config/hosting.php'];
 if (in_array(strtolower($uri), $denied, true) || str_ends_with(strtolower($uri), '/hosting.php')) {
     http_response_code(403);
-    require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '403.html';
+    require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '403.php';
     return true;
 }
 
@@ -50,5 +50,5 @@ if ($uri === '/admin' || str_starts_with($uri, '/admin/')) {
 }
 
 http_response_code(404);
-require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '404.html';
+require $root . DIRECTORY_SEPARATOR . 'pages' . DIRECTORY_SEPARATOR . '404.php';
 return true;

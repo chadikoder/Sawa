@@ -37,13 +37,31 @@ final class Validator
         return $value;
     }
 
+    /**
+     * Age in whole years, or null when the date is not a usable birthdate.
+     *
+     * Two things this has to get right and previously did not:
+     *
+     * - DateInterval::$y is an absolute magnitude, so a date in the *future*
+     *   produced a positive age. A birthdate of 2050 came back as a plausible
+     *   number and sailed through the `>= 10` check in signup.
+     * - createFromFormat without a leading '!' leaves the unspecified time
+     *   fields set to the current time, and it happily rolls invalid dates
+     *   over (2026-02-31 becomes 2026-03-03). Resetting the time and then
+     *   round-tripping the value rejects dates that never existed.
+     */
     public static function ageFromBirthdate(string $date): ?int
     {
-        $dob = DateTime::createFromFormat('Y-m-d', $date);
-        if (!$dob) {
+        $dob = DateTime::createFromFormat('!Y-m-d', $date);
+        if (!$dob || $dob->format('Y-m-d') !== $date) {
             return null;
         }
+
         $today = new DateTime('today');
-        return (int) $today->diff($dob)->y;
+        if ($dob > $today) {
+            return null;
+        }
+
+        return (int) $dob->diff($today)->y;
     }
 }

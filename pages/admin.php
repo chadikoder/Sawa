@@ -324,6 +324,13 @@ $stats = [
     'org_wallets' => (float) admin_query_value($pdo, 'SELECT COALESCE(SUM(balance_after),0) FROM wallet_transactions WHERE id IN (SELECT MAX(id) FROM wallet_transactions GROUP BY organisation_id)'),
     'receipts' => (int) admin_query_value($pdo, 'SELECT COUNT(*) FROM receipts'),
     'notifications' => (int) admin_query_value($pdo, 'SELECT COUNT(*) FROM notifications WHERE is_read = 0'),
+    // Distinct accounts that actually signed in successfully in the last day.
+    // The "Active Now" tile used to show max(1, count($loginAttempts)) — the
+    // size of a 40-row query window, floored at 1, relabelled as live users.
+    // It could never read 0 and never reflected anything real.
+    'signed_in_24h' => (int) admin_query_value($pdo,
+        "SELECT COUNT(DISTINCT email) FROM login_attempts
+          WHERE success = 1 AND attempted_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"),
 ];
 $stats['wallet_total'] = $stats['user_wallets'] + $stats['org_wallets'];
 $stats['review_total'] = $stats['pending_orgs'] + (int) admin_query_value($pdo, 'SELECT COUNT(*) FROM campaigns WHERE status = \'pending\'') + $stats['open_reports'];
@@ -589,12 +596,10 @@ $notice = $_GET['status'] ?? null;
                     <p><?= admin_e($current[2]) ?></p>
                 </div>
                 <div class="admin-page-actions">
-                    <select aria-label="Date range">
-                        <option>Last 30 days</option>
-                        <option>Today</option>
-                        <option>Last 7 days</option>
-                        <option>This year</option>
-                    </select>
+                    <?php /* The "Date range" select was removed: it had no name,
+                             no handler and no query behind it, so changing it did
+                             nothing while implying every figure on the page had
+                             been filtered. Refresh and Export both work. */ ?>
                     <button type="button" onclick="window.location.reload()">Refresh</button>
                     <button type="button" data-export-table>Export</button>
                 </div>
@@ -692,7 +697,7 @@ $notice = $_GET['status'] ?? null;
                 <section class="admin-stat-grid">
                     <?php
                     $secondary = [
-                        ['Active Now', number_format(max(1, count($loginAttempts))), 'Recent logins', 'live', 'stat-active'],
+                        ['Signed In (24h)', number_format($stats['signed_in_24h']), 'Distinct successful logins', 'live', 'stat-active'],
                         ['Organizations', number_format($stats['organizations']), $stats['pending_orgs'] . ' pending', 'warn', 'stat-orgs'],
                         ['Transactions', number_format($stats['transactions']), 'Donations + sessions', 'info', 'stat-transactions'],
                         ['SAWA Wallet', admin_money($stats['wallet_total']), 'All wallets', 'info', 'stat-wallet'],
@@ -712,11 +717,20 @@ $notice = $_GET['status'] ?? null;
                 </section>
 
                 <section class="admin-dashboard-grid">
+                    <?php
+                    // Real signups per month. This was a hardcoded array of
+                    // twelve numbers that only ever climbed — it drew the same
+                    // encouraging curve on an empty database as on a busy one.
+                    // $seriesUsers is the same query behind the Total Users KPI.
+                    $usersPeak = max(1.0, max($seriesUsers));
+                    ?>
                     <article class="admin-panel admin-panel--wide">
-                        <div class="admin-panel-head"><div><h2>User Activity</h2><span>Registrations, active users, and returning users from current data.</span></div></div>
-                        <div class="admin-line-chart" aria-label="User activity chart">
-                            <?php foreach ([38, 52, 47, 62, 74, 69, 86, 78, 92, 88, 97, 100] as $height): ?>
-                                <span style="height: <?= (int) $height ?>%"></span>
+                        <div class="admin-panel-head"><div><h2>User Activity</h2><span>New registrations per month, last 12 months. Peak: <?= (int) $usersPeak ?>.</span></div></div>
+                        <div class="admin-line-chart" aria-label="New registrations per month for the last 12 months">
+                            <?php foreach ($seriesUsers as $i => $count): ?>
+                                <?php $label = date('M Y', strtotime('-' . (count($seriesUsers) - 1 - $i) . ' month')); ?>
+                                <span style="height: <?= (int) round(($count / $usersPeak) * 100) ?>%"
+                                      title="<?= admin_e($label) ?>: <?= (int) $count ?>"></span>
                             <?php endforeach; ?>
                         </div>
                     </article>
@@ -732,12 +746,35 @@ $notice = $_GET['status'] ?? null;
                             <span><i class="is-danger"></i>Rejected</span>
                         </div>
                     </article>
+                    <?php
+                    // Real split by payment_method. The previous figures were
+                    // fixed at wallet 44 / hosted_checkout 36 / whish 18 /
+                    // other 8 and never summed to 100 anyway.
+                    $methodRows = admin_query_all($pdo,
+                        "SELECT payment_method, COUNT(*) AS n
+                           FROM donations
+                          WHERE status IN ('verified','completed')
+                          GROUP BY payment_method
+                          ORDER BY n DESC");
+                    $methodTotal = array_sum(array_map(static fn ($r) => (int) $r['n'], $methodRows));
+                    $methodLabels = [
+                        'wallet'          => 'Sawa Wallet',
+                        'hosted_checkout' => 'Visa / Mastercard',
+                        'whish'           => 'Whish Money',
+                    ];
+                    ?>
                     <article class="admin-panel">
-                        <div class="admin-panel-head"><div><h2>Payment Methods</h2><span>Recent transaction mix</span></div></div>
+                        <div class="admin-panel-head"><div><h2>Payment Methods</h2><span><?= $methodTotal > 0 ? 'Share of ' . number_format($methodTotal) . ' confirmed donations' : 'Confirmed donation mix' ?></span></div></div>
                         <div class="admin-bar-list">
-                            <?php foreach (['wallet' => 44, 'hosted_checkout' => 36, 'whish' => 18, 'other' => 8] as $label => $value): ?>
-                                <div><span><?= admin_e($label) ?></span><b style="width: <?= (int) $value ?>%"></b><strong><?= (int) $value ?>%</strong></div>
-                            <?php endforeach; ?>
+                            <?php if (!$methodRows): ?>
+                                <p class="admin-empty">No confirmed donations yet.</p>
+                            <?php else: foreach ($methodRows as $row): ?>
+                                <?php
+                                $key = (string) $row['payment_method'];
+                                $pct = (int) round(((int) $row['n'] / max(1, $methodTotal)) * 100);
+                                ?>
+                                <div><span><?= admin_e($methodLabels[$key] ?? ucfirst($key)) ?></span><b style="width: <?= $pct ?>%"></b><strong><?= $pct ?>%</strong></div>
+                            <?php endforeach; endif; ?>
                         </div>
                     </article>
                     <article class="admin-panel">

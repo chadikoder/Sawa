@@ -1,3 +1,12 @@
+<?php
+declare(strict_types=1);
+/** 403 page. PHP so assets resolve via url() — see pages/404.php for why. */
+require_once dirname(__DIR__) . '/php/config/config.php';
+
+if (!headers_sent()) {
+    http_response_code(403);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,21 +16,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/tokens.css">
-    <link rel="stylesheet" href="../css/status.css">
-    <link rel="icon" href="../images/sawa.svg" type="image/svg+xml">
-    <script src="../js/theme.js"></script>
+    <link rel="stylesheet" href="<?= url('css/tokens.css') ?>">
+    <link rel="stylesheet" href="<?= url('css/status.css') ?>">
+    <link rel="icon" href="<?= url('images/sawa.svg') ?>" type="image/svg+xml">
+    <script src="<?= url('js/theme.js') ?>"></script>
 </head>
 <body>
     <main class="status-shell" aria-labelledby="status-title">
         <section class="status-copy">
-            <img class="status-logo" src="../images/sawa_v2.svg" alt="Sawa">
+            <img class="status-logo" src="<?= url('images/sawa_v2.svg') ?>" alt="Sawa">
             <p class="status-eyebrow">403</p>
             <h1 id="status-title">You cannot access this page.</h1>
             <p>Log in with the correct account or return to the guest dashboard.</p>
             <div class="status-actions">
-                <a href="login.php" class="status-btn">Log In</a>
-                <a href="userhome.php" class="status-btn secondary">Guest Dashboard</a>
+                <a href="<?= url('pages/login.php') ?>" class="status-btn">Log In</a>
+                <a href="<?= url('pages/userhome.php') ?>" class="status-btn secondary">Guest Dashboard</a>
             </div>
         </section>
         <div class="status-art">

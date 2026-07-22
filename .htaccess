@@ -12,6 +12,20 @@ AddDefaultCharset UTF-8
 
     RewriteRule ^admin/?(.*)$ pages/admin.php [L,QSA]
     RewriteRule ^storage/uploads/(.*)$ storage/uploads/$1 [L]
+
+    # Send anything that is not a real file or directory to the styled 404.
+    # Must stay last: the rules above claim their paths first.
+    #
+    # ErrorDocument cannot do this job here. It takes a URL path measured from
+    # the document root, and this project is unzipped into an unknown folder —
+    # /sawa on one machine, /Sawa-main on the next — so there is no correct
+    # value to hardcode. A RewriteRule is resolved relative to this directory,
+    # so it works wherever the folder lands. Without it Apache answered with
+    # its own default 404, which showed the visitor the server version banner
+    # and none of the project's error design.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ pages/404.php [L]
 </IfModule>
 
 <FilesMatch "^(\.env|database_complete\.sql)$">

@@ -20,7 +20,12 @@ function clearAllErrors(form) {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 
-document.querySelector('.login_form').addEventListener('submit', (e) => {
+// This file is loaded by login.php AND forgot-password.php, which share the
+// .login_form class but not its fields — forgot-password has no password box.
+// Both lookups are therefore optional: reading .value off a missing element
+// threw here, and because preventDefault() had already run, the exception left
+// the forgot-password form permanently unsubmittable.
+document.querySelector('.login_form')?.addEventListener('submit', (e) => {
   e.preventDefault();
   clearAllErrors(e.target);
 
@@ -28,20 +33,23 @@ document.querySelector('.login_form').addEventListener('submit', (e) => {
   const password = document.getElementById('password');
   let valid = true;
 
-  if (!EMAIL_RE.test(email.value.trim())) {
+  if (email && !EMAIL_RE.test(email.value.trim())) {
     showError(email, 'Please enter a valid email address');
     valid = false;
   }
 
-  if (!PASSWORD_RE.test(password.value)) {
+  if (password && !PASSWORD_RE.test(password.value)) {
     showError(password, 'Password must be at least 6 characters with letters and numbers');
     valid = false;
   }
 
   if (valid) {
     const btn = e.target.querySelector('[type="submit"]');
-    btn.value = 'Logging in...';
-    btn.disabled = true;
+    if (btn) {
+      // The password box is what distinguishes login from forgot-password.
+      btn.value = password ? 'Logging in...' : 'Sending...';
+      btn.disabled = true;
+    }
     e.target.submit();
   }
 });

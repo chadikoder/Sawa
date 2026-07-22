@@ -34,15 +34,18 @@ final class Response
     {
         http_response_code($code);
         $map = [
-            403 => 'pages/403.html',
-            404 => 'pages/404.html',
-            500 => 'pages/500.html',
+            403 => 'pages/403.php',
+            404 => 'pages/404.php',
+            500 => 'pages/500.php',
         ];
         $file = $page ?? ($map[$code] ?? null);
         if ($file !== null) {
             $full = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $file);
             if (is_readable($full)) {
-                readfile($full);
+                // include, not readfile: the status pages are PHP now so that
+                // their asset URLs go through url(). readfile() would ship the
+                // raw source, tags and all, straight to the browser.
+                include $full;
                 exit;
             }
         }

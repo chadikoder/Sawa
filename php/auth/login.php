@@ -43,8 +43,23 @@ if ((int) $user['email_verified'] !== 1 && $user['role'] !== 'admin') {
 $addMode = !empty($_POST['add']) && Auth::check();
 Auth::login((int) $user['id'], $user['role'], $addMode);
 
+// "Remember me" — re-issue the session cookie with an expiry instead of
+// leaving it a browser-session cookie that dies when Chrome closes.
+//
+// The old ini_set('session.cookie_lifetime') here did nothing at all: the
+// session had already been started by bootstrap.php and the Set-Cookie header
+// was already sent, so changing the ini value afterwards could not affect it.
+// This has to run after Auth::login(), which regenerates the id.
 if (!empty($_POST['remember_me'])) {
-    ini_set('session.cookie_lifetime', (string) (60 * 60 * 24 * 30));
+    $params = session_get_cookie_params();
+    setcookie(session_name(), session_id(), [
+        'expires'  => time() + (60 * 60 * 24 * 30),
+        'path'     => $params['path'],
+        'domain'   => $params['domain'],
+        'secure'   => $params['secure'],
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 }
 
 $dest = match ($user['role']) {

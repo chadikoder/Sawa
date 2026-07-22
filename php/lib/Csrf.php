@@ -25,11 +25,11 @@ final class Csrf
         $expected = Session::get(CSRF_TOKEN_KEY);
 
         if (!is_string($submitted) || !is_string($expected)) {
-            Response::abort(403, 'pages/403.html');
+            Response::abort(403, 'pages/403.php');
         }
 
         if (!hash_equals($expected, $submitted)) {
-            Response::abort(403, 'pages/403.html');
+            Response::abort(403, 'pages/403.php');
         }
     }
 
