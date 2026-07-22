@@ -1896,3 +1896,75 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
 .logout-form {
   display: contents;
 }
+
+/* ── Submitted documents in the Organizations table ────────────────────────
+   Approve / Reject sat next to a name and a date with no way to see what the
+   applicant actually submitted. This cell carries the logo they uploaded and a
+   link to their registration document so the decision can be made on evidence.
+
+   The thumbnail is fixed-size so rows keep an even height whatever shape the
+   uploaded logo is; object-fit: cover crops rather than distorts. */
+.admin-doc-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.admin-doc-thumb {
+  display: block;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-deep, #f1f5f9);
+  flex-shrink: 0;
+}
+.admin-doc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.admin-doc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.admin-doc-link:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+/* The file type, so it is clear whether a new tab opens a PDF or an image. */
+.admin-doc-link span {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+/* Not an error state — an applicant who submitted nothing is a legitimate
+   reason to reject, so it is stated rather than left blank. */
+.admin-doc-missing {
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Pending-organization rows show the submitted logo in place of initials. */
+.admin-avatar--img {
+  padding: 0;
+  overflow: hidden;
+}
+.admin-avatar--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

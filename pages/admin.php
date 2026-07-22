@@ -267,6 +267,20 @@ function admin_asset(?string $path, string $fallback = '/images/campaign-placeho
 function admin_section_from_request(): array
 {
     $path = trim((string) parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH), '/');
+
+    // Strip the folder the project is installed in before looking for 'admin'.
+    // admin_route() builds its links as BASE_PATH . '/admin/<section>', so on
+    // this machine a link reads /sawa/admin/organizations. Without this the
+    // first path segment was 'sawa', the 'admin' test below never matched, and
+    // $section came out as 'sawa' — not a known section, so every single
+    // sidebar link fell through to the Overview fallback and the admin console
+    // looked like it had one page. BASE_PATH is '' when the project is served
+    // from a document root, which is why this was never seen there.
+    $base = trim(BASE_PATH, '/');
+    if ($base !== '' && ($path === $base || str_starts_with($path, $base . '/'))) {
+        $path = trim(substr($path, strlen($base)), '/');
+    }
+
     $parts = $path === '' ? [] : explode('/', $path);
     if (($parts[0] ?? '') === 'admin') {
         array_shift($parts);
@@ -916,7 +930,14 @@ function render_organizations_panel(array $rows): void
     echo '<article class="admin-panel"><div class="admin-panel-head"><div><h2>Pending Organizations</h2><span>Approve or reject real applications.</span></div><a href="' . admin_route('organizations') . '">View all</a></div><div class="admin-list">';
     foreach (array_slice($rows, 0, 5) as $row) {
         $status = (int) $row['verified'] === 1 ? 'approved' : ((int) $row['rejected'] === 1 ? 'rejected' : 'pending');
-        echo '<div class="admin-list-row"><div class="admin-avatar">' . admin_e(admin_initials($row['name'])) . '</div><div><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></div>' . admin_badge($status) . '</div>';
+        // The submitted logo instead of initials when there is one — on a
+        // verification queue, seeing what the applicant actually sent is the
+        // point of the row.
+        $logo = trim((string) ($row['logo_path'] ?? ''));
+        $avatar = $logo !== ''
+            ? '<div class="admin-avatar admin-avatar--img"><img src="' . admin_e(Upload::publicUrl($logo)) . '" alt="" loading="lazy"></div>'
+            : '<div class="admin-avatar">' . admin_e(admin_initials($row['name'])) . '</div>';
+        echo '<div class="admin-list-row">' . $avatar . '<div><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></div>' . admin_badge($status) . '</div>';
     }
     if (!$rows) { echo '<p class="admin-empty">No organizations found.</p>'; }
     echo '</div></article>';
@@ -952,14 +973,58 @@ function render_audit_panel(array $rows): void
     echo '</ol></article>';
 }
 
+/**
+ * What an organisation submitted, as something an admin can actually look at.
+ *
+ * Approve and Reject were being pressed against a name and a date. Signup
+ * collects a logo and a registration document precisely so a human can check
+ * the applicant is a real registered organisation, and neither was reachable
+ * from this screen — the decision the whole table exists for was being made
+ * blind.
+ *
+ * The logo is shown inline because it is an image and small; the registration
+ * document may be a PDF, so it is a link that opens in its own tab rather than
+ * something to render in a table cell. Missing files are stated plainly, since
+ * "nothing was submitted" is itself a reason to reject.
+ */
+function admin_org_documents(array $row): string
+{
+    $logo = trim((string) ($row['logo_path'] ?? ''));
+    $doc = trim((string) ($row['registration_doc'] ?? ''));
+    $name = (string) $row['name'];
+
+    if ($logo === '' && $doc === '') {
+        return '<span class="admin-doc-missing">Nothing submitted</span>';
+    }
+
+    $out = '<div class="admin-doc-cell">';
+    if ($logo !== '') {
+        $url = admin_e(Upload::publicUrl($logo));
+        $out .= '<a class="admin-doc-thumb" href="' . $url . '" target="_blank" rel="noopener"'
+              . ' title="Open the full-size logo">'
+              . '<img src="' . $url . '" alt="Logo submitted by ' . admin_e($name) . '" loading="lazy">'
+              . '</a>';
+    }
+    if ($doc !== '') {
+        // Extension only for the label — the file itself is served from
+        // storage/uploads, and Upload::store already validated its MIME type.
+        $ext = strtoupper(pathinfo($doc, PATHINFO_EXTENSION) ?: 'file');
+        $out .= '<a class="admin-doc-link" href="' . admin_e(Upload::publicUrl($doc)) . '" target="_blank" rel="noopener">'
+              . 'Registration <span>' . admin_e($ext) . '</span></a>';
+    } else {
+        $out .= '<span class="admin-doc-missing">No registration doc</span>';
+    }
+    return $out . '</div>';
+}
+
 function render_organizations_table(array $rows): void
 {
-    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>Organization</th><th>ID</th><th>Representative</th><th>Campaigns</th><th>Transaction Value</th><th>Registration</th><th>Verification</th><th>Actions</th></tr></thead><tbody>';
+    echo '<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table" data-admin-table><thead><tr><th>Organization</th><th>ID</th><th>Representative</th><th>Documents</th><th>Campaigns</th><th>Transaction Value</th><th>Registration</th><th>Verification</th><th>Actions</th></tr></thead><tbody>';
     foreach ($rows as $row) {
         $status = (int) $row['verified'] === 1 ? 'approved' : ((int) $row['rejected'] === 1 ? 'rejected' : 'pending');
-        echo '<tr><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="' . url('php/admin/verify-organisation.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
+        echo '<tr><td><strong>' . admin_e($row['name']) . '</strong><span>' . admin_e($row['email']) . '</span></td><td>ORG-' . (int) $row['id'] . '</td><td>' . admin_e($row['representative']) . '</td><td>' . admin_org_documents($row) . '</td><td>' . (int) $row['campaigns_count'] . '</td><td>' . admin_money($row['transaction_value']) . '</td><td>' . admin_date($row['created_at']) . '</td><td>' . admin_badge($status) . '</td><td><form action="' . url('php/admin/verify-organisation.php') . '" method="POST" class="admin-inline-form" data-confirm-action>' . Csrf::field() . '<input type="hidden" name="organisation_id" value="' . (int) $row['id'] . '"><button name="action" value="approve">Approve</button><button name="action" value="reject" class="is-danger">Reject</button></form></td></tr>';
     }
-    if (!$rows) { echo admin_empty_row(8, 'organizations', 'No organizations yet', 'Approved NGOs will appear here once they finish onboarding.'); }
+    if (!$rows) { echo admin_empty_row(9, 'organizations', 'No organizations yet', 'Approved NGOs will appear here once they finish onboarding.'); }
     echo '</tbody></table></div></section>';
 }
 
