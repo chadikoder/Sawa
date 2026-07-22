@@ -529,7 +529,11 @@ $notice = $_GET['status'] ?? null;
     <script src="<?= asset('js/burger.js') ?>" defer></script>
     <title><?= admin_e($current[0]) ?> — SAWA Admin</title>
 </head>
-<body class="admin-page">
+<?php /* The install folder, so js/admin.js can build endpoint URLs. The project
+         is unzipped into an unknown directory — /sawa here, /Sawa-main on the
+         next machine — so a relative or absolute path in the script would be
+         wrong on one of them. */ ?>
+<body class="admin-page" data-admin-base="<?= admin_e(rtrim(BASE_PATH, '/')) ?>">
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="admin-shell" data-admin-shell>
     <aside class="admin-sidebar" id="admin-sidebar">
@@ -566,6 +570,11 @@ $notice = $_GET['status'] ?? null;
             <div class="admin-avatar"><?= admin_e(admin_initials($adminName)) ?></div>
             <div>
                 <strong><?= admin_e($adminName) ?></strong>
+                <?php /* The role, under the name. The card showed a name and an
+                         email, neither of which says what this account can do —
+                         and Sawa has four roles, so "which account am I signed
+                         in as" was a real question with no answer on screen. */ ?>
+                <span class="admin-profile-role">Admin</span>
                 <span><?= admin_e($adminEmail) ?></span>
             </div>
             <button class="admin-icon-btn" type="button" data-menu-toggle="admin-profile-menu" aria-label="Open admin menu">•••</button>
@@ -595,23 +604,54 @@ $notice = $_GET['status'] ?? null;
             </button>
             <form class="admin-search" role="search">
                 <svg class="admin-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="search" placeholder="Search users, organizations, campaigns…" data-admin-search aria-label="Search admin">
+                <input type="search" placeholder="Search users, organizations, campaigns…" data-admin-search aria-label="Search admin" autocomplete="off">
                 <kbd>Ctrl K</kbd>
+                <?php /* Filled by js/admin.js from php/admin/search.php. It used
+                         to hold five fixed links to the sections, which were the
+                         same five whatever you typed. */ ?>
                 <div class="admin-search-panel" data-search-panel hidden>
-                    <strong>Quick results</strong>
-                    <a href="<?= admin_route('users') ?>">Users</a>
-                    <a href="<?= admin_route('organizations') ?>">Organizations</a>
-                    <a href="<?= admin_route('campaigns') ?>">Campaign Reviews</a>
-                    <a href="<?= admin_route('transactions') ?>">Transactions</a>
-                    <a href="<?= admin_route('reports') ?>">Reports</a>
+                    <p class="admin-search-hint">Type at least 2 characters.</p>
                 </div>
             </form>
-            <a class="admin-notification-btn" href="<?= admin_route('notifications') ?>" aria-label="Notifications (<?= (int) $stats['notifications'] ?> unread)">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                <?php if ((int) $stats['notifications'] > 0): ?>
-                    <span class="admin-notification-badge" aria-hidden="true"><?= (int) $stats['notifications'] ?></span>
-                <?php endif; ?>
-            </a>
+
+            <?php /* A dropdown, matching the member dashboard's bell. It was a
+                     bare link straight to the Notifications section, so there
+                     was no way to glance at what came in without leaving the
+                     page you were working on. */ ?>
+            <div class="admin-notif-wrap" data-notif-wrap>
+                <button class="admin-notification-btn" type="button" data-notif-toggle
+                        aria-haspopup="true" aria-expanded="false"
+                        aria-label="Notifications (<?= (int) $stats['notifications'] ?> unread)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <?php if ((int) $stats['notifications'] > 0): ?>
+                        <span class="admin-notification-badge" aria-hidden="true"><?= (int) $stats['notifications'] ?></span>
+                    <?php endif; ?>
+                </button>
+                <div class="admin-notif-panel" data-notif-panel role="menu" hidden>
+                    <div class="admin-notif-head">
+                        <strong>Notifications</strong>
+                        <span><?= (int) $stats['notifications'] ?> unread</span>
+                    </div>
+                    <ul class="admin-notif-list">
+                        <?php if (!$notifications): ?>
+                            <li class="admin-notif-empty">
+                                <strong>No notifications</strong>
+                                <small>Nothing has come in yet.</small>
+                            </li>
+                        <?php else: foreach (array_slice($notifications, 0, 6) as $n): ?>
+                            <li class="admin-notif-row<?= (int) $n['is_read'] === 0 ? ' is-unread' : '' ?>">
+                                <strong><?= admin_e((string) ($n['title'] ?? 'Notification')) ?></strong>
+                                <?php /* The column is `body`; `message` is the
+                                         fallback render_notifications_table
+                                         also carries for older rows. */ ?>
+                                <small><?= admin_e((string) ($n['body'] ?? $n['message'] ?? '')) ?></small>
+                                <em><?= admin_e((string) ($n['full_name'] ?? 'System')) ?> &middot; <?= admin_date($n['created_at']) ?></em>
+                            </li>
+                        <?php endforeach; endif; ?>
+                    </ul>
+                    <a class="admin-notif-foot" href="<?= admin_route('notifications') ?>">View all notifications</a>
+                </div>
+            </div>
         </header>
 
         <main class="admin-content" id="main">

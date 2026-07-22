@@ -2016,3 +2016,200 @@ html[data-theme="dark"] .admin-spark--live    { color: #38bdf8; }
     z-index: 25;
   }
 }
+
+/* ── Search results panel ──────────────────────────────────────────────────
+   Real results from php/admin/search.php, grouped by record type. Each row is
+   a link to the section where that record can be acted on. */
+.admin-search-panel strong {
+  display: block;
+  padding: 0.9rem 1.2rem 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.admin-search-panel a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.9rem;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.admin-search-panel a:hover {
+  background: var(--color-primary-light);
+}
+.admin-search-panel a span {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.admin-search-panel a small {
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+}
+.admin-search-hint {
+  padding: 1.4rem 1.2rem;
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Notification dropdown ─────────────────────────────────────────────────
+   Same shape as the member dashboard's bell: a card anchored to the button,
+   a head, a scrolling list, and a footer that opens the full section. */
+.admin-notif-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.admin-notif-panel {
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  right: 0;
+  width: 36rem;
+  max-width: calc(100vw - 3.2rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.4rem;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  /* Above the sticky topbar's own stacking context. */
+  z-index: 60;
+}
+.admin-notif-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 1.8rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.admin-notif-head strong { font-size: 1.45rem; }
+.admin-notif-head span { font-size: 1.15rem; color: var(--color-text-muted); }
+.admin-notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 34rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.admin-notif-row,
+.admin-notif-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.4rem 1.8rem;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+}
+.admin-notif-row:last-child,
+.admin-notif-empty { border-bottom: none; }
+.admin-notif-row strong,
+.admin-notif-empty strong { font-size: 1.3rem; }
+.admin-notif-row small,
+.admin-notif-empty small { font-size: 1.2rem; color: var(--color-text-muted); }
+.admin-notif-row em {
+  font-size: 1.1rem;
+  font-style: normal;
+  color: var(--color-text-light, #94a3b8);
+}
+/* Unread marker, in the gutter rather than inline, so titles stay aligned. */
+.admin-notif-row.is-unread::before {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  top: 1.9rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.admin-notif-foot {
+  display: block;
+  padding: 1.3rem;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  border-top: 1px solid var(--color-border);
+}
+.admin-notif-foot:hover { background: var(--color-primary-light); }
+
+/* Role under the name in the sidebar profile card. */
+.admin-profile-role {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.1rem 0.6rem;
+  margin-block: 0.2rem;
+  border-radius: 9999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The drawer takes the whole screen below 1024px. A 26rem panel left a strip
+   of dimmed page beside it that did nothing; full width gives the nav the room
+   its labels want and makes the menu unambiguously the thing in front. */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 100%;
+    max-width: none;
+  }
+  /* Fixed, not absolute. The panel is a child of the 4.4rem bell wrapper, so
+     `left`/`right` were resolving against that button rather than the screen
+     and collapsed the card into a vertical sliver. Anchoring it to the
+     viewport under the topbar gives it the full width it is asking for. */
+  .admin-notif-panel {
+    position: fixed;
+    top: 7.3rem;
+    left: 1.6rem;
+    right: 1.6rem;
+    width: auto;
+    max-width: none;
+  }
+  .admin-notif-list { max-height: calc(100svh - 22rem); }
+}
+
+/* ── A real search bar on mobile ───────────────────────────────────────────
+   Below 768px the search box was hidden and replaced by a magnifier button
+   that threw a full-screen overlay over the console. Two taps to reach a field
+   that then covered everything you might have wanted to search against.
+
+   The topbar wraps instead and the search takes the full width of a second
+   row — the same control as on desktop, always visible, one tap. The icon
+   button and its overlay are gone. */
+@media (max-width: 768px) {
+  .admin-topbar {
+    flex-wrap: wrap;
+    row-gap: 1rem;
+  }
+  .admin-search {
+    display: flex;
+    order: 5;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .admin-search-mobile { display: none; }
+  .admin-breadcrumb { flex: 1; min-width: 0; }
+}
+
+/* The drawer and its backdrop hang off the bottom of the topbar, whose height
+   now depends on whether the search has wrapped to its own row. js/admin.js
+   measures it and publishes it here; the fallback is the unwrapped height. */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    top: var(--admin-topbar-h, 7.3rem);
+    height: calc(100svh - var(--admin-topbar-h, 7.3rem));
+  }
+  .admin-shell.is-mobile-open .admin-workspace::before {
+    inset: var(--admin-topbar-h, 7.3rem) 0 0 0;
+  }
+  .admin-notif-panel {
+    top: calc(var(--admin-topbar-h, 7.3rem) + 0.6rem);
+  }
+}
