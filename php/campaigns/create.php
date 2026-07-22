@@ -10,7 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 Csrf::validate();
 require_auth();
-require_role('beneficiary', 'organisation', 'admin');
+// Donors included: anyone signed in may raise a campaign. Organisations still
+// have to be verified first (checked immediately below), and the owner is
+// recorded either as the organisation or as the individual user.
+require_role('user', 'beneficiary', 'organisation', 'admin');
 
 if (Auth::role() === 'organisation' && !Auth::isOrganisationVerified()) {
     Response::redirect('pages/org-pending.html');

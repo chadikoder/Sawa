@@ -4478,20 +4478,6 @@ body:not(.role-donor) .donor-only { display: none !important; }
 body:not(.role-taker) .taker-only { display: none !important; }
 body:not(.role-org)   .org-only   { display: none !important; }
 
-/* Campaign creation is limited to recipients, organisations and admins — see
-   the require_role() call in php/campaigns/create.php. A donor was still shown
-   the sidebar entry, the bottom-nav + button and a profile quick action, all
-   of which led to a form that could only ever fail. Two :not()s rather than
-   combining .taker-only with .org-only, because those rules hide an element
-   unless the body carries that exact role, so an element with both classes
-   would be hidden from everyone.
-   Admins map to .role-org via Auth::bodyRoleClass(), and are redirected off
-   this page anyway. */
-body:not(.role-taker):not(.role-org) .creator-only { display: none !important; }
-
-/* The bottom nav is a 5-column grid; with the + button hidden for donors it
-   would otherwise leave a gap where the FAB used to be. */
-body.role-donor .bottom-nav { grid-template-columns: repeat(4, 1fr); }
 
 /* Opt-in escape hatch: a role-only block can still appear for guests if it
    also carries .guest-show. Specificity (3 classes) beats the :not() rule (2). */
@@ -6699,13 +6685,16 @@ body.is-guest #discover .discover-filters {
    - Main content is centered with comfortable max-width
    ════════════════════════════════════════════════════════════ */
 
-/* Kill the desktop expand/collapse toggle entirely */
-.sidebar-toggle { display: none !important; }
-.sidebar.collapsed { width: 28rem; }
-.sidebar.collapsed .sidebar-brand span,
-.sidebar.collapsed .sidebar-item span,
-.sidebar.collapsed .sidebar-user-info,
-.sidebar.collapsed .sidebar-user-chevron { display: initial; }
+/* The desktop collapse toggle used to be killed here — the button was
+   display:none !important and .collapsed was neutralised back to full width,
+   so on desktop the sidebar could not be closed at all. Both are restored; the
+   real collapsed styling lives at ".sidebar.collapsed" further up (6rem rail,
+   labels hidden). The drawer on mobile is unaffected: .sidebar-toggle only
+   appears inside .sidebar-brand, which the drawer also shows. */
+@media (max-width: 768px) {
+  /* No collapsing inside the drawer — it slides away instead. */
+  .sidebar-toggle { display: none; }
+}
 
 /* Sidebar drawer definition consolidated to the top of this file — see the
    `.sidebar` rule under "--- Layout ---". It fixes two bugs reported here:
@@ -10196,4 +10185,26 @@ html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
    exactly as it did when this was a bare <button>. */
 .logout-form {
   display: contents;
+}
+
+/* ── Account rows in Settings ──────────────────────────────────────────────
+   Account switching moved out of the sidebar drawer panel and into Settings.
+   These reuse .settings-row, so they only need the avatar and the wrapper that
+   makes a <form>-wrapped row lay out like the plain <a> rows beside it. */
+.settings-account-form {
+  display: contents;
+}
+.settings-account-avatar {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+.settings-row.is-current-account {
+  cursor: default;
+}
+.settings-row.is-current-account .settings-row-chevron {
+  color: var(--color-success);
 }

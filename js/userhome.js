@@ -115,16 +115,34 @@ document.addEventListener('click', (e) => {
 
 
 /* ── Sidebar open / close (mobile) ── */
+/* The page behind the drawer must not scroll while it is open. Setting
+   overflow on <body> alone is not enough here: <html> is the scrolling element
+   on this page, so the document kept scrolling underneath the drawer. Both are
+   locked, and the scroll position is restored on close so reopening the drawer
+   does not jump the page back to the top. */
+let _scrollLockY = 0;
+
 function closeSidebar() {
   document.querySelector('.sidebar')?.classList.remove('open');
   document.querySelector('.mobile-overlay')?.classList.remove('show');
+  document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, _scrollLockY);
 }
 
 function openSidebar() {
+  _scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
   document.querySelector('.sidebar')?.classList.add('open');
   document.querySelector('.mobile-overlay')?.classList.add('show');
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  // position:fixed is what actually stops iOS Safari rubber-banding the page.
+  document.body.style.position = 'fixed';
+  document.body.style.top = (-_scrollLockY) + 'px';
+  document.body.style.width = '100%';
 }
 
 /* ── Guest unified header / mobile drawer ── */

@@ -258,66 +258,10 @@ $partial = dirname(__DIR__) . '/php/partials/';
            account" link). Multi-account switching needs backend support;
            additional accounts will be listed inside the panel once a
            /php/auth/sessions.php endpoint exists. -->
-      <div class="sidebar-user-wrap auth-only">
-        <button type="button" class="sidebar-user" data-section="profile" aria-label="Go to my profile">
-          <?php /* Was hardcoded to the placeholder SVG and the literal word
-                   "User", so a signed-in member saw a stranger's chip in their
-                   own sidebar while the header above it showed their real name
-                   and photo. Both values are already resolved at the top of
-                   this file. */ ?>
-          <img class="sidebar-user-avatar" src="<?= $avatarUrl ?>" alt="" id="sidebar-user-avatar">
-          <span class="sidebar-user-info">
-            <strong class="sidebar-user-name" id="sidebar-user-name"><?= $displayName ?></strong>
-            <small class="sidebar-user-role"></small>
-          </span>
-        </button>
-        <button type="button" class="sidebar-account-toggle" id="sidebar-account-toggle" aria-expanded="false" aria-controls="sidebar-account-panel" aria-label="Switch account">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-
-        <div class="sidebar-account-panel" id="sidebar-account-panel" hidden>
-          <!-- Current (active) account. -->
-          <div class="sidebar-account-row is-current" aria-current="true">
-            <img class="sidebar-account-avatar" src="<?= $avatarUrl ?>" alt="">
-            <span class="sidebar-account-info">
-              <strong><?= $displayName ?></strong>
-              <small>Active now</small>
-            </span>
-            <svg class="sidebar-account-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <!-- Other accounts signed in on this device — POST switches the active one. -->
-          <?php foreach ($otherAccounts as $acc):
-            $accName = htmlspecialchars((string) $acc['name'], ENT_QUOTES, 'UTF-8');
-            $accAvatar = !empty($acc['avatar'])
-                ? htmlspecialchars(Upload::publicUrl((string) $acc['avatar']), ENT_QUOTES, 'UTF-8')
-                : '../images/user-profile.svg';
-            $accRoleLabel = match ($acc['role']) {
-                'organisation' => 'Organization',
-                'beneficiary'  => 'Recipient',
-                'admin'        => 'Admin',
-                default        => 'Donor',
-            };
-          ?>
-          <form action="../php/auth/switch-account.php" method="POST" class="sidebar-account-switch-form">
-            <?= Csrf::field() ?>
-            <input type="hidden" name="account_id" value="<?= (int) $acc['id'] ?>">
-            <button type="submit" class="sidebar-account-row" aria-label="Switch to <?= $accName ?>">
-              <img class="sidebar-account-avatar" src="<?= $accAvatar ?>" alt="">
-              <span class="sidebar-account-info">
-                <strong><?= $accName ?></strong>
-                <small><?= $accRoleLabel ?> · Switch</small>
-              </span>
-            </button>
-          </form>
-          <?php endforeach; ?>
-          <a class="sidebar-account-add" href="login.php?add=1">
-            <span class="sidebar-account-add-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </span>
-            Add an account
-          </a>
-        </div>
-      </div>
+      <?php /* The sidebar used to carry a second copy of the profile chip and
+               an account-switch panel, duplicating the header chip directly
+               above it. Account switching now lives in Settings, which is a
+               better home for it than a drawer panel. */ ?>
       <button class="sidebar-item active" data-section="dashboard" aria-current="page">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         <span>Dashboard</span>
@@ -348,7 +292,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
         <span>Help</span>
       </a>
-      <button class="sidebar-item auth-only creator-only" data-section="campaign-new">
+      <button class="sidebar-item auth-only" data-section="campaign-new">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span>Create Campaign</span>
       </button>
@@ -1177,7 +1121,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <button type="button" class="btn btn-primary" data-section="discover">Browse campaigns</button>
               <button type="button" class="btn btn-outline" data-section="wallet">Top up wallet</button>
               <button type="button" class="btn btn-outline" data-section="activity">View receipts</button>
-              <button type="button" class="btn btn-outline creator-only" data-section="campaign-new">Create campaign</button>
+              <button type="button" class="btn btn-outline" data-section="campaign-new">Create campaign</button>
             </div>
           </div>
 
@@ -1666,6 +1610,48 @@ $partial = dirname(__DIR__) . '/php/partials/';
                the new account to a multi-session cookie. UI is real (no fake
                account list); switching between accounts happens in the sidebar
                user-card panel once the backend exposes the session list. -->
+          <?php /* Account switching moved here from the sidebar panel, so
+                   Settings is the single place accounts are managed. The
+                   current account is shown for orientation; each other account
+                   signed in on this device gets a POST row that swaps the
+                   active session (php/auth/switch-account.php). Nothing is
+                   listed unless it is genuinely signed in — Auth::otherAccounts()
+                   reads the real session, so this never shows a fake list. */ ?>
+          <div class="settings-row is-current-account" aria-current="true">
+            <img class="settings-account-avatar" src="<?= $avatarUrl ?>" alt="">
+            <span class="settings-row-body">
+              <strong><?= $displayName ?></strong>
+              <small>Signed in now</small>
+            </span>
+            <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+
+          <?php foreach ($otherAccounts as $acc):
+            $accName = htmlspecialchars((string) $acc['name'], ENT_QUOTES, 'UTF-8');
+            $accAvatar = !empty($acc['avatar'])
+                ? htmlspecialchars(Upload::publicUrl((string) $acc['avatar']), ENT_QUOTES, 'UTF-8')
+                : '../images/user-profile.svg';
+            $accRoleLabel = match ($acc['role']) {
+                'organisation' => 'Organization',
+                'beneficiary'  => 'Recipient',
+                'admin'        => 'Admin',
+                default        => 'Donor',
+            };
+          ?>
+          <form action="../php/auth/switch-account.php" method="POST" class="settings-account-form">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="account_id" value="<?= (int) $acc['id'] ?>">
+            <button type="submit" class="settings-row" aria-label="Switch to <?= $accName ?>">
+              <img class="settings-account-avatar" src="<?= $accAvatar ?>" alt="">
+              <span class="settings-row-body">
+                <strong><?= $accName ?></strong>
+                <small><?= $accRoleLabel ?> · Tap to switch</small>
+              </span>
+              <svg class="settings-row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </form>
+          <?php endforeach; ?>
+
           <a class="settings-row" href="login.php?add=1">
             <span class="settings-row-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -2194,7 +2180,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
       <span>Campaigns</span>
     </button>
-    <button class="bottom-nav-item bottom-nav-fab creator-only" data-section="campaign-new" aria-label="Create new campaign">
+    <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" aria-label="Create new campaign">
       <svg fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     </button>
     <button class="bottom-nav-item" data-section="wallet" aria-label="Wallet">
