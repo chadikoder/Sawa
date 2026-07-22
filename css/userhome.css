@@ -5947,6 +5947,15 @@ body.role-org   .site-header-user-role::before { content: "Organisation"; }
   .site-header-nav { display: none; }
   .site-header-burger { display: none !important; }
 
+  /* ...except for guests. The reasoning above holds only when signed in: the
+     bottom-nav and the profile widget are both auth-only, so a guest under
+     900px lost the header links AND the button that opens the drawer, leaving
+     no route to About at all. The drawer itself was there the whole time —
+     nothing could open it. */
+  body.is-guest .site-header.guest-only .site-header-burger {
+    display: inline-flex !important;
+  }
+
   .site-header-inner { padding: 0 1.6rem; height: 5.8rem; gap: 1rem; }
   /* Keep the user-lead chip aligned with the sidebar/drawer logo (x = 2.2rem) */
   .site-header--user-lead .site-header-inner { padding-left: 2.2rem; padding-right: 1.6rem; }

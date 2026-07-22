@@ -420,7 +420,7 @@ $year = date('Y');
       <div class="footer-grid">
         <div class="footer-section">
           <div class="footer-brand">
-            <div class="footer-logo"><img src="../images/sawa_v2.svg" alt="Sawa" style="width: 2.8rem; height: 2.8rem;"></div>
+            <div class="footer-logo"><img src="../images/sawa_v2.svg" alt="Sawa"></div>
             <span>Sawa</span>
           </div>
           <p class="footer-desc">Direct help for Lebanese families in need.</p>

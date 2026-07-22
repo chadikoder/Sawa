@@ -44,17 +44,6 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
       <span>Back to home</span>
     </a>
-    <?php /* Brand mark for small screens. Signup already had the page gradient
-             and a white form card, but no logo or name anywhere — so it read as
-             a bare form. This sits on the existing gradient rather than adding a
-             second filled band, which would just stack two blues. Hidden from
-             768px up, where the desktop layout takes over. */ ?>
-    <div class="auth-brand-band">
-      <img src="../images/sawa_v2.svg" alt="" class="auth-brand-band-logo">
-      <p class="auth-brand-band-name">SAWA</p>
-      <p class="auth-brand-band-tag">Connecting Lebanese donors<br>with families in need</p>
-    </div>
-
     <?php if ($signupErrorMessage !== null): ?>
       <div class="signup-error-banner" role="alert">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -136,7 +125,6 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
         <button type="button" class="phone_btn" >Phone</button>
         <button type="button" class="email_btn">Email</button>
     </div>
-
 
         <label class="field-fullname">
         <span class="label_text">Full Name</span>
@@ -329,7 +317,6 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 
                     </div>
 
-
                 </label>
 
                     <span class="file_text">Upload registration document</span>
@@ -341,9 +328,7 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 
             <input type="submit" value="Submit for Verification">
 
-
         </div>
-
 
 
     </form>

@@ -549,7 +549,18 @@ footer {
 .footer-grid { display: grid; grid-template-columns: 1fr; gap: 3.2rem; margin-bottom: 3.2rem; }
 @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } }
 
-.footer-section h4 { font-weight: 700; margin-bottom: 1.6rem; color: white; }
+/* Matches .footer-brand's row height so "Contact us" and the other column
+   headings sit on the same line as "Sawa". The brand row is as tall as its
+   6.4rem logo disc, which left its text ~20px lower than every other heading
+   and made the footer columns look unaligned. */
+.footer-section h4 {
+    font-weight: 700;
+    margin-bottom: 1.6rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    min-height: 6.4rem;
+}
 .footer-section ul { list-style: none; }
 .footer-section li { margin-bottom: 0.8rem; }
 .footer-section a { font-size: 1.4rem; opacity: 0.75; color: white; }
@@ -557,7 +568,10 @@ footer {
 
 .footer-brand { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.6rem; }
 .footer-logo { width: 6.4rem; height: 6.4rem; border-radius: 50%; background-color: white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.footer-logo img { width: 100%; height: 100%; object-fit: contain; }
+/* Fills the disc properly. The markup used to carry an inline 2.8rem, which
+   beat this rule and left the mark floating in the middle of a 6.4rem circle
+   with more padding than logo. */
+.footer-logo img { width: 100%; height: 100%; object-fit: contain; padding: 0.9rem; }
 
 /* ==========================================
    DARK MODE

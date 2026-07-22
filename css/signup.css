@@ -1150,53 +1150,7 @@ html[data-theme="dark"] .back-home {
     color: #bfdbfe;
 }
 
-/* ── Brand mark above the signup card (small screens only) ──────────────────
-   Signup already had a gradient page and a white card, so it did not need the
-   login page's floating-card treatment — what it had was no brand at all.
-   This adds the logo, name and tagline directly on the existing gradient. A
-   filled band would have stacked a second blue on top of the first.
-   Above 768px the desktop layout takes over and this is hidden. */
-.auth-brand-band {
-    width: 100%;
-    text-align: center;
-    padding: 0 2rem;
-    margin: 0 0 1.6rem;
-}
 
-.auth-brand-band-logo {
-    width: 6.4rem;
-    height: 6.4rem;
-    filter: var(--auth-logo-filter);
-}
-
-.auth-brand-band-name {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--auth-panel-fg);
-    margin: 0.5rem 0 0.3rem;
-    line-height: 1;
-}
-
-.auth-brand-band-tag {
-    font-size: 1.3rem;
-    line-height: 1.5;
-    color: var(--auth-panel-soft);
-    margin: 0;
-}
-
-/* A signup form with seven fields will scroll on a phone and should — cramming
-   it into one screen would mean shrinking the fields themselves. On a short
-   window the tagline is the first thing worth losing, since the logo and name
-   already carry the brand. */
-@media (max-height: 800px) {
-    .auth-brand-band-tag { display: none; }
-    .auth-brand-band { margin-bottom: 1rem; }
-}
-
-@media (min-width: 768px) {
-    .auth-brand-band { display: none; }
-}
 
 /* "(optional)" hint next to a label — lighter and smaller than the label so it
    reads as an aside rather than part of the field name. */
