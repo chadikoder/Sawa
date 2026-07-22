@@ -43,11 +43,21 @@ document.querySelector('.login_form')?.addEventListener('submit', (e) => {
     valid = false;
   }
 
+  // reset-password.php is the only page with a confirm box. Catching the
+  // mismatch here saves a round trip that would otherwise come back as a bare
+  // ?status=error with the reason lost.
+  const confirm = document.getElementById('password_confirm');
+  if (confirm && password && confirm.value !== password.value) {
+    showError(confirm, 'Passwords do not match');
+    valid = false;
+  }
+
   if (valid) {
     const btn = e.target.querySelector('[type="submit"]');
     if (btn) {
-      // The password box is what distinguishes login from forgot-password.
-      btn.value = password ? 'Logging in...' : 'Sending...';
+      // Each page states its own busy label — inferring it from which fields
+      // exist was guesswork that mislabelled the reset form as "Logging in".
+      btn.value = btn.dataset.busy || 'Please wait…';
       btn.disabled = true;
     }
     e.target.submit();
@@ -62,19 +72,21 @@ document.querySelector('.login_form')?.addEventListener('submit', (e) => {
   });
 });
 
-// Password show/hide toggle
-document.querySelector('.pwd-toggle')?.addEventListener('click', () => {
-  const pwd = document.getElementById('password');
-  const icon = document.getElementById('eye-icon');
-  if (pwd.type === 'password') {
-    pwd.type = 'text';
-    icon.style.opacity = '0.45';
-    document.querySelector('.pwd-toggle')?.setAttribute('aria-label', 'Hide password');
-  } else {
-    pwd.type = 'password';
-    icon.style.opacity = '1';
-    document.querySelector('.pwd-toggle')?.setAttribute('aria-label', 'Show password');
-  }
+// Password show/hide. Bound per button and scoped to that button's own
+// .input-wrap, so a page with more than one password box works — the previous
+// version grabbed only the first .pwd-toggle and hardcoded #password and
+// #eye-icon, so on reset-password.php the confirm field's toggle would have
+// silently operated the field above it.
+document.querySelectorAll('.pwd-toggle').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const field = btn.closest('.input-wrap')?.querySelector('input[type="password"], input[type="text"]');
+    if (!field) return;
+    const icon = btn.querySelector('svg');
+    const reveal = field.type === 'password';
+    field.type = reveal ? 'text' : 'password';
+    if (icon) icon.style.opacity = reveal ? '0.45' : '1';
+    btn.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+  });
 });
 
 // PHP redirect toast with fixed status codes only.

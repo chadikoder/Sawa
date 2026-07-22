@@ -113,7 +113,7 @@ $addMode = isset($_GET['add']) && Auth::check();
                     <a href="forgot-password.php" class="forgot-link">Forgot password?</a>
                 </div>
 
-                <input type="submit" value="Log In">
+                <input type="submit" value="Log In" data-busy="Logging in...">
 
             </form>
 
