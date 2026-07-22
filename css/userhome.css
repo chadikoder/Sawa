@@ -1727,7 +1727,16 @@ body.is-guest .fee-rate--user  { display: none !important; }
     top: 5.8rem;
     left: 0;
     bottom: 0;
-    z-index: 30;
+    /* Top of the stack while open: above the overlay (z:110) and the bottom
+       nav (z:100). At z:30 the drawer rendered underneath both, so its items
+       could be seen but not tapped. */
+    z-index: 120;
+    /* The base rule pins height to 100dvh. Here the drawer starts 5.8rem down
+       to clear the header, so keeping a full-viewport height pushed its last
+       5.8rem below the fold — the bottom of the menu was cut off and the
+       drawer scrolled to reach it. Letting top/bottom size the box instead
+       gives exactly the space between the header and the screen edge. */
+    height: auto;
     transform: translateX(-100%);
     transition: transform 0.3s;
     box-shadow: var(--shadow-lg);
@@ -6686,8 +6695,14 @@ body.is-guest #discover .discover-filters {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
-  /* Above sticky site-header (z:50), below sidebar drawer (z:60). */
-  z-index: 55;
+  /* 110: above the bottom nav (z:100) and below the drawer (z:120 on mobile).
+     This used to be 55, and the comment here justified it as "below sidebar
+     drawer (z:60)" — true of the base .sidebar rule, but the mobile media
+     query drops the drawer to z:30. So on a phone the overlay covered the very
+     menu it was meant to sit behind and every item in it was unclickable.
+     Sitting above the bottom nav is deliberate too: while the drawer is open a
+     tap outside it should close the drawer, not press a bottom-nav button. */
+  z-index: 110;
 }
 .mobile-overlay.show { display: block; }
 

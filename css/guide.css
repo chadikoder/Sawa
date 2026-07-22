@@ -88,13 +88,16 @@ html[data-theme="dark"] .guide-header {
 /* ── Mobile chip TOC (visible <1024px) ── */
 .guide-toc-chips {
   display: flex;
+  /* Wraps onto a second line instead of scrolling sideways. This was a
+     horizontal scroller (overflow-x:auto + scroll-snap): 656px of chips in a
+     544px row, so two of the six sections were off-screen with nothing to
+     indicate they were there. A sideways scroll inside a vertical page is easy
+     to miss entirely, and there is plenty of room to just wrap. */
+  flex-wrap: wrap;
   gap: var(--sp-2);
   padding: var(--sp-3) var(--sp-4);
-  overflow-x: auto;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
 }
 .guide-toc-chips a {
   flex-shrink: 0;
@@ -106,7 +109,6 @@ html[data-theme="dark"] .guide-header {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--r-full);
-  scroll-snap-align: start;
 }
 .guide-toc-chips a:hover { border-color: var(--color-primary); color: var(--color-primary); }
 @media (min-width: 1024px) {

@@ -246,9 +246,14 @@ $partial = dirname(__DIR__) . '/php/partials/';
            /php/auth/sessions.php endpoint exists. -->
       <div class="sidebar-user-wrap auth-only">
         <button type="button" class="sidebar-user" data-section="profile" aria-label="Go to my profile">
-          <img class="sidebar-user-avatar" src="../images/user-profile.svg" alt="" id="sidebar-user-avatar">
+          <?php /* Was hardcoded to the placeholder SVG and the literal word
+                   "User", so a signed-in member saw a stranger's chip in their
+                   own sidebar while the header above it showed their real name
+                   and photo. Both values are already resolved at the top of
+                   this file. */ ?>
+          <img class="sidebar-user-avatar" src="<?= $avatarUrl ?>" alt="" id="sidebar-user-avatar">
           <span class="sidebar-user-info">
-            <strong class="sidebar-user-name" id="sidebar-user-name">User</strong>
+            <strong class="sidebar-user-name" id="sidebar-user-name"><?= $displayName ?></strong>
             <small class="sidebar-user-role"></small>
           </span>
         </button>
@@ -343,12 +348,6 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         <span>My Campaigns</span>
       </button>
-      <!-- Help → user-flow tips page (replaces the old "About" link on the auth nav). -->
-      <a class="sidebar-item" href="guide.html">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093V15m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>Help</span>
-      </a>
-
       <!-- Auth section — pinned to bottom, visually separated from primary nav -->
       <div class="sidebar-auth-section">
         <span class="sidebar-section-label guest-only">Join Sawa</span>
@@ -1101,13 +1100,15 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
           <div class="profile-identity">
             <div class="profile-avatar-frame">
-              <img src="../images/user-profile.svg" alt="" id="profile-view-avatar">
+              <img src="<?= $avatarUrl ?>" alt="" id="profile-view-avatar">
             </div>
             <h2 class="profile-view-name" id="profile-view-name"><?= $displayName ?></h2>
             <span class="profile-role-badge" aria-label="Account role"></span>
-            <p class="profile-view-bio" id="profile-view-bio">
-              <?= $bioValue !== '' ? $bioValue : '<em class="profile-view-bio-empty">No bio yet — tap Edit profile to add one.</em>' ?>
-            </p>
+            <?php /* Kept on one line on purpose: this element is
+                     white-space: pre-wrap, so a newline and the source
+                     indentation would render as a literal gap before the
+                     text. */ ?>
+            <p class="profile-view-bio" id="profile-view-bio"><?= $bioValue !== '' ? $bioValue : '<em class="profile-view-bio-empty">No bio yet — tap Edit profile to add one.</em>' ?></p>
           </div>
         </div>
 
@@ -1208,7 +1209,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
 
             <div class="profile-edit-avatar">
               <label class="avatar-upload" for="avatar-input">
-                <img src="../images/user-profile.svg" alt="" id="avatar-preview">
+                <img src="<?= $avatarUrl ?>" alt="" id="avatar-preview">
                 <span class="avatar-overlay" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                   <span>Change photo</span>
@@ -2081,7 +2082,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <?= Csrf::field() ?>
               <input type="hidden" name="campaign_id" id="cm-comment-camp-id">
               <div class="cm-comment-form-row">
-                <img class="cm-comment-form-avatar" src="../images/user-profile.svg" alt="" aria-hidden="true">
+                <img class="cm-comment-form-avatar" src="<?= $avatarUrl ?>" alt="" aria-hidden="true">
                 <textarea name="body" id="cm-comment-input" aria-label="Add a comment" placeholder="Add a comment — be kind." maxlength="500" rows="2" required></textarea>
               </div>
               <div class="cm-comment-form-foot">
