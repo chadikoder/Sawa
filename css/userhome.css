@@ -1724,30 +1724,31 @@ body.is-guest .fee-rate--user  { display: none !important; }
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    top: 5.8rem;
     left: 0;
     /* Top of the stack while open: above the overlay (z:110) and the bottom
        nav (z:100). At z:30 the drawer rendered underneath both, so its items
        could be seen but not tapped. */
     z-index: 120;
-    /* Sized by svh, not by dvh and not by top+bottom.
-       The base rule pins height to 100dvh; here the drawer starts 5.8rem down
-       to clear the header, so a full-viewport height pushed its last 5.8rem
-       below the fold and it had to scroll to reach them.
-       bottom:0 fixes that but introduces a worse problem on a phone: a fixed
-       box sized by bottom resolves against the *dynamic* viewport, and the
-       browser chrome collapsing as you scroll changes it — the drawer visibly
-       resized mid-scroll. svh is the viewport measured with the chrome
-       showing, i.e. the smallest it ever gets, so the height is constant from
-       open to close. The vh line is the fallback for engines without svh. */
+    /* Full height, starting at the very top rather than 5.8rem down.
+       The drawer sits at z-index 120, above the header, so it does not need to
+       leave room for it — and starting below it was the source of every
+       sizing complaint: the height then depended on where the header ended.
+       Sized by svh, not vh/dvh and not by top+bottom: a fixed box sized by
+       `bottom` resolves against the *dynamic* viewport, which is exactly what
+       changes when mobile browser chrome collapses mid-scroll, so the drawer
+       visibly resized while scrolling. svh is the viewport with the chrome
+       showing — the smallest it ever gets — so the height cannot move. The vh
+       line is the fallback for engines without svh. */
+    top: 0;
     bottom: auto;
-    height: calc(100vh - 5.8rem);
-    height: calc(100svh - 5.8rem);
+    height: 100vh;
+    height: 100svh;
+    /* A touch wider than the old 28rem so the longer labels breathe. */
+    width: 30rem;
+    border-radius: 0 1.6rem 1.6rem 0;
     transform: translateX(-100%);
     transition: transform 0.3s;
     box-shadow: var(--shadow-lg);
-    border-radius: 0 1.6rem 1.6rem 0;
-    width: 28rem;
   }
   .sidebar.open { transform: translateX(0); }
 
@@ -1775,13 +1776,14 @@ body.is-guest .fee-rate--user  { display: none !important; }
     padding-bottom: 1.8rem;
   }
   .avatar-upload { width: 12rem; height: 12rem; }
-  /* Touch hint — hover never fires, so always show a subtle gradient pill. */
-  .avatar-upload .avatar-overlay {
-    opacity: 1;
-    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 55%);
-    padding-bottom: 1rem;
-    font-size: 1.05rem;
-  }
+  /* The gradient-pill override that used to live here was left over from when
+     .avatar-overlay covered the whole avatar. It is a solid blue corner camera
+     badge now, and repainting its background with a transparent-to-black
+     gradient made it almost invisible against the photo — the badge only
+     looked present on hover, where the base rule darkens it. The badge needs
+     no touch hint: it is always visible by design. */
+  .avatar-upload .avatar-overlay { width: 3.8rem; height: 3.8rem; }
+  .avatar-upload .avatar-overlay svg { width: 1.8rem; height: 1.8rem; }
   .profile-display-name { font-size: 2rem; }
   .profile-fields { width: 100%; min-width: 0; }
   .profile-save-btn {
@@ -4475,6 +4477,21 @@ body.is-guest .auth-only  { display: none !important; }
 body:not(.role-donor) .donor-only { display: none !important; }
 body:not(.role-taker) .taker-only { display: none !important; }
 body:not(.role-org)   .org-only   { display: none !important; }
+
+/* Campaign creation is limited to recipients, organisations and admins — see
+   the require_role() call in php/campaigns/create.php. A donor was still shown
+   the sidebar entry, the bottom-nav + button and a profile quick action, all
+   of which led to a form that could only ever fail. Two :not()s rather than
+   combining .taker-only with .org-only, because those rules hide an element
+   unless the body carries that exact role, so an element with both classes
+   would be hidden from everyone.
+   Admins map to .role-org via Auth::bodyRoleClass(), and are redirected off
+   this page anyway. */
+body:not(.role-taker):not(.role-org) .creator-only { display: none !important; }
+
+/* The bottom nav is a 5-column grid; with the + button hidden for donors it
+   would otherwise leave a gap where the FAB used to be. */
+body.role-donor .bottom-nav { grid-template-columns: repeat(4, 1fr); }
 
 /* Opt-in escape hatch: a role-only block can still appear for guests if it
    also carries .guest-show. Specificity (3 classes) beats the :not() rule (2). */
@@ -9592,8 +9609,16 @@ html[data-theme="dark"] .bill-verification {
   font-family: inherit;
   font-size: 1.15rem;
   font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.7;
+  /* Was cursor:not-allowed + opacity:.7 from when this was a disabled
+     "Coming soon" button. It is a working <label> driving a file input now, so
+     it has to look and behave like one. */
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+.profile-banner-edit-btn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 .profile-banner-edit-btn svg { width: 1.4rem; height: 1.4rem; }
 

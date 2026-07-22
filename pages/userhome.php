@@ -348,7 +348,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
         <span>Help</span>
       </a>
-      <button class="sidebar-item auth-only" data-section="campaign-new">
+      <button class="sidebar-item auth-only creator-only" data-section="campaign-new">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span>Create Campaign</span>
       </button>
@@ -1177,7 +1177,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
               <button type="button" class="btn btn-primary" data-section="discover">Browse campaigns</button>
               <button type="button" class="btn btn-outline" data-section="wallet">Top up wallet</button>
               <button type="button" class="btn btn-outline" data-section="activity">View receipts</button>
-              <button type="button" class="btn btn-outline" data-section="campaign-new">Create campaign</button>
+              <button type="button" class="btn btn-outline creator-only" data-section="campaign-new">Create campaign</button>
             </div>
           </div>
 
@@ -1780,21 +1780,27 @@ $partial = dirname(__DIR__) . '/php/partials/';
               </span>
             </span>
           </label>
-          <?php /* Wallet-pay disabled by design — enable when the wallet-pay endpoint + provider integration are ready. */ ?>
-          <label class="payment-method-option is-coming-soon auth-only" aria-disabled="true">
-            <input type="radio" name="payment_method_choice" value="wallet" disabled>
+          <?php /* Enabled: the backend has supported this the whole time —
+                   php/donations/donate.php handles payment_method 'wallet',
+                   debits through WalletService inside the donation transaction,
+                   and DonationService::feeRate() already returns the 5% member
+                   rate for it. Only this control was holding it back. Balance
+                   is shown so the member can see whether it will cover the
+                   donation; donate.php re-checks and rejects an overdraw. */ ?>
+          <label class="payment-method-option auth-only">
+            <input type="radio" name="payment_method_choice" value="wallet">
             <span class="payment-method-icon payment-method-icon--wallet" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </span>
             <span class="payment-method-body">
               <strong>Sawa Wallet</strong>
               <small>Pay from your Sawa balance — instant, members only.</small>
-              <span class="payment-method-fee payment-method-fee--soon">Coming soon</span>
+              <span class="payment-method-fee">5% Sawa fee — cheapest option</span>
               <span class="payment-method-extra">
-                <span class="pm-extra-row"><span class="pm-extra-label">Status</span><span>Wallet payments are launching soon &mdash; we&rsquo;ll notify you the moment they go live.</span></span>
-                <span class="pm-extra-row"><span class="pm-extra-label">Source</span><span>Will use your Sawa wallet balance only.</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Balance</span><span>$<?= $walletBalance ?> available now.</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Source</span><span>Uses your Sawa wallet balance only.</span></span>
                 <span class="pm-extra-row"><span class="pm-extra-label">Speed</span><span>Instant — no provider redirect.</span></span>
-                <span class="pm-extra-row"><span class="pm-extra-label">Why cheaper</span><span>Members will pay 5% on wallet donations (vs 10% via Whish / Visa).</span></span>
+                <span class="pm-extra-row"><span class="pm-extra-label">Why cheaper</span><span>Members pay 5% on wallet donations, against 10% via Whish or Visa.</span></span>
               </span>
             </span>
           </label>
@@ -2188,7 +2194,7 @@ $partial = dirname(__DIR__) . '/php/partials/';
       <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
       <span>Campaigns</span>
     </button>
-    <button class="bottom-nav-item bottom-nav-fab" data-section="campaign-new" aria-label="Create new campaign">
+    <button class="bottom-nav-item bottom-nav-fab creator-only" data-section="campaign-new" aria-label="Create new campaign">
       <svg fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     </button>
     <button class="bottom-nav-item" data-section="wallet" aria-label="Wallet">
