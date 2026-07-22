@@ -26,4 +26,7 @@ if (!$camp || $camp['status'] !== 'active') {
 db()->prepare('INSERT INTO comments (campaign_id, user_id, body) VALUES (?, ?, ?)')
     ->execute([$campaignId, Auth::id(), $body]);
 
-Response::redirect('pages/userhome.php', ['status' => 'success', 'campaign' => $campaignId]);
+// Deliberately no 'campaign' parameter: js/userhome.js opens the campaign
+// modal whenever one is present, so returning with it made the whole campaign
+// screen spring open again the moment a comment was posted.
+Response::redirect('pages/userhome.php', ['status' => 'comment_posted']);

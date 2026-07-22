@@ -17,15 +17,9 @@ if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
 }
 
 $session = PaymentService::findByToken($token);
+// Just the section. A 'campaign' parameter makes js/userhome.js reopen the
+// full campaign screen on arrival, which buried the payment status modal.
 $returnExtra = ['section' => 'discover'];
-if ($session && !empty($session['donation_id'])) {
-    $stmt = db()->prepare('SELECT campaign_id FROM donations WHERE id = ? LIMIT 1');
-    $stmt->execute([(int) $session['donation_id']]);
-    $campaignId = (int) $stmt->fetchColumn();
-    if ($campaignId > 0) {
-        $returnExtra['campaign'] = $campaignId;
-    }
-}
 
 if ($action === 'confirm') {
     try {

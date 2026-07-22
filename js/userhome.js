@@ -1327,21 +1327,19 @@ function openCampaignModal(card) {
     : '<li class="activity-empty">No donors yet. Be the first.</li>';
 
   // Comments tab — wire campaign id into the post form so PHP gets it on submit.
-  // Mock empty state; PHP later: replace #cm-comments-list contents + update badge count.
   const campIdHidden = document.getElementById('cm-comment-camp-id');
   if (campIdHidden) campIdHidden.value = card.dataset.campId || '';
-  const commentsList = document.getElementById('cm-comments-list');
-  if (commentsList) commentsList.innerHTML = '<li class="activity-empty">No comments yet — be the first to post.</li>';
   const commentInput = document.getElementById('cm-comment-input');
   const commentCounter = document.getElementById('cm-comment-counter');
   if (commentInput) commentInput.value = '';
   if (commentCounter) commentCounter.textContent = '0 / 500';
-  const commentsCount = document.getElementById('cm-comments-count');
-  const cCount = parseInt(card.dataset.commentsCount || '0', 10) || 0;
-  if (commentsCount) {
-    commentsCount.textContent = cCount;
-    commentsCount.hidden = cCount === 0;
-  }
+  // Comments are fetched rather than read off the card: putting every comment
+  // into a data attribute on every card in the grid does not scale, and this
+  // list was previously hardcoded to "No comments yet" no matter what had been
+  // posted — so a comment saved fine and then vanished.
+  loadCampaignComments(card.dataset.campId);
+
+  // (comments are loaded by loadCampaignComments, defined below)
 
   // Message-creator deep link — PHP wires this to its messaging route.
   // Hide the button if no org id on the card (no destination = no button).
@@ -1528,6 +1526,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   const toastMessages = {
     success: { text: 'Saved successfully.', error: false },
+    comment_posted: { text: 'Comment posted.', error: false },
+    campaign_deleted: { text: 'Campaign deleted.', error: false },
+    campaign_withdrawn: { text: 'Campaign withdrawn from public view. Donation records are kept.', error: false },
     error: { text: 'Something went wrong. Please try again.', error: true },
     payment_pending: { text: 'Payment is pending confirmation.', error: false },
     payment_confirmed: { text: 'Payment confirmed. Thank you.', error: false },
@@ -2184,3 +2185,58 @@ document.querySelectorAll('[data-back-to]').forEach(btn => {
   }
   setInterval(poll, 4000);
 })();
+
+
+/* ── Campaign comments ────────────────────────────────────────────────────
+   Loads the real feed for a campaign into the modal's Comments tab and keeps
+   the tab badge honest. Called whenever the modal opens, and again after a
+   comment is posted so the new one appears without a reload. */
+async function loadCampaignComments(campaignId) {
+  const list = document.getElementById('cm-comments-list');
+  const badge = document.getElementById('cm-comments-count');
+  if (!list || !campaignId) return;
+
+  list.innerHTML = '<li class="activity-empty">Loading comments…</li>';
+  try {
+    const res = await fetch('../php/engagement/comments-list.php?campaign_id=' + encodeURIComponent(campaignId),
+                            { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+    const items = (data && data.comments) || [];
+
+    if (badge) {
+      badge.textContent = items.length;
+      badge.hidden = items.length === 0;
+    }
+    if (!items.length) {
+      list.innerHTML = '<li class="activity-empty">No comments yet — be the first to post.</li>';
+      return;
+    }
+    // textContent everywhere below, never innerHTML with server data: comment
+    // bodies are user-written and must not be able to inject markup here.
+    list.innerHTML = '';
+    items.forEach(c => {
+      const li = document.createElement('li');
+      li.className = 'cm-comment-row';
+      const img = document.createElement('img');
+      img.className = 'cm-comment-avatar';
+      img.src = c.avatar || '../images/user-profile.svg';
+      img.alt = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'cm-comment-body';
+      const head = document.createElement('div');
+      head.className = 'cm-comment-head';
+      const who = document.createElement('strong');
+      who.textContent = c.author;
+      const when = document.createElement('small');
+      when.textContent = c.ago;
+      head.append(who, when);
+      const text = document.createElement('p');
+      text.textContent = c.body;
+      wrap.append(head, text);
+      li.append(img, wrap);
+      list.appendChild(li);
+    });
+  } catch (e) {
+    list.innerHTML = '<li class="activity-empty">Could not load comments.</li>';
+  }
+}

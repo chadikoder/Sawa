@@ -26,7 +26,9 @@ $camp = CampaignService::find($campaignId);
 if (!$camp || $camp['status'] !== 'active' || $amount < 1) {
     Response::redirectStatus('pages/userhome.php', 'error');
 }
-$returnExtra = ['section' => 'discover', 'campaign' => $campaignId];
+// No 'campaign' here either — see the note in comments-post.php. Returning
+// from a payment reopened the full campaign screen behind the status modal.
+$returnExtra = ['section' => 'discover'];
 
 $breakdown = DonationService::breakdown($amount, $isGuest, $method);
 $guestName = Validator::sanitizeString((string) ($_POST['donor_name'] ?? ''), 120);

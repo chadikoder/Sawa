@@ -10200,3 +10200,58 @@ html[data-theme="dark"] .recent-donation-empty > p { color: #cbd5e1; }
 .settings-row.is-current-account .settings-row-chevron {
   color: var(--color-success);
 }
+
+/* ── Owner controls on a campaign card ────────────────────────────────────
+   A creator can withdraw their own campaign. Styled as a quiet destructive
+   action, not a primary one: it sits where Donate sits on other people's
+   cards, so it must not read as the main thing to press. */
+.camp-delete-form { display: contents; }
+.camp-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid var(--color-danger);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-danger);
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t), color var(--t);
+}
+.camp-delete svg { width: 1.5rem; height: 1.5rem; }
+.camp-delete:hover { background: var(--color-danger); color: #fff; }
+
+/* ── Comment feed in the campaign modal ── */
+.cm-comment-row {
+  display: flex;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.cm-comment-row:last-child { border-bottom: 0; }
+.cm-comment-avatar {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.cm-comment-body { min-width: 0; flex: 1; }
+.cm-comment-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+.cm-comment-head strong { font-size: 1.4rem; color: var(--color-text); }
+.cm-comment-head small { font-size: 1.2rem; color: var(--color-text-muted); }
+.cm-comment-body p {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
