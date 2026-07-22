@@ -6,7 +6,7 @@
 
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 7rem;
+    scroll-padding-top: 8.2rem;
 }
 
 body {
@@ -693,7 +693,7 @@ html[data-theme="dark"] .ill-line {
     h2 { font-size: 2.4rem; }
     h3 { font-size: 2rem; }
     .hero { min-height: auto; }
-    .hero .container { padding-top: 10rem; }
+    .hero .container { padding-top: 11.2rem; }
     .hero p { font-size: 1.6rem; }
     .hero-visual { max-width: 100%; }
     .hero-proof-card {
@@ -844,8 +844,18 @@ html[data-theme="dark"] .footer-bottom {
     color: #cbd5e1;
 }
 
+/* Was a near-white chip, which is why the footer mark stayed coloured while
+   every other logo went white in dark mode — a white mark on a white disc
+   erases itself. Matching .nav-logo-circle's dark treatment instead lets the
+   logo go white here too, and makes the header and footer marks agree. */
 html[data-theme="dark"] .footer-logo {
-    background: rgba(248, 250, 252, 0.94);
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(96, 165, 250, 0.32);
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] .footer-logo img {
+    filter: var(--auth-logo-filter);
 }
 
 /* Final dark-mode sweep for late policy/FAQ blocks and any section class that

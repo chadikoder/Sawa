@@ -8,7 +8,12 @@
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 200;
-  height: 6.4rem;
+  /* 7.6rem, up from 6.4rem: the brand circle is 5.6rem at >=768px, which left
+     only 4px of breathing room above and below it. Anything that offsets
+     against this bar was moved by the same 1.2rem — the mobile drawer's `top`
+     below, .hero .container's padding-top, and scroll-padding-top in
+     about.css, which keeps anchor links from landing under the bar. */
+  height: 7.6rem;
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -98,7 +103,7 @@
 /* ── Mobile slide-down panel ── */
 .nav-links-wrap {
   position: fixed;
-  top: 6.4rem;
+  top: 7.6rem;
   left: 0; right: 0;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);

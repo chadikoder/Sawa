@@ -1164,17 +1164,17 @@ html[data-theme="dark"] .back-home {
 }
 
 .auth-brand-band-logo {
-    width: 8rem;
-    height: 8rem;
+    width: 6.4rem;
+    height: 6.4rem;
     filter: var(--auth-logo-filter);
 }
 
 .auth-brand-band-name {
-    font-size: 2.4rem;
+    font-size: 2rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     color: var(--auth-panel-fg);
-    margin: 0.8rem 0 0.4rem;
+    margin: 0.5rem 0 0.3rem;
     line-height: 1;
 }
 
@@ -1185,6 +1185,24 @@ html[data-theme="dark"] .back-home {
     margin: 0;
 }
 
+/* A signup form with seven fields will scroll on a phone and should — cramming
+   it into one screen would mean shrinking the fields themselves. On a short
+   window the tagline is the first thing worth losing, since the logo and name
+   already carry the brand. */
+@media (max-height: 800px) {
+    .auth-brand-band-tag { display: none; }
+    .auth-brand-band { margin-bottom: 1rem; }
+}
+
 @media (min-width: 768px) {
     .auth-brand-band { display: none; }
+}
+
+/* "(optional)" hint next to a label — lighter and smaller than the label so it
+   reads as an aside rather than part of the field name. */
+.field-optional {
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    opacity: 0.85;
 }

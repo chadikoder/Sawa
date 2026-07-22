@@ -254,7 +254,7 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 
             <div class="input-group">
 
-            <label for="user_description_basic">Bio</label>
+            <label for="user_description_basic">Bio <span class="field-optional">(optional)</span></label>
             <textarea name="user_description" id="user_description_basic" rows="5" cols="15" maxlength="250"></textarea>
             <span class="bio-counter" id="basic-bio-counter">0 / 250</span>
 
@@ -299,8 +299,8 @@ $signupErrorMessage = $signupErrors[$signupErrorCode] ?? null;
 
             <div class="input-group">
 
-            <label for="user_description_org">Bio</label>
-            <textarea name="user_description" id="user_description_org" rows="5" cols="15" maxlength="250"></textarea>
+            <label for="user_description_org">Bio <span class="field-optional">(optional)</span></label>
+            <textarea name="org_description" id="user_description_org" rows="5" cols="15" maxlength="250"></textarea>
             <span class="bio-counter" id="org-bio-counter">0 / 250</span>
 
             </div>

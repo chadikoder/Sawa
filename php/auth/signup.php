@@ -69,7 +69,14 @@ if ($hasPhone) {
     }
 }
 
-$bio = Validator::sanitizeString((string) ($_POST['user_description'] ?? ''), 250);
+// The form carries two bio boxes — one on the personal step, one on the
+// organisation step — and both live inside the same <form>. A hidden step is
+// only display:none, so its fields are still submitted; when both were named
+// "user_description" the later (empty) one silently won and the bio the user
+// typed never reached the database. They now have distinct names.
+$bioPersonal = Validator::sanitizeString((string) ($_POST['user_description'] ?? ''), 250);
+$bioOrg = Validator::sanitizeString((string) ($_POST['org_description'] ?? ''), 250);
+$bio = ($role === 'organisation' && $bioOrg !== '') ? $bioOrg : $bioPersonal;
 $location = Validator::sanitizeString((string) ($_POST['user_location'] ?? ''), 80);
 $hash = password_hash($password, PASSWORD_DEFAULT);
 

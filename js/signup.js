@@ -158,9 +158,13 @@ function validateBasicInfo() {
     let valid = true;
     clearAllErrors();
 
+    // Bio is optional. The server already stores NULL for a blank one, and
+    // nothing downstream needs it — only enforce the minimum once the user has
+    // actually written something.
     const bio = document.getElementById('user_description_basic');
-    if (bio.value.trim().length < 10) {
-        showError(bio, 'Bio must be at least 10 characters');
+    const bioText = bio.value.trim();
+    if (bioText.length > 0 && bioText.length < 10) {
+        showError(bio, 'Either write at least 10 characters or leave the bio empty');
         valid = false;
     }
 
@@ -177,9 +181,11 @@ function validateOrgInfo() {
     let valid = true;
     clearAllErrors();
 
+    // Optional, same as the personal bio above.
     const bio = document.getElementById('user_description_org');
-    if (bio.value.trim().length < 10) {
-        showError(bio, 'Bio must be at least 10 characters');
+    const bioText = bio.value.trim();
+    if (bioText.length > 0 && bioText.length < 10) {
+        showError(bio, 'Either write at least 10 characters or leave the bio empty');
         valid = false;
     }
 

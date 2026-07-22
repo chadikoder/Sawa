@@ -9,9 +9,17 @@
     --white:          var(--color-surface);
 }
 
+/* Settles in by scale, not by translate.
+   translateY(20px) does not change layout, but it does extend the *scrollable
+   overflow* area, so for the first 0.6s of every page load the document was
+   20px taller than the viewport. On the desktop landing page, where both
+   panels are exactly 100vh, that showed a scrollbar which then vanished when
+   the animation finished — the flash on entering the page.
+   Scaling from 0.98 to 1 only ever shrinks the box inward, so it can never
+   add overflow, and the entry still reads as motion rather than a hard cut. */
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: scale(0.98); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
 /* ── Page layout ── */
