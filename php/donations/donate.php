@@ -90,11 +90,17 @@ try {
         $donationId
     );
     $pdo->commit();
-} catch (Throwable) {
+} catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    Response::redirectStatus('pages/userhome.php', 'payment_failed', $returnExtra ?? []);
+    // An empty wallet is the one failure here the donor can actually do
+    // something about, so it gets its own status rather than being flattened
+    // into "payment failed" with no reason given. WalletService::debit()
+    // throws this before writing anything, so nothing needs undoing beyond the
+    // rollback above.
+    $status = $e->getMessage() === 'insufficient_balance' ? 'wallet_short' : 'payment_failed';
+    Response::redirectStatus('pages/userhome.php', $status, $returnExtra ?? []);
 }
 
 Response::redirect('php/payments/checkout.php', ['token' => $session['token']]);

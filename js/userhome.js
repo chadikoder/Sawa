@@ -1532,6 +1532,7 @@ window.addEventListener('DOMContentLoaded', () => {
     payment_pending: { text: 'Payment is pending confirmation.', error: false },
     payment_confirmed: { text: 'Payment confirmed. Thank you.', error: false },
     payment_failed: { text: 'Payment failed. Please try another method.', error: true },
+    wallet_short: { text: 'Not enough in your Sawa Wallet. Top up or pick another method.', error: true },
     payment_cancelled: { text: 'Payment was cancelled.', error: true },
   };
   const status = params.get('status');
@@ -1557,6 +1558,10 @@ function showPaymentStatus(status) {
     payment_failed: {
       title: 'Payment failed',
       message: 'The provider did not confirm the payment. Please try again or choose another method.',
+    },
+    wallet_short: {
+      title: 'Not enough wallet balance',
+      message: 'Your Sawa Wallet does not cover this donation. Top up your wallet from the Wallet section, or pay with Whish or a card instead. Nothing was charged.',
     },
     payment_cancelled: {
       title: 'Payment cancelled',
